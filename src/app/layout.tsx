@@ -32,7 +32,9 @@ export const metadata: Metadata = {
   },
   description:
     "A free, open-source, offline-capable tool for researching Qur'anic Arabic roots and word forms: every derivative, every occurrence, with the Uthmani text and translation.",
-  manifest: "/manifest.webmanifest",
+  // metadata.manifest is not auto-prefixed by Next's basePath (unlike the
+  // icon.svg/apple-icon.png convention routes), so it's done explicitly here.
+  manifest: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/manifest.webmanifest`,
   applicationName: "Quran Root Research",
   appleWebApp: {
     capable: true,

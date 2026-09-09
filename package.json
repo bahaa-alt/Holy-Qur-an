@@ -14,6 +14,7 @@
     "data:build": "tsx scripts/build-data.ts",
     "data:check": "tsx scripts/build-data.ts --check",
     "icons:build": "tsx scripts/build-icons.ts",
+    "build:ghpages": "tsx scripts/build-data.ts && NEXT_PUBLIC_BASE_PATH=/Holy-Qur-an next build && NEXT_PUBLIC_BASE_PATH=/Holy-Qur-an tsx scripts/build-sw.ts",
     "format": "prettier --write ."
   },
   "dependencies": {

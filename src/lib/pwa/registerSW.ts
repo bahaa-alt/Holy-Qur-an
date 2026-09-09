@@ -6,9 +6,11 @@
 export function registerServiceWorker(onUpdateAvailable?: () => void): void {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
   const doRegister = () => {
     navigator.serviceWorker
-      .register("/sw.js")
+      .register(`${basePath}/sw.js`)
       .then((registration) => {
         registration.addEventListener("updatefound", () => {
           const installing = registration.installing;

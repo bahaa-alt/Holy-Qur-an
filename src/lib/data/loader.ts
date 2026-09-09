@@ -8,7 +8,9 @@ import type {
   SurahVerse,
 } from "./types";
 
-const DATA_BASE = "/data/v1";
+// Matches next.config.ts's basePath: empty for the default (root-domain)
+// build, "/<repo-name>" for the GitHub Pages project-site build.
+const DATA_BASE = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/data/v1`;
 
 const cache = new Map<string, Promise<unknown>>();
 
