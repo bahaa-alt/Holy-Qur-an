@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { RootSummary } from "@/lib/root/summary";
+import type { SurahDistribution } from "@/lib/root/distribution";
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
@@ -10,7 +11,21 @@ function Stat({ label, value }: { label: string; value: number }) {
   );
 }
 
-export function RootHeader({ summary, actions }: { summary: RootSummary; actions?: ReactNode }) {
+function periodLabel(distribution: SurahDistribution): string {
+  if (distribution.medinanCount === 0) return "100% Meccan";
+  if (distribution.meccanCount === 0) return "100% Medinan";
+  return `${distribution.meccanPct}% Meccan`;
+}
+
+export function RootHeader({
+  summary,
+  distribution,
+  actions,
+}: {
+  summary: RootSummary;
+  distribution?: SurahDistribution;
+  actions?: ReactNode;
+}) {
   const root = summary.root ?? "";
 
   return (
@@ -24,6 +39,11 @@ export function RootHeader({ summary, actions }: { summary: RootSummary; actions
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {summary.bw && <p className="font-mono text-sm text-muted">/{summary.bw}/</p>}
+          {distribution && summary.total > 0 && (
+            <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted">
+              {periodLabel(distribution)}
+            </span>
+          )}
           {actions}
         </div>
       </div>
