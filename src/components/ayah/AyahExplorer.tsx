@@ -8,6 +8,7 @@ import { buildExportRow } from "@/lib/export/buildRow";
 import { CATEGORY_ORDER } from "@/lib/data/types";
 import type { MetaFile, RootFile, SurahVerse } from "@/lib/data/types";
 import { AyahCard } from "./AyahCard";
+import { KwicRow } from "./KwicRow";
 import { FilterBar } from "./FilterBar";
 import { Pagination } from "./Pagination";
 import { ExportMenu } from "@/components/export/ExportMenu";
@@ -32,6 +33,7 @@ export function AyahExplorer({
   const [filters, setFilters] = useState<RowFilters>(initialFilters ?? {});
   const [page, setPage] = useState(1);
   const [pageVerses, setPageVerses] = useState<Map<string, SurahVerse>>(new Map());
+  const [viewMode, setViewMode] = useState<"cards" | "kwic">("cards");
 
   useEffect(() => {
     let cancelled = false;
@@ -122,11 +124,29 @@ export function AyahExplorer({
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-6">
+    <div id="ayah-explorer" className="rounded-2xl border border-border bg-surface p-6">
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-medium text-ink">Contextual Ayah Explorer</h2>
-          <ExportMenu filenameBase={filenameBase} resolveRows={resolveExportRows} />
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex rounded-lg border border-border p-0.5 text-xs">
+              <button
+                type="button"
+                onClick={() => setViewMode("cards")}
+                className={`rounded-md px-2.5 py-1 ${viewMode === "cards" ? "bg-accent text-accent-fg" : "text-muted"}`}
+              >
+                Cards
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("kwic")}
+                className={`rounded-md px-2.5 py-1 ${viewMode === "kwic" ? "bg-accent text-accent-fg" : "text-muted"}`}
+              >
+                KWIC
+              </button>
+            </div>
+            <ExportMenu filenameBase={filenameBase} resolveRows={resolveExportRows} />
+          </div>
         </div>
 
         <FilterBar
@@ -137,7 +157,7 @@ export function AyahExplorer({
         />
       </div>
 
-      <div className="mt-4 space-y-3">
+      <div className={viewMode === "cards" ? "mt-4 space-y-3" : "mt-4"}>
         {isLoadingVerses ? (
           <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted">
             <Loader2 size={16} className="animate-spin" /> Loading verses…
@@ -147,7 +167,7 @@ export function AyahExplorer({
             const verse = displayedPageVerses.get(`${row.s}:${row.a}`);
             const surahMeta = meta.surahs.find((s) => s.n === row.s);
             if (!verse || !surahMeta) return null;
-            return (
+            return viewMode === "cards" ? (
               <AyahCard
                 key={`${row.s}-${row.a}-${row.w}-${i}`}
                 surahMeta={surahMeta}
@@ -156,6 +176,14 @@ export function AyahExplorer({
                 translation={verse.t}
                 highlightIndices={verseIndex.get(`${row.s}:${row.a}`) ?? []}
                 emphasisIndex={row.w}
+              />
+            ) : (
+              <KwicRow
+                key={`${row.s}-${row.a}-${row.w}-${i}`}
+                surahMeta={surahMeta}
+                ayah={row.a}
+                tokens={verse.w}
+                wordIndex={row.w}
               />
             );
           })
