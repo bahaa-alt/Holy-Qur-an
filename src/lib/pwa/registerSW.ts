@@ -6,7 +6,7 @@
 export function registerServiceWorker(onUpdateAvailable?: () => void): void {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
-  window.addEventListener("load", () => {
+  const doRegister = () => {
     navigator.serviceWorker
       .register("/sw.js")
       .then((registration) => {
@@ -23,7 +23,18 @@ export function registerServiceWorker(onUpdateAvailable?: () => void): void {
       .catch(() => {
         // registration failing (e.g. unsupported context) shouldn't break the app
       });
-  });
+  };
+
+  // This runs from a React effect after hydration, by which point the
+  // window's "load" event has very often already fired (a static export
+  // page loads fast) -- attaching a "load" listener at that point would
+  // never call it back. Register immediately if the document is already
+  // fully loaded, and only wait for "load" otherwise.
+  if (document.readyState === "complete") {
+    doRegister();
+  } else {
+    window.addEventListener("load", doRegister);
+  }
 
   let refreshing = false;
   navigator.serviceWorker.addEventListener("controllerchange", () => {

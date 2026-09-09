@@ -93,10 +93,17 @@ body {
   }
 }
 
-/* Arabic UI text (root letters, lemma labels, etc.), not Qur'anic verse text. */
+/* Arabic UI text (root letters, lemma labels, etc.), not Qur'anic verse text.
+   Deliberately does NOT set `direction: rtl`: the Unicode bidi algorithm
+   already renders Arabic glyphs right-to-left regardless of the CSS
+   `direction` property, and `unicode-bidi: plaintext` auto-detects the
+   paragraph base direction from the content itself. Setting `direction: rtl`
+   here would also flip which physical side Tailwind's logical padding/margin
+   utilities (pe-*, ps-*, text-end, etc.) resolve to on this element,
+   silently breaking spacing wherever this class sits inside an
+   otherwise-LTR layout (e.g. a table cell next to an English column). */
 .arabic-ui {
   font-family: var(--font-arabic);
-  direction: rtl;
   unicode-bidi: plaintext;
 }
 

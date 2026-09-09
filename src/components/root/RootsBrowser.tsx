@@ -59,7 +59,7 @@ export function RootsBrowser({ roots }: { roots: RootRow[] }) {
             .filter(([, list]) => list.length > 0)
             .map(([letter, list]) => (
               <div key={letter}>
-                <h2 className="arabic-ui text-lg font-semibold text-accent">{letter}</h2>
+                <h2 className="arabic-ui text-left text-lg font-semibold text-accent">{letter}</h2>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {list
                     .sort((a, b) => b.count - a.count)
@@ -79,10 +79,10 @@ function RootChip({ root }: { root: RootRow }) {
   return (
     <Link
       href={`/root/${encodeURIComponent(root.ar)}/`}
-      className="arabic-ui rounded-full border border-border bg-surface px-3 py-1.5 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
+      className="arabic-ui inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
     >
-      {root.ar}
-      <span className="ms-1.5 text-xs text-muted">{root.count.toLocaleString()}</span>
+      <span>{root.ar}</span>
+      <span className="text-xs text-muted">{root.count.toLocaleString()}</span>
     </Link>
   );
 }

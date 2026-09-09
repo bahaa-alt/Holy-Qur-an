@@ -1,9 +1,11 @@
-import { readManifest } from "@/lib/data/serverData";
+import { readIndex, readManifest } from "@/lib/data/serverData";
+import { OfflineDownload } from "@/components/layout/OfflineDownload";
 
 export const metadata = { title: "About" };
 
 export default function AboutPage() {
   const manifest = readManifest();
+  const rootNames = readIndex().roots.map((r) => r.ar);
 
   return (
     <div className="mx-auto max-w-2xl space-y-8 px-4 py-8 text-sm leading-relaxed text-ink">
@@ -59,6 +61,7 @@ export default function AboutPage() {
           installed, previously visited roots and surahs stay available offline, and the app can download
           the full corpus in the background for complete offline access.
         </p>
+        <OfflineDownload roots={rootNames} />
       </div>
 
       <div>

@@ -17,7 +17,7 @@ export function RootHeader({ summary }: { summary: RootSummary }) {
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-muted">Root</p>
-          <p className="arabic-ui mt-1 text-4xl font-semibold tracking-widest text-ink sm:text-5xl">
+          <p className="arabic-ui mt-1 text-left text-4xl font-semibold tracking-widest text-ink sm:text-5xl">
             {[...root].join(" ")}
           </p>
         </div>

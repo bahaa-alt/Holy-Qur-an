@@ -18,7 +18,7 @@ export function WordHeader({
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
       <p className="text-xs font-medium uppercase tracking-wide text-muted">Lemma</p>
-      <p className="arabic-ui mt-1 text-4xl font-semibold text-ink sm:text-5xl">{lemma}</p>
+      <p className="arabic-ui mt-1 text-left text-4xl font-semibold text-ink sm:text-5xl">{lemma}</p>
 
       <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
         <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted">

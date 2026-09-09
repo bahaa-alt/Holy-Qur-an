@@ -32,10 +32,10 @@ export default function Home() {
             <Link
               key={r.ar}
               href={`/root/${encodeURIComponent(r.ar)}/`}
-              className="arabic-ui rounded-full border border-border bg-surface px-3 py-1.5 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
+              className="arabic-ui inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
             >
-              {r.ar}
-              <span className="ms-1.5 text-xs text-muted">{r.count.toLocaleString()}</span>
+              <span>{r.ar}</span>
+              <span className="text-xs text-muted">{r.count.toLocaleString()}</span>
             </Link>
           ))}
         </div>
