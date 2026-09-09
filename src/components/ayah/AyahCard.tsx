@@ -1,0 +1,50 @@
+import Link from "next/link";
+import { HighlightedVerse } from "./HighlightedVerse";
+import { AyahActions } from "./AyahActions";
+import type { SurahMeta } from "@/lib/data/types";
+
+export function AyahCard({
+  surahMeta,
+  ayah,
+  tokens,
+  translation,
+  highlightIndices,
+  emphasisIndex,
+}: {
+  surahMeta: SurahMeta;
+  ayah: number;
+  tokens: string[];
+  translation: string;
+  highlightIndices: number[];
+  emphasisIndex?: number;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-surface p-5">
+      <div className="flex items-baseline justify-between gap-3">
+        <Link
+          href={`/surah/${surahMeta.n}/?ayah=${ayah}`}
+          className="text-sm font-medium text-accent hover:text-accent-strong"
+        >
+          <bdi>
+            {surahMeta.nameEn} {surahMeta.n}:{ayah}
+          </bdi>
+        </Link>
+        <span className="arabic-ui text-sm text-muted">{surahMeta.nameAr}</span>
+      </div>
+
+      <div className="mt-3">
+        <HighlightedVerse tokens={tokens} highlightIndices={highlightIndices} emphasisIndex={emphasisIndex} />
+      </div>
+      <p className="mt-2 text-sm text-muted">{translation}</p>
+
+      <div className="mt-3 border-t border-border pt-3">
+        <AyahActions
+          arabic={tokens.join(" ")}
+          translation={translation}
+          surah={surahMeta.n}
+          ayah={ayah}
+        />
+      </div>
+    </div>
+  );
+}
