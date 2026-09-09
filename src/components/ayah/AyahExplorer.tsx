@@ -22,15 +22,23 @@ export function AyahExplorer({
   source,
   filenameBase,
   initialFilters,
+  filters: controlledFilters,
+  onFiltersChange,
 }: {
   source: AyahSource;
   filenameBase: string;
   initialFilters?: RowFilters;
+  /** Makes filters optionally controlled (e.g. from a conjugation table's cell
+   *  clicks). Omit both this and `onFiltersChange` for today's uncontrolled
+   *  behavior, seeded from `initialFilters`. */
+  filters?: RowFilters;
+  onFiltersChange?: (next: RowFilters) => void;
 }) {
   const root = source.kind === "root" ? source.root : null;
   const [file, setFile] = useState<RootFile | null>(null);
   const [meta, setMeta] = useState<MetaFile | null>(null);
-  const [filters, setFilters] = useState<RowFilters>(initialFilters ?? {});
+  const [internalFilters, setInternalFilters] = useState<RowFilters>(initialFilters ?? {});
+  const filters = controlledFilters ?? internalFilters;
   const [page, setPage] = useState(1);
   const [pageVerses, setPageVerses] = useState<Map<string, SurahVerse>>(new Map());
   const [viewMode, setViewMode] = useState<"cards" | "kwic">("cards");
@@ -59,7 +67,8 @@ export function AyahExplorer({
   const pageRows = filteredRows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   function handleFiltersChange(next: RowFilters) {
-    setFilters(next);
+    if (onFiltersChange) onFiltersChange(next);
+    else setInternalFilters(next);
     setPage(1);
   }
 

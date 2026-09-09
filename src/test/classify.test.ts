@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { classify, extractMood, extractVerbForm } from "@/lib/morphology/classify";
+import { classify, extractMood, extractPersonGenderNumber, extractVerbForm } from "@/lib/morphology/classify";
 
 describe("classify", () => {
   it("classifies the three sample rows from the plan", () => {
@@ -54,5 +54,22 @@ describe("extractMood", () => {
 
   it("returns null when there is no MOOD tag", () => {
     expect(extractMood(["PERF", "3MS"])).toBeNull();
+  });
+});
+
+describe("extractPersonGenderNumber", () => {
+  it("extracts a bare person/gender/number tag", () => {
+    expect(extractPersonGenderNumber(["IMPF", "VF:1", "3MP", "MOOD:IND"])).toBe("3MP");
+    expect(extractPersonGenderNumber(["PERF", "2FS"])).toBe("2FS");
+  });
+
+  it("does not mistake MOOD:/VF:/IMPF for a person/gender/number tag", () => {
+    expect(extractPersonGenderNumber(["MOOD:IND"])).toBeNull();
+    expect(extractPersonGenderNumber(["VF:4"])).toBeNull();
+    expect(extractPersonGenderNumber(["IMPF"])).toBeNull();
+  });
+
+  it("returns null when no tag matches", () => {
+    expect(extractPersonGenderNumber(["PERF"])).toBeNull();
   });
 });

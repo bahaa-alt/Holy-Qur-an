@@ -68,3 +68,17 @@ export function extractMood(tags: readonly string[]): string | null {
   }
   return null;
 }
+
+// Same tag shape as tagLabels.ts's private (unexported) decodePersonGenderNumber:
+// a digit is always person, M/F is always gender, S/D/P is always number.
+// Small intentional duplication rather than exporting a helper from a
+// module whose purpose is otherwise purely display labels.
+const PGN_PATTERN = /^[123MFSDP]{1,3}$/;
+
+/** Extracts a bare person/gender/number tag (e.g. "3MP", "2FS"), if present. */
+export function extractPersonGenderNumber(tags: readonly string[]): string | null {
+  for (const tag of tags) {
+    if (PGN_PATTERN.test(tag)) return tag;
+  }
+  return null;
+}

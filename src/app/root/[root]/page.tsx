@@ -2,12 +2,13 @@ import { notFound } from "next/navigation";
 import { readIndex, readManifest, readMeta, readRootFile } from "@/lib/data/serverData";
 import { buildRootSummary } from "@/lib/root/summary";
 import { buildSurahDistribution } from "@/lib/root/distribution";
+import { buildConjugationTables, hasVerbLemma } from "@/lib/root/conjugation";
 import { RootHeader } from "@/components/root/RootHeader";
 import { CiteButton } from "@/components/root/CiteButton";
 import { FrequencyChart } from "@/components/root/FrequencyChart";
 import { FormsTable } from "@/components/root/FormsTable";
 import { SurahDistribution } from "@/components/root/SurahDistribution";
-import { AyahExplorer } from "@/components/ayah/AyahExplorer";
+import { RootInteractive } from "@/components/root/RootInteractive";
 
 export function generateStaticParams() {
   const index = readIndex();
@@ -36,6 +37,7 @@ export default async function RootPage({ params }: { params: Promise<{ root: str
   const meta = readMeta();
   const distribution = buildSurahDistribution(file, meta);
   const surahLabels = new Map(meta.surahs.map((s) => [s.n, s.translit]));
+  const conjugationTables = hasVerbLemma(file) ? buildConjugationTables(file) : [];
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
@@ -55,7 +57,7 @@ export default async function RootPage({ params }: { params: Promise<{ root: str
           }))}
         />
       )}
-      <AyahExplorer key={root} source={{ kind: "root", root }} filenameBase={`root-${root}`} />
+      <RootInteractive root={root} conjugationTables={conjugationTables} filenameBase={`root-${root}`} />
     </div>
   );
 }
