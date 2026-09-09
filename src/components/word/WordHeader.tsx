@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { CATEGORY_LABELS } from "@/lib/data/types";
 import type { Cat } from "@/lib/data/types";
@@ -8,17 +9,24 @@ export function WordHeader({
   cat,
   count,
   formCount,
+  actions,
 }: {
   lemma: string;
   root: string | null;
   cat: Cat;
   count: number;
   formCount: number;
+  actions?: ReactNode;
 }) {
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted">Lemma</p>
-      <p className="arabic-ui mt-1 text-left text-4xl font-semibold text-ink sm:text-5xl">{lemma}</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted">Lemma</p>
+          <p className="arabic-ui mt-1 text-left text-4xl font-semibold text-ink sm:text-5xl">{lemma}</p>
+        </div>
+        {actions}
+      </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
         <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted">

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
-import { readIndex, readLemmaFile, readRootFile } from "@/lib/data/serverData";
+import { readIndex, readLemmaFile, readManifest, readRootFile } from "@/lib/data/serverData";
 import { WordHeader } from "@/components/word/WordHeader";
+import { CiteButton } from "@/components/root/CiteButton";
 import { FormsTable } from "@/components/root/FormsTable";
 import { AyahExplorer } from "@/components/ayah/AyahExplorer";
 import type { RootFormEntry, RootLemmaEntry } from "@/lib/data/types";
@@ -40,9 +41,18 @@ export default async function WordPage({ params }: { params: Promise<{ idx: stri
     lemmas = lemmaFile.lemmas;
   }
 
+  const manifest = readManifest();
+
   return (
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
-      <WordHeader lemma={row.lemma} root={root} cat={row.cat} count={row.count} formCount={forms.length} />
+      <WordHeader
+        lemma={row.lemma}
+        root={root}
+        cat={row.cat}
+        count={row.count}
+        formCount={forms.length}
+        actions={<CiteButton subject={{ kind: "word", label: row.lemma }} manifest={manifest} />}
+      />
       <FormsTable forms={forms} lemmas={lemmas} />
       <AyahExplorer
         key={idx}

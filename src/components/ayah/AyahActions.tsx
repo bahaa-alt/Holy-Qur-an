@@ -3,27 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Check, Copy, ExternalLink } from "lucide-react";
-
-async function copy(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    try {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-}
+import { copyToClipboard } from "@/lib/clipboard";
 
 export function AyahActions({
   arabic,
@@ -40,7 +20,7 @@ export function AyahActions({
 
   async function handleCopy(kind: "ar" | "both") {
     const text = kind === "ar" ? arabic : `${arabic}\n\n${translation}\n(${surah}:${ayah})`;
-    const ok = await copy(text);
+    const ok = await copyToClipboard(text);
     if (ok) {
       setCopied(kind);
       setTimeout(() => setCopied(null), 1500);

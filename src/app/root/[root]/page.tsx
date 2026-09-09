@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
-import { readIndex, readRootFile } from "@/lib/data/serverData";
+import { readIndex, readManifest, readRootFile } from "@/lib/data/serverData";
 import { buildRootSummary } from "@/lib/root/summary";
 import { RootHeader } from "@/components/root/RootHeader";
+import { CiteButton } from "@/components/root/CiteButton";
 import { FrequencyChart } from "@/components/root/FrequencyChart";
 import { FormsTable } from "@/components/root/FormsTable";
 import { AyahExplorer } from "@/components/ayah/AyahExplorer";
@@ -29,10 +30,14 @@ export default async function RootPage({ params }: { params: Promise<{ root: str
   }
 
   const summary = buildRootSummary(file);
+  const manifest = readManifest();
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
-      <RootHeader summary={summary} />
+      <RootHeader
+        summary={summary}
+        actions={<CiteButton subject={{ kind: "root", label: root }} manifest={manifest} />}
+      />
       <FrequencyChart byCategory={summary.byCategory} byLemma={summary.byLemma} />
       <FormsTable forms={file.forms} lemmas={file.lemmas} />
       <AyahExplorer key={root} source={{ kind: "root", root }} filenameBase={`root-${root}`} />
