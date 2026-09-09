@@ -158,7 +158,8 @@ export interface SurahFile {
 export interface RootLemmaEntry {
   lemma: string;
   key: string;
-  pos: "N" | "V";
+  /** the corpus uses exactly three part-of-speech letters: N(oun), V(erb), P(article) */
+  pos: "N" | "V" | "P";
   count: number;
   cats: Partial<Record<Cat, number>>;
   /** Form I-XI counts, only present for verbs */

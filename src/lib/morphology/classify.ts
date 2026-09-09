@@ -37,7 +37,7 @@ export function classify(pos: string, tags: readonly string[]): Cat {
  * Returns null when no VF tag is present (i.e. the word is not a verb, or
  * is a bare/Form-I verb without an explicit VF tag in the source data).
  */
-const ROMAN_FORMS: Record<string, string> = {
+export const ROMAN_FORMS: Record<string, string> = {
   "1": "I",
   "2": "II",
   "3": "III",
