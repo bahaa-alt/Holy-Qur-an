@@ -37,10 +37,15 @@ export interface BuildSurahsResult {
  * morphology-reconstructed words are used instead so that occurrence word
  * indices always resolve correctly, and the verse is flagged `m: 1` and
  * recorded in `mismatches` for review.
+ *
+ * `pickthallByRef` (keyed "s:a") attaches Pickthall's translation alongside
+ * Saheeh International where available; omitted entirely for a verse absent
+ * from that map, rather than an empty string.
  */
 export function buildSurahs(
   words: readonly RawWord[],
   chapters: readonly QuranJsonChapter[],
+  pickthallByRef: ReadonlyMap<string, string> = new Map(),
 ): BuildSurahsResult {
   const wordsByVerse = new Map<string, string[]>();
   for (const word of words) {
@@ -76,11 +81,13 @@ export function buildSurahs(
         mismatches.push({ s: n, a, morphN: morphWords.length, jsonN: quranTokens.length });
       }
 
+      const pickthall = pickthallByRef.get(`${n}:${a}`);
       verses.push({
         a,
         w: tokens,
         t: quranVerse.translation,
         ...(mismatch ? { m: 1 as const } : {}),
+        ...(pickthall !== undefined ? { pickthall } : {}),
       });
     }
 

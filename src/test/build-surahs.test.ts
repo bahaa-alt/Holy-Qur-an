@@ -77,6 +77,16 @@ describe("buildSurahs", () => {
     ]);
   });
 
+  it("attaches Pickthall's translation where the map has an entry, and omits it entirely otherwise", () => {
+    const pickthallByRef = new Map([["1:1", "In the name of Allah, the Beneficent, the Merciful"]]);
+    const { surahFiles: sf } = buildSurahs(words, [chapter()], pickthallByRef);
+    const verse1 = sf.get(1)!.verses.find((v) => v.a === 1)!;
+    const verse2 = sf.get(1)!.verses.find((v) => v.a === 2)!;
+    expect(verse1.pickthall).toBe("In the name of Allah, the Beneficent, the Merciful");
+    expect(verse2.pickthall).toBeUndefined();
+    expect("pickthall" in verse2).toBe(false);
+  });
+
   it("emits every verse even when a verse has no morphology words at all", () => {
     const emptyChapter: QuranJsonChapter = {
       ...chapter(),

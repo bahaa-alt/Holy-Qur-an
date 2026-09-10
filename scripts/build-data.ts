@@ -18,6 +18,10 @@ import { buildVerseRoots } from "./lib/build-verse-roots";
 import { SizeReport, recordGroup, writeJSON } from "./lib/emit";
 import type { ManifestFile, ManifestSource, VerseRootsFile } from "../src/lib/data/types";
 
+interface PickthallEdition {
+  quran: { chapter: number; verse: number; text: string }[];
+}
+
 const args = process.argv.slice(2);
 const CHECK_ONLY = args.includes("--check");
 const FORCE = args.includes("--force");
@@ -26,6 +30,10 @@ const MORPHOLOGY_URL = "https://raw.githubusercontent.com/mustafa0x/quran-morpho
 const QURAN_JSON_CHAPTER_URL = (n: number) =>
   `https://raw.githubusercontent.com/risan/quran-json/main/dist/chapters/en/${n}.json`;
 const ROOTS_GLOSS_URL = "https://raw.githubusercontent.com/R3GENESI5/quran-bil-quran/master/app/data/roots_index.json";
+// Pickthall's translation, from the same tanzil.net corpus quran-json's own
+// Saheeh International text derives from -- a second English rendering
+// shown alongside Saheeh International for translation comparison.
+const PICKTHALL_URL = "https://raw.githubusercontent.com/fawazahmed0/quran-api/1/editions/eng-mohammedmarmadu.min.json";
 
 const SOURCES: ManifestSource[] = [
   {
@@ -42,6 +50,11 @@ const SOURCES: ManifestSource[] = [
     name: "Root meanings (after Lane's Lexicon)",
     url: "https://github.com/R3GENESI5/quran-bil-quran",
     license: "MIT",
+  },
+  {
+    name: "Pickthall English translation (via tanzil.net)",
+    url: "https://github.com/fawazahmed0/quran-api",
+    license: "Public domain packaging (Unlicense); translation text via tanzil.net",
   },
 ];
 
@@ -79,7 +92,11 @@ const BUDGETS_RAW_BYTES = {
   "verse-roots.json": 700 * 1024,
 };
 const LARGEST_ROOT_BUDGET_RAW = 60 * 1024;
-const TOTAL_RAW_BUDGET = 9 * 1024 * 1024;
+// Raised from 9 MiB: adding Pickthall's translation to every verse grew
+// surahs/*.json by ~900 KB raw (measured 9.18 MiB total). Gzipped total
+// barely moved (~2.66 MiB, well under TOTAL_GZ_BUDGET) since English prose
+// compresses well -- raw is what actually needed headroom.
+const TOTAL_RAW_BUDGET = 10.5 * 1024 * 1024;
 const TOTAL_GZ_BUDGET = 3 * 1024 * 1024;
 
 function fail(message: string): never {
@@ -97,10 +114,20 @@ async function main() {
   console.log(`Data pipeline starting (${CHECK_ONLY ? "check-only" : "build"} mode)${FORCE ? ", forced refetch" : ""}`);
 
   // --- 1. Download ---
-  const [morphology, rootsGloss] = await Promise.all([
+  const [morphology, rootsGloss, pickthall] = await Promise.all([
     fetchCached(MORPHOLOGY_URL, "quran-morphology.txt", { force: FORCE }),
     fetchCachedJSON<RootsGlossMap>(ROOTS_GLOSS_URL, "roots_index.json", { force: FORCE }),
+    fetchCachedJSON<PickthallEdition>(PICKTHALL_URL, "pickthall.json", { force: FORCE }),
   ]);
+  const pickthallByRef = new Map<string, string>();
+  for (const v of pickthall.data.quran) {
+    pickthallByRef.set(`${v.chapter}:${v.verse}`, v.text);
+  }
+  if (pickthallByRef.size < EXPECTED.verses - 50) {
+    console.warn(
+      `Warning: Pickthall translation only covers ${pickthallByRef.size}/${EXPECTED.verses} verses; some verses will show Saheeh International only.`,
+    );
+  }
 
   const chapters: QuranJsonChapter[] = [];
   for (let n = 1; n <= 114; n++) {
@@ -120,7 +147,7 @@ async function main() {
   console.log(`Parsed ${words.length.toLocaleString()} words / ${totalSegments.toLocaleString()} segments.`);
 
   // --- 3. Build surahs (+ per-verse validation against quran-json) ---
-  const { surahFiles, meta, mismatches } = buildSurahs(words, chapters);
+  const { surahFiles, meta, mismatches } = buildSurahs(words, chapters, pickthallByRef);
 
   // --- 4. Build roots / lemmas / forms ---
   const {
@@ -223,7 +250,7 @@ async function main() {
   console.log("✓ All invariants passed.");
 
   // --- 7. Manifest ---
-  const hashInput = morphology.sha256 + rootsGloss.sha256 + chapters.map((c) => c.id).join(",");
+  const hashInput = morphology.sha256 + rootsGloss.sha256 + pickthall.sha256 + chapters.map((c) => c.id).join(",");
   const manifest: ManifestFile = {
     version: "v1",
     builtAt: new Date().toISOString(),

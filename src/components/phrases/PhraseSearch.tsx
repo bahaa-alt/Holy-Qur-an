@@ -21,6 +21,7 @@ interface ResultRow {
   a: number;
   tokens: string[];
   translation: string;
+  pickthall?: string;
   leadW: number;
   followW: number;
 }
@@ -64,12 +65,20 @@ export function PhraseSearch({ roots }: { roots: RootSlotOption[] }) {
       const verseMap = await getVerses(refs);
 
       const rows = capped
-        .map((m) => {
+        .map((m): ResultRow | null => {
           const ref = globalIdToRef(meta, m.globalId);
           if (!ref) return null;
           const verse = verseMap.get(`${ref.s}:${ref.a}`);
           if (!verse) return null;
-          return { s: ref.s, a: ref.a, tokens: verse.w, translation: verse.t, leadW: m.leadW, followW: m.followW };
+          return {
+            s: ref.s,
+            a: ref.a,
+            tokens: verse.w,
+            translation: verse.t,
+            pickthall: verse.pickthall,
+            leadW: m.leadW,
+            followW: m.followW,
+          };
         })
         .filter((r): r is ResultRow => r !== null);
       setResults(rows);
@@ -120,6 +129,7 @@ export function PhraseSearch({ roots }: { roots: RootSlotOption[] }) {
               ayah={row.a}
               tokens={row.tokens}
               translation={row.translation}
+              pickthall={row.pickthall}
               highlightIndices={[row.leadW, row.followW]}
               emphasisIndex={row.leadW}
             />

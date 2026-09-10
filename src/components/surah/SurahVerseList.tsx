@@ -41,9 +41,21 @@ export function SurahVerseList({ surahMeta, verses }: { surahMeta: SurahMeta; ve
             </div>
             <p className="uthmani mt-2 text-ink">{verse.w.join(" ")}</p>
             <p className="mt-2 text-sm text-muted">{verse.t}</p>
+            {verse.pickthall && (
+              <p className="mt-1 text-sm text-muted/80">
+                <span className="text-xs uppercase tracking-wide text-muted/60">Pickthall: </span>
+                {verse.pickthall}
+              </p>
+            )}
             <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <AyahActions arabic={verse.w.join(" ")} translation={verse.t} surah={surahMeta.n} ayah={verse.a} />
+                <AyahActions
+                  arabic={verse.w.join(" ")}
+                  translation={verse.t}
+                  pickthall={verse.pickthall}
+                  surah={surahMeta.n}
+                  ayah={verse.a}
+                />
                 <SaveButton
                   id={`verse:${surahMeta.n}:${verse.a}`}
                   kind="verse"

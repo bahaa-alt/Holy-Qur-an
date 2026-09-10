@@ -161,6 +161,10 @@ export interface SurahVerse {
    *  reconstruction rather than the canonical quran-json text, due to a
    *  token-count mismatch between the two sources */
   m?: 1;
+  /** Pickthall's English translation, shown alongside Saheeh International
+   *  for translation comparison. Absent for the small number of verses the
+   *  Pickthall source doesn't cover (see manifest for provenance). */
+  pickthall?: string;
 }
 
 export interface SurahFile {

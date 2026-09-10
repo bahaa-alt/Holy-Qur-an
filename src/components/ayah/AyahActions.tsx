@@ -8,18 +8,22 @@ import { copyToClipboard } from "@/lib/clipboard";
 export function AyahActions({
   arabic,
   translation,
+  pickthall,
   surah,
   ayah,
 }: {
   arabic: string;
   translation: string;
+  /** Pickthall's translation, included in "Copy with translation" when present. */
+  pickthall?: string;
   surah: number;
   ayah: number;
 }) {
   const [copied, setCopied] = useState<"ar" | "both" | null>(null);
 
   async function handleCopy(kind: "ar" | "both") {
-    const text = kind === "ar" ? arabic : `${arabic}\n\n${translation}\n(${surah}:${ayah})`;
+    const translations = [translation, pickthall].filter(Boolean).join("\n");
+    const text = kind === "ar" ? arabic : `${arabic}\n\n${translations}\n(${surah}:${ayah})`;
     const ok = await copyToClipboard(text);
     if (ok) {
       setCopied(kind);

@@ -183,6 +183,7 @@ export function AyahExplorer({
                 ayah={row.a}
                 tokens={verse.w}
                 translation={verse.t}
+                pickthall={verse.pickthall}
                 highlightIndices={verseIndex.get(`${row.s}:${row.a}`) ?? []}
                 emphasisIndex={row.w}
               />

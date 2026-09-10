@@ -10,6 +10,7 @@ export function AyahCard({
   ayah,
   tokens,
   translation,
+  pickthall,
   highlightIndices,
   emphasisIndex,
 }: {
@@ -17,6 +18,7 @@ export function AyahCard({
   ayah: number;
   tokens: string[];
   translation: string;
+  pickthall?: string;
   highlightIndices: number[];
   emphasisIndex?: number;
 }) {
@@ -38,12 +40,19 @@ export function AyahCard({
         <HighlightedVerse tokens={tokens} highlightIndices={highlightIndices} emphasisIndex={emphasisIndex} />
       </div>
       <p className="mt-2 text-sm text-muted">{translation}</p>
+      {pickthall && (
+        <p className="mt-1 text-sm text-muted/80">
+          <span className="text-xs uppercase tracking-wide text-muted/60">Pickthall: </span>
+          {pickthall}
+        </p>
+      )}
 
       <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <AyahActions
             arabic={tokens.join(" ")}
             translation={translation}
+            pickthall={pickthall}
             surah={surahMeta.n}
             ayah={ayah}
           />
