@@ -3,13 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Loader2, X } from "lucide-react";
-import { getIndex, getMeta, getRoot, getVerseRoots } from "@/lib/data/loader";
-import { refToGlobalId } from "@/lib/data/verseId";
-import { findWordRootIdx, resolveWordInfo, type WordInfo } from "@/lib/word/wordInfo";
+import { lookupWordInfo, type WordLookupResult } from "@/lib/word/lookupWordInfo";
+import { describeTags } from "@/lib/morphology/tagLabels";
 import { rootHref, wordHref } from "@/lib/search/suggest";
-import { useT } from "@/lib/i18n/LanguageContext";
+import { useLanguage, useT } from "@/lib/i18n/LanguageContext";
 
-type LookupState = { status: "loading" } | { status: "not-rooted" } | { status: "found"; info: WordInfo };
+type LookupState = { status: "loading" } | WordLookupResult;
 
 /**
  * On-demand "what is this word" panel, shown below a verse when a reader
@@ -41,28 +40,14 @@ export function WordInfoPanel({
   onClose: () => void;
 }) {
   const t = useT();
+  const { lang } = useLanguage();
   const [state, setState] = useState<LookupState>({ status: "loading" });
 
   useEffect(() => {
     let cancelled = false;
-
-    (async () => {
-      const [verseRoots, meta, index] = await Promise.all([getVerseRoots(), getMeta(), getIndex()]);
-      const globalId = refToGlobalId(meta, s, a);
-      const rootIdx = globalId === null ? null : findWordRootIdx(verseRoots, globalId, w);
-      if (rootIdx === null) {
-        if (!cancelled) setState({ status: "not-rooted" });
-        return;
-      }
-
-      const indexRootRow = index.roots[rootIdx];
-      const rootFile = await getRoot(indexRootRow.ar);
-      if (cancelled) return;
-
-      const info = resolveWordInfo(rootFile, indexRootRow, index, rootIdx, s, a, w);
-      setState(info ? { status: "found", info } : { status: "not-rooted" });
-    })();
-
+    lookupWordInfo(s, a, w).then((result) => {
+      if (!cancelled) setState(result);
+    });
     return () => {
       cancelled = true;
     };
@@ -114,6 +99,22 @@ export function WordInfoPanel({
           </div>
 
           {state.info.rootGlossShort && <p className="text-muted">{state.info.rootGlossShort}</p>}
+
+          {describeTags(state.info.tagsJoined).length > 0 && (
+            <div>
+              <span className="text-xs uppercase tracking-wide text-muted">{t.wordInfoPanel.grammar}: </span>
+              <span className="inline-flex flex-wrap gap-1.5 align-middle">
+                {describeTags(state.info.tagsJoined).map((tag, i) => (
+                  <span
+                    key={i}
+                    className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-xs text-ink"
+                  >
+                    {lang === "ar" ? tag.ar : tag.en}
+                  </span>
+                ))}
+              </span>
+            </div>
+          )}
 
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
             <span>{t.wordInfoPanel.occurrencesOfRoot(state.info.rootTotal)}</span>

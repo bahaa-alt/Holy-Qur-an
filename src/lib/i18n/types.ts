@@ -275,6 +275,7 @@ export interface Dict {
     root: string;
     lemma: string;
     category: string;
+    grammar: string;
     occurrencesOfRoot: (count: number) => string;
     occurrencesOfLemma: (count: number) => string;
     occurrencesOfForm: (count: number) => string;

@@ -67,6 +67,14 @@ describe("resolveWordInfo", () => {
     expect(info).not.toBeNull();
     expect(info!.lemma).toBe("كَتَبَ");
     expect(info!.cat).toBe("verb.impf");
+    expect(info!.tagsJoined).toContain("MOOD:IND");
+  });
+
+  it("carries the occurrence's raw grammar tags for the noun too", () => {
+    const { index, katabaFile, katabaIdx } = buildFixture();
+    const indexRootRow = index.roots[katabaIdx];
+    const info = resolveWordInfo(katabaFile, indexRootRow, index, katabaIdx, 2, 2, 2);
+    expect(info!.tagsJoined).toBe("M|NOM");
   });
 
   it("resolves the correct global lemma index for use in a /word/{idx}/ link", () => {

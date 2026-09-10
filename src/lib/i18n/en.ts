@@ -276,6 +276,7 @@ export const en: Dict = {
     root: "Root",
     lemma: "Lemma",
     category: "Category",
+    grammar: "Grammar",
     occurrencesOfRoot: (count) => `${count.toLocaleString()} occurrences of this root`,
     occurrencesOfLemma: (count) => `${count.toLocaleString()} occurrences of this lemma`,
     occurrencesOfForm: (count) => `${count.toLocaleString()} occurrences of this exact form`,

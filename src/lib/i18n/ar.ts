@@ -299,6 +299,7 @@ export const ar: Dict = {
     root: "الجذر",
     lemma: "الكلمة",
     category: "الفئة",
+    grammar: "الإعراب",
     occurrencesOfRoot: (count) => `${count.toLocaleString()} ورودًا لهذا الجذر`,
     occurrencesOfLemma: (count) => `${count.toLocaleString()} ورودًا لهذه الكلمة`,
     occurrencesOfForm: (count) => `${count.toLocaleString()} ورودًا لهذه الصيغة بالضبط`,

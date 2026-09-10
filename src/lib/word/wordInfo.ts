@@ -29,6 +29,8 @@ export interface WordInfo {
   cat: Cat;
   /** total occurrences of this exact surface form across the whole Qur'an */
   formCount: number;
+  /** this occurrence's raw pipe-delimited grammar tags (e.g. "IMPF|VF:1|3MP|MOOD:IND"), for describeTags() */
+  tagsJoined: string;
 }
 
 /**
@@ -50,7 +52,7 @@ export function resolveWordInfo(
 ): WordInfo | null {
   const occEntry = rootFile.occ.find(([os, oa, ow]) => os === s && oa === a && ow === w);
   if (!occEntry) return null;
-  const [, , , , formIdx] = occEntry;
+  const [, , , , formIdx, featIdx] = occEntry;
   const form = rootFile.forms[formIdx];
   if (!form) return null;
   const lemma = rootFile.lemmas[form.lemmaIdx];
@@ -69,5 +71,6 @@ export function resolveWordInfo(
     globalLemmaIdx,
     cat: form.cat,
     formCount: form.count,
+    tagsJoined: rootFile.feats[featIdx] ?? "",
   };
 }
