@@ -307,6 +307,17 @@ export const ar: Dict = {
     viewWordPage: "عرض صفحة الكلمة",
     close: "إغلاق",
   },
+  ayahMorphologyTable: {
+    toggleShow: "عرض التحليل الصرفي الكامل",
+    toggleHide: "إخفاء التحليل الصرفي الكامل",
+    loading: "جارٍ تحليل كل كلمة…",
+    wordColumn: "الكلمة",
+    rootColumn: "الجذر",
+    lemmaColumn: "أصل الكلمة",
+    categoryColumn: "الفئة",
+    grammarColumn: "الإعراب",
+    notRooted: "أداة / ضمير / لاصقة نحوية -- لا جذر لها",
+  },
   exportMenu: {
     exportLabel: "تصدير:",
     csv: "CSV",

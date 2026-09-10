@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { buildHighlightedVerse } from "@/lib/highlight";
 import { WordInfoPanel } from "./WordInfoPanel";
+import { AyahMorphologyTable } from "./AyahMorphologyTable";
+import { useT } from "@/lib/i18n/LanguageContext";
 
 export function HighlightedVerse({
   s,
@@ -18,7 +20,9 @@ export function HighlightedVerse({
   highlightIndices: number[];
   emphasisIndex?: number;
 }) {
+  const t = useT();
   const [selectedWord, setSelectedWord] = useState<number | null>(null);
+  const [showMorphology, setShowMorphology] = useState(false);
   const parts = buildHighlightedVerse(tokens, highlightIndices, emphasisIndex);
 
   return (
@@ -53,6 +57,14 @@ export function HighlightedVerse({
           onClose={() => setSelectedWord(null)}
         />
       )}
+      <button
+        type="button"
+        onClick={() => setShowMorphology((v) => !v)}
+        className="mt-2 text-xs text-accent hover:text-accent-strong"
+      >
+        {showMorphology ? t.ayahMorphologyTable.toggleHide : t.ayahMorphologyTable.toggleShow}
+      </button>
+      {showMorphology && <AyahMorphologyTable s={s} a={a} tokens={tokens} />}
     </div>
   );
 }

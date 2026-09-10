@@ -284,6 +284,17 @@ export const en: Dict = {
     viewWordPage: "View word page",
     close: "Close",
   },
+  ayahMorphologyTable: {
+    toggleShow: "Show full grammar breakdown",
+    toggleHide: "Hide full grammar breakdown",
+    loading: "Resolving every word…",
+    wordColumn: "Word",
+    rootColumn: "Root",
+    lemmaColumn: "Lemma",
+    categoryColumn: "Category",
+    grammarColumn: "Grammar",
+    notRooted: "Particle / pronoun / clitic -- no root",
+  },
   exportMenu: {
     exportLabel: "Export:",
     csv: "CSV",

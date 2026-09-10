@@ -283,6 +283,17 @@ export interface Dict {
     viewWordPage: string;
     close: string;
   };
+  ayahMorphologyTable: {
+    toggleShow: string;
+    toggleHide: string;
+    loading: string;
+    wordColumn: string;
+    rootColumn: string;
+    lemmaColumn: string;
+    categoryColumn: string;
+    grammarColumn: string;
+    notRooted: string;
+  };
   exportMenu: {
     exportLabel: string;
     csv: string;
