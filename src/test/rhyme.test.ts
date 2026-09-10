@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { countRhymeEndings, versesWithEnding } from "@/lib/quran/rhyme";
+import { countRhymeEndings, surahRhymeSummary, versesWithEnding } from "@/lib/quran/rhyme";
 import type { RhymeRow } from "@/lib/data/types";
 
 const ROWS: RhymeRow[] = [
@@ -35,5 +35,21 @@ describe("versesWithEnding", () => {
 
   it("returns an empty array when no verse ends in that letter", () => {
     expect(versesWithEnding(ROWS, "ز")).toEqual([]);
+  });
+});
+
+describe("surahRhymeSummary", () => {
+  it("finds the dominant ending letter within one surah, ignoring other surahs' rows", () => {
+    // Surah 1's own rows are م,ن,م -- م dominates 2 of 3, regardless of
+    // surah 2's rows (which would tie م at 3 total if not filtered first).
+    expect(surahRhymeSummary(ROWS, 1)).toEqual({ dominant: { letter: "م", count: 2 }, totalVerses: 3 });
+  });
+
+  it("returns totalVerses matching just that surah's row count", () => {
+    expect(surahRhymeSummary(ROWS, 2)).toEqual({ dominant: { letter: "د", count: 1 }, totalVerses: 2 });
+  });
+
+  it("returns a null dominant and zero total for a surah with no rows", () => {
+    expect(surahRhymeSummary(ROWS, 99)).toEqual({ dominant: null, totalVerses: 0 });
   });
 });

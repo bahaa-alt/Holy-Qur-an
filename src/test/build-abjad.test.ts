@@ -12,8 +12,15 @@ const ROWS = [
   "2:1:1:1\tه\tN\tLEM:ه", // value 5
 ].join("\n");
 
+// Global verse ids, Qur'an order: 1:1 -> 0, 1:2 -> 1, 2:1 -> 2.
+const GLOBAL_ID_OF = new Map([
+  ["1:1", 0],
+  ["1:2", 1],
+  ["2:1", 2],
+]);
+
 describe("buildAbjad", () => {
-  const totals = buildAbjad(parseMorphologyTSV(ROWS), 2);
+  const totals = buildAbjad(parseMorphologyTSV(ROWS), 2, GLOBAL_ID_OF);
 
   it("sums every word's Abjad value into the book total", () => {
     expect(totals.bookTotal).toBe(3 + 7 + 5);
@@ -32,5 +39,12 @@ describe("buildAbjad", () => {
     expect(totals.byJuz[0]).toBe(15);
     expect(totals.byHizb.slice(1).every((v) => v === 0)).toBe(true);
     expect(totals.byJuz.slice(1).every((v) => v === 0)).toBe(true);
+  });
+
+  it("sums per verse, indexed by global verse id", () => {
+    expect(totals.byVerse).toHaveLength(GLOBAL_ID_OF.size);
+    expect(totals.byVerse[0]).toBe(3); // 1:1
+    expect(totals.byVerse[1]).toBe(7); // 1:2
+    expect(totals.byVerse[2]).toBe(5); // 2:1
   });
 });

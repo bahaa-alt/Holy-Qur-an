@@ -1,6 +1,18 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { FormulasFile, IndexFile, InsightsFile, ManifestFile, MetaFile, RootFile, SurahFile, VerseRootsFile } from "./types";
+import type {
+  AbjadTotalsFile,
+  DistinctiveVocabFile,
+  FormulasFile,
+  IndexFile,
+  InsightsFile,
+  ManifestFile,
+  MetaFile,
+  RhymeFile,
+  RootFile,
+  SurahFile,
+  VerseRootsFile,
+} from "./types";
 
 /**
  * Reads a static data file directly from disk. Only valid at build time
@@ -32,6 +44,18 @@ export function readInsights(): InsightsFile {
 
 export function readFormulas(): FormulasFile {
   return readDataFile<FormulasFile>("formulas.json");
+}
+
+export function readDistinctiveVocab(): DistinctiveVocabFile {
+  return readDataFile<DistinctiveVocabFile>("distinctive-vocab.json");
+}
+
+export function readRhyme(): RhymeFile {
+  return readDataFile<RhymeFile>("rhyme.json");
+}
+
+export function readAbjad(): AbjadTotalsFile {
+  return readDataFile<AbjadTotalsFile>("abjad.json");
 }
 
 export function readRootFile(root: string): RootFile {

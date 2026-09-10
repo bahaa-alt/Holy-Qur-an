@@ -167,6 +167,7 @@ export interface Dict {
   compareView: {
     loadingRoots: string;
     pickAtLeastOneMore: string;
+    heatmapHeading: string;
   };
   rootPicker: {
     heading: string;
@@ -268,6 +269,7 @@ export interface Dict {
     tabCooccurrence: string;
     tabPatterns: string;
     tabFormulas: string;
+    tabVerseSimilarity: string;
     letterFrequencyHeading: string;
     letterFrequencyDescription: string;
     scopeAyah: string;
@@ -328,6 +330,13 @@ export interface Dict {
     hizbLabel: string;
     abjadTotalLabel: string;
     abjadWordBreakdownHeading: string;
+    abjadLookupHeading: string;
+    abjadLookupDescription: string;
+    abjadLookupPlaceholder: string;
+    abjadLookupInvalid: string;
+    abjadLookupSurahsFound: (n: number) => string;
+    abjadLookupVersesFound: (shown: number, total: number) => string;
+    abjadLookupNoVerses: string;
     cooccurrenceHeading: string;
     cooccurrenceDescription: string;
     cooccurrenceTopPairsHeading: string;
@@ -356,6 +365,12 @@ export interface Dict {
     formulasLoading: string;
     formulasNoResults: string;
     formulasOccurrencesCount: (n: number) => string;
+    verseSimilarityHeading: string;
+    verseSimilarityDescription: string;
+    verseSimilarityLoading: string;
+    verseSimilaritySharedRoots: (n: number) => string;
+    verseSimilarityJaccard: (pct: number) => string;
+    verseSimilarityPickPrompt: string;
     sortByFrequency: string;
     sortByPmi: string;
     pmiExplanation: string;
@@ -364,6 +379,18 @@ export interface Dict {
   formulaDetailPage: {
     backToInsights: string;
     summary: (length: number, count: number) => string;
+  };
+  surahInsights: {
+    heading: string;
+    distinctiveVocabHeading: string;
+    distinctiveVocabEmpty: string;
+    rhymeHeading: string;
+    /** letter is rendered separately (isolated via <bdi>) to avoid bidi-reversing this otherwise-LTR sentence -- see the component */
+    rhymeSummary: (count: number, total: number) => string;
+    rhymeEmpty: string;
+    abjadHeading: string;
+    abjadValue: (n: number) => string;
+    viewMoreInInsights: string;
   };
   surahPage: {
     previous: string;
@@ -495,6 +522,8 @@ export interface Dict {
     patternsMethodBody: string;
     formulasMethodHeading: string;
     formulasMethodBody: string;
+    verseSimilarityMethodHeading: string;
+    verseSimilarityMethodBody: string;
     dataSourcesHeading: string;
     laneLexiconNote: string;
     offlineHeading: string;

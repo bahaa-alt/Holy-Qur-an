@@ -4,11 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { getRoot } from "@/lib/data/loader";
 import { buildRootSummary, type RootSummary } from "@/lib/root/summary";
+import { buildSurahOccurrenceCounts } from "@/lib/root/surahHeatmap";
 import { buildComparisonCategoryRows, buildComparisonMarkdown } from "@/lib/compare/buildComparisonRows";
 import { decodeRootsQuery, encodeRootsQuery } from "@/lib/compare/query";
 import { RootPicker, type CompareRootRow } from "./RootPicker";
 import { CompareStatsTable } from "./CompareStatsTable";
 import { CompareCategoryBars } from "./CompareCategoryBars";
+import { SurahHeatmapStrip } from "@/components/root/SurahHeatmapStrip";
 import { CopyTextButton } from "@/components/export/CopyTextButton";
 import { useT } from "@/lib/i18n/LanguageContext";
 
@@ -24,6 +26,7 @@ export function CompareView({ roots }: { roots: CompareRootRow[] }) {
   // any direct/deep link carrying a `?roots=` query.
   const [selected, setSelected] = useState<string[]>([]);
   const [summaries, setSummaries] = useState<Map<string, RootSummary>>(new Map());
+  const [heatmaps, setHeatmaps] = useState<Map<string, number[]>>(new Map());
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -57,6 +60,13 @@ export function CompareView({ roots }: { roots: CompareRootRow[] }) {
         const next = new Map(prev);
         for (const file of files) {
           if (file.root) next.set(file.root, buildRootSummary(file));
+        }
+        return next;
+      });
+      setHeatmaps((prev) => {
+        const next = new Map(prev);
+        for (const file of files) {
+          if (file.root) next.set(file.root, buildSurahOccurrenceCounts(file));
         }
         return next;
       });
@@ -94,6 +104,17 @@ export function CompareView({ roots }: { roots: CompareRootRow[] }) {
             rows={categoryRows}
             labels={loadedSummaries.map((s) => s.root ?? "")}
           />
+          <div className="rounded-2xl border border-border bg-surface p-6">
+            <h2 className="text-sm font-medium text-ink">{t.compareView.heatmapHeading}</h2>
+            <div className="mt-3 space-y-2">
+              {loadedSummaries.map(
+                (s) =>
+                  s.root && (
+                    <SurahHeatmapStrip key={s.root} label={s.root} counts={heatmaps.get(s.root) ?? new Array(114).fill(0)} />
+                  ),
+              )}
+            </div>
+          </div>
         </>
       )}
 

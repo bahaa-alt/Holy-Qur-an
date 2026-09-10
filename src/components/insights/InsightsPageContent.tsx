@@ -12,6 +12,7 @@ import { AbjadTab } from "./AbjadTab";
 import { CooccurrenceTab } from "./CooccurrenceTab";
 import { PatternsTab } from "./PatternsTab";
 import { FormulasTab } from "./FormulasTab";
+import { VerseSimilarityTab } from "./VerseSimilarityTab";
 import type {
   InsightsFile,
   MetaFile,
@@ -36,7 +37,8 @@ type Tab =
   | "abjad"
   | "cooccurrence"
   | "patterns"
-  | "formulas";
+  | "formulas"
+  | "verseSimilarity";
 const TAB_PILL_CLASS = (active: boolean) => `rounded-md px-3 py-1.5 ${active ? "bg-accent text-accent-fg" : "text-muted"}`;
 
 function VerseLink({ s, a, label }: { s: number; a: number; label: string }) {
@@ -116,6 +118,13 @@ export function InsightsPageContent({
         </button>
         <button type="button" onClick={() => setTab("formulas")} className={TAB_PILL_CLASS(tab === "formulas")}>
           {t.insightsPage.tabFormulas}
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("verseSimilarity")}
+          className={TAB_PILL_CLASS(tab === "verseSimilarity")}
+        >
+          {t.insightsPage.tabVerseSimilarity}
         </button>
       </div>
 
@@ -219,6 +228,7 @@ export function InsightsPageContent({
       {tab === "cooccurrence" && <CooccurrenceTab />}
       {tab === "patterns" && <PatternsTab />}
       {tab === "formulas" && <FormulasTab />}
+      {tab === "verseSimilarity" && <VerseSimilarityTab />}
     </div>
   );
 }

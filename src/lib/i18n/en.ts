@@ -163,6 +163,7 @@ export const en: Dict = {
   compareView: {
     loadingRoots: "Loading roots…",
     pickAtLeastOneMore: "Pick at least one more root to compare.",
+    heatmapHeading: "Where each root occurs across the Mushaf",
   },
   rootPicker: {
     heading: "Roots to compare",
@@ -273,6 +274,7 @@ export const en: Dict = {
     tabCooccurrence: "Root network",
     tabPatterns: "Patterns",
     tabFormulas: "Formulas",
+    tabVerseSimilarity: "Similar verses",
     letterFrequencyHeading: "Letter frequency",
     letterFrequencyDescription:
       "How often each Arabic letter appears, diacritics stripped but letter variants (ة vs ه, ا vs أ/إ/آ/ٱ) kept distinct. Pick a scope below.",
@@ -340,6 +342,14 @@ export const en: Dict = {
     hizbLabel: "Hizb",
     abjadTotalLabel: "Total value",
     abjadWordBreakdownHeading: "Per word",
+    abjadLookupHeading: "Find by value",
+    abjadLookupDescription:
+      "The classical chronogram tradition works in reverse: a target number, matched against a text's Abjad value. Enter a number to find every verse or whole surah whose total equals it exactly.",
+    abjadLookupPlaceholder: "e.g. 786",
+    abjadLookupInvalid: "Enter a positive whole number.",
+    abjadLookupSurahsFound: (n) => `${n.toLocaleString()} whole surah${n === 1 ? "" : "s"} match exactly`,
+    abjadLookupVersesFound: (shown, total) => `${total.toLocaleString()} verse${total === 1 ? "" : "s"} match exactly${total > shown ? ` (showing ${shown})` : ""}`,
+    abjadLookupNoVerses: "No verse matches that value exactly.",
     cooccurrenceHeading: "Root co-occurrence network",
     cooccurrenceDescription:
       "Which pairs of roots occur together in the same verse most often, across the whole Qur'an -- unlike Collocations (what else appears in one root's own verses), this surfaces the most formulaic/idiomatic pairings corpus-wide. Pairs sharing fewer than 3 verses are excluded as noise.",
@@ -375,6 +385,13 @@ export const en: Dict = {
     formulasLoading: "Loading phrases…",
     formulasNoResults: "No phrase of this length recurs often enough to qualify.",
     formulasOccurrencesCount: (n) => `${n.toLocaleString()} occurrences`,
+    verseSimilarityHeading: "Similar verses",
+    verseSimilarityDescription:
+      "Verse pairs sharing an unusually high proportion of their distinct roots, even when the exact wording differs -- unlike Formulas (exact repeated phrases), this catches thematically or structurally parallel verses, like a repeated list or a shared narrative pattern across different stories.",
+    verseSimilarityLoading: "Loading…",
+    verseSimilaritySharedRoots: (n) => `${n} shared roots`,
+    verseSimilarityJaccard: (pct) => `${pct}% overlap`,
+    verseSimilarityPickPrompt: "Pick a pair above to compare the two verses.",
     sortByFrequency: "Frequency",
     sortByPmi: "Statistical strength (PMI)",
     pmiExplanation:
@@ -385,6 +402,17 @@ export const en: Dict = {
     backToInsights: "← Back to Insights",
     summary: (length, count) =>
       `A ${length}-word phrase, occurring ${count.toLocaleString()} time${count === 1 ? "" : "s"} across the Qur'an.`,
+  },
+  surahInsights: {
+    heading: "This surah at a glance",
+    distinctiveVocabHeading: "Distinctive vocabulary",
+    distinctiveVocabEmpty: "No root repeats often enough in this surah to rank.",
+    rhymeHeading: "Predominant verse-ending",
+    rhymeSummary: (count, total) => `${count.toLocaleString()} of ${total.toLocaleString()} verses`,
+    rhymeEmpty: "No verses to analyze.",
+    abjadHeading: "Abjad total (ḥisāb al-jummal)",
+    abjadValue: (n) => n.toLocaleString(),
+    viewMoreInInsights: "More corpus-wide research tools in Insights →",
   },
   surahPage: {
     previous: "Previous",
@@ -515,7 +543,7 @@ export const en: Dict = {
       "For every occurrence of a verb root, checks whether the immediately following word -- or, for a one-letter proclitic like بِ/لِ/كَ, that word's attached prefix segment -- is one of ten canonical Arabic prepositions (ب ل ك من إلى على في عن مع حتى). Restricted to this list rather than any following particle, so the result reflects verb government (valency) specifically, not incidental adjacency to a conjunction, negation, or interrogative. Each combination also gets a PMI (pointwise mutual information) score alongside its raw count, measured over all tracked-verb occurrences with a following word: PMI asks whether a preposition follows a given verb more than its own overall frequency in that space would predict, so it isn't dominated by simply-common prepositions the way raw count is.",
     abjadMethodHeading: "Abjad value (ḥisāb al-jummal)",
     abjadMethodBody:
-      "Sums each letter's value in the classical 28-letter Arabic numeral system (أبجد هوز حطي...), after stripping diacritics and folding alif variants and hamza carriers (أ إ آ ٱ ء ؤ ئ) to ا, teh marbuta (ة) to ه, and alif maksura (ى) to ي -- hamza carries no separate value in this system, which predates hamza as a distinct letter.",
+      "Sums each letter's value in the classical 28-letter Arabic numeral system (أبجد هوز حطي...), after stripping diacritics and folding alif variants and hamza carriers (أ إ آ ٱ ء ؤ ئ) to ا, teh marbuta (ة) to ه, and alif maksura (ى) to ي -- hamza carries no separate value in this system, which predates hamza as a distinct letter. The \"Find by value\" search reverses this: every verse's and every surah's own total is precomputed once at build time, so a target number can be matched against the whole corpus (an exact-equality scan) instead of one hand-picked phrase, the way classical chronogram composition itself works.",
     juzHizbHeading: "Juz' and Hizb boundaries",
     juzHizbBody:
       "The 30-part Juz' and 60-part Hizb divisions are standard structural divisions of the Mushaf, unrelated to the morphology dataset above. Boundaries were cross-checked against two independent community-maintained datasets (see the project's source code for exact references and commit history); that check found and corrected two isolated errors in one source's Hizb boundaries before they shipped.",
@@ -527,7 +555,10 @@ export const en: Dict = {
       "Every rooted segment is classified by verb Form (I-XI; an untagged verb defaults to Form I, matching the per-root Conjugation table's convention), by the same derivational category used everywhere else in this app, and by root shape (sound, hollow, defective, assimilated, geminate, hamzated, quadriliteral -- see the Roots browse page's \"by shape\" grouping). Each is then tallied across every root in the corpus, giving occurrence and distinct-root counts per Form/category/shape -- a cross-root productivity view, not a per-root breakdown.",
     formulasMethodHeading: "Recurring phrases (formulas)",
     formulasMethodBody:
-      "For every verse, every contiguous run of 3, 4, 5, and 6 words (a sliding window, never crossing into the next verse) is normalized and counted across the whole Qur'an; each length is ranked independently, so a 3-word phrase and the 4-word phrase containing it appear as separate entries. Shorter phrases need more repeats to qualify (minimums of 6/4/3/3 occurrences for lengths 3-6) since short sequences recur more often by grammatical chance alone; the top 25 phrases per length are shown, each linking to up to 12 of its occurrences.",
+      "For every verse, every contiguous run of 3, 4, 5, and 6 words (a sliding window, never crossing into the next verse) is normalized and counted across the whole Qur'an; each length is ranked independently, so a 3-word phrase and the 4-word phrase containing it appear as separate entries. Shorter phrases need more repeats to qualify (minimums of 6/4/3/3 occurrences for lengths 3-6) since short sequences recur more often by grammatical chance alone; the top 25 phrases per length are shown, each linking to a page listing every one of its occurrences with full verse text.",
+    verseSimilarityMethodHeading: "Similar verses",
+    verseSimilarityMethodBody:
+      "For every verse, collects its distinct rooted-word roots. Candidate pairs are proposed only through roots occurring in 60 or fewer verses (a shared common root like أله is not a meaningful signal on its own), then every candidate is scored by full Jaccard similarity (shared roots ÷ the union of both verses' distinct roots) over each verse's complete root set. A pair needs at least 4 shared roots and 40% overlap to qualify; the top 50 pairs are shown. This heuristic can miss a genuinely similar pair that shares only common roots -- it trades completeness for keeping the comparison corpus-wide rather than one hand-picked pair at a time.",
     dataSourcesHeading: "Data sources & licenses",
     laneLexiconNote:
       'Root meanings are given as "after Lane\'s Lexicon" -- a summary drawn from that dataset, not a verbatim quotation of the original 19th-century lexicon. This project\'s own source code is licensed GPL-3.0, matching the copyleft terms of the morphology dataset it builds on.',

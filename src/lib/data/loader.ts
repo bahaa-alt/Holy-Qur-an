@@ -17,6 +17,7 @@ import type {
   SurahFile,
   SurahVerse,
   VerseRootsFile,
+  VerseSimilarityFile,
 } from "./types";
 
 // Matches next.config.ts's basePath: empty for the default (root-domain)
@@ -118,6 +119,10 @@ export function getPatterns(): Promise<PatternsFile> {
 
 export function getFormulas(): Promise<FormulasFile> {
   return cachedFetch(`${DATA_BASE}/formulas.json`);
+}
+
+export function getVerseSimilarity(): Promise<VerseSimilarityFile> {
+  return cachedFetch(`${DATA_BASE}/verse-similarity.json`);
 }
 
 export function getRoot(root: string): Promise<RootFile> {

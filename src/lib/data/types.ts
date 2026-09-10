@@ -376,10 +376,10 @@ export interface CollocationsFile {
 
 /**
  * Precomputed classical Abjad-value totals (see src/lib/arabic/abjad.ts)
- * at every traditional scale above a single ayah -- summing all ~77,429
- * words client-side just to answer "what's the Abjad value of the whole
- * Qur'an" would mean fetching every surah file. Ayah-level totals are
- * cheap enough (one surah file) to compute on demand instead.
+ * at every traditional scale, including a single ayah -- summing all
+ * ~77,429 words client-side just to answer "what's the Abjad value of
+ * the whole Qur'an" (or to reverse-search by value) would mean fetching
+ * every surah file.
  */
 export interface AbjadTotalsFile {
   bookTotal: number;
@@ -387,6 +387,8 @@ export interface AbjadTotalsFile {
   bySurah: number[];
   /** index n-1 -> Hizb n's total (60 entries) */
   byHizb: number[];
+  /** global verse id (see src/lib/data/verseId.ts) -> that verse's total (6,236 entries) */
+  byVerse: number[];
   /** index n-1 -> Juz' n's total (30 entries) */
   byJuz: number[];
 }
@@ -479,6 +481,31 @@ export interface FormulaRef {
   a: number;
   /** 1-based index of the phrase's first word within this verse (see src/lib/highlight.ts) */
   w: number;
+}
+
+/** Two verses that share an unusually high proportion of their distinct roots. */
+export interface VerseSimilarityPair {
+  /** global verse id (see src/lib/data/verseId.ts) */
+  a: number;
+  /** global verse id (see src/lib/data/verseId.ts) */
+  b: number;
+  sharedRoots: number;
+  /** |shared roots| / |union of both verses' distinct roots|, 0-1 */
+  jaccard: number;
+}
+
+/**
+ * Verse pairs that share an unusually high proportion of their distinct
+ * roots even when the wording differs -- unlike the Formulas feature
+ * (exact repeated word sequences), this catches thematically/structurally
+ * parallel verses. Candidate pairs are found via roots that occur in few
+ * enough verses to be a meaningful signal (a shared "أله" means nothing;
+ * a shared rare root is a real clue), then scored by full Jaccard
+ * similarity over each verse's complete root set. Top 50, sorted by
+ * Jaccard desc. Powers /insights/'s Verse similarity tab.
+ */
+export interface VerseSimilarityFile {
+  pairs: VerseSimilarityPair[];
 }
 
 /** One recurring multi-word phrase (a candidate Qur'anic "formula"). */

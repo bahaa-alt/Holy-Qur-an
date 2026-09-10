@@ -67,6 +67,10 @@ export function AboutContent({ manifest, rootNames }: { manifest: ManifestFile; 
             <h3 className="font-medium">{t.aboutPage.formulasMethodHeading}</h3>
             <p className="mt-1 text-muted">{t.aboutPage.formulasMethodBody}</p>
           </div>
+          <div>
+            <h3 className="font-medium">{t.aboutPage.verseSimilarityMethodHeading}</h3>
+            <p className="mt-1 text-muted">{t.aboutPage.verseSimilarityMethodBody}</p>
+          </div>
         </div>
       </div>
 

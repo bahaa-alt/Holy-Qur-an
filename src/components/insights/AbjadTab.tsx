@@ -7,6 +7,7 @@ import { ABJAD_LETTER_ORDER, ABJAD_VALUES } from "@/lib/arabic/abjad";
 import { JUZ_COUNT } from "@/lib/quran/juz";
 import { HIZB_COUNT } from "@/lib/quran/hizb";
 import { AbjadAyahBreakdown } from "./AbjadAyahBreakdown";
+import { AbjadReverseLookup } from "./AbjadReverseLookup";
 import { useT } from "@/lib/i18n/LanguageContext";
 import type { AbjadTotalsFile, MetaFile } from "@/lib/data/types";
 
@@ -140,22 +141,30 @@ export function AbjadTab({ meta }: { meta: MetaFile }) {
         <p className="mt-4 flex items-center gap-2 text-sm text-muted">
           <Loader2 size={14} className="animate-spin" /> {t.insightsPage.abjadLoading}
         </p>
-      ) : scope === "ayah" ? (
-        <AbjadAyahBreakdown key={ayahKey} surahNum={surahNum} ayahNum={clampedAyah} />
       ) : (
-        <p className="mt-4 text-sm text-ink">
-          <span className="text-xs uppercase tracking-wide text-muted">{t.insightsPage.abjadTotalLabel}: </span>
-          <span className="text-2xl font-semibold">
-            {(scope === "quran"
-              ? abjad.bookTotal
-              : scope === "surah"
-                ? abjad.bySurah[surahNum - 1]
-                : scope === "hizb"
-                  ? abjad.byHizb[hizbNum - 1]
-                  : abjad.byJuz[juzNum - 1]
-            ).toLocaleString()}
-          </span>
-        </p>
+        <>
+          {scope === "ayah" ? (
+            <AbjadAyahBreakdown key={ayahKey} surahNum={surahNum} ayahNum={clampedAyah} />
+          ) : (
+            <p className="mt-4 text-sm text-ink">
+              <span className="text-xs uppercase tracking-wide text-muted">{t.insightsPage.abjadTotalLabel}: </span>
+              <span className="text-2xl font-semibold">
+                {(scope === "quran"
+                  ? abjad.bookTotal
+                  : scope === "surah"
+                    ? abjad.bySurah[surahNum - 1]
+                    : scope === "hizb"
+                      ? abjad.byHizb[hizbNum - 1]
+                      : abjad.byJuz[juzNum - 1]
+                ).toLocaleString()}
+              </span>
+            </p>
+          )}
+
+          <div className="mt-6">
+            <AbjadReverseLookup abjad={abjad} meta={meta} />
+          </div>
+        </>
       )}
     </div>
   );

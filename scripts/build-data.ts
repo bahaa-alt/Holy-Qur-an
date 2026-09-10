@@ -24,6 +24,7 @@ import { buildAbjad } from "./lib/build-abjad";
 import { buildCooccurrence } from "./lib/build-cooccurrence";
 import { buildPatterns } from "./lib/build-patterns";
 import { buildFormulas } from "./lib/build-formulas";
+import { buildVerseSimilarity } from "./lib/build-verse-similarity";
 import { buildCorpusExportCsv } from "./lib/build-corpus-export";
 import { SizeReport, recordGroup, writeJSON, writeText } from "./lib/emit";
 import { ALL_TOPICS } from "../src/lib/topics/topicDefinitions";
@@ -221,11 +222,12 @@ async function main() {
   const rhyme = buildRhyme(surahFiles);
   const distinctiveVocab = buildDistinctiveVocab(words, rootFiles, indexRoots, meta.surahs.length);
   const collocations = buildCollocations(words);
-  const abjad = buildAbjad(words, meta.surahs.length);
+  const abjad = buildAbjad(words, meta.surahs.length, globalIdOf);
   const verseCountByRoot = new Map(indexRoots.map((r) => [r.ar, r.verseCount]));
   const cooccurrence = buildCooccurrence(words, verseCountByRoot, indexableVerses.length);
   const patterns = buildPatterns(words);
   const formulas = buildFormulas(surahFiles);
+  const verseSimilarity = buildVerseSimilarity(words, globalIdOf);
   const corpusExportCsv = buildCorpusExportCsv(words, surahFiles, meta);
   const corpusExportBytes = Buffer.byteLength(corpusExportCsv, "utf8");
 
@@ -379,6 +381,7 @@ async function main() {
       cooccurrence,
       patterns,
       formulas,
+      verseSimilarity,
       corpusExportBytes,
       rootFiles,
       lemmaFiles,
@@ -468,6 +471,9 @@ async function main() {
   const formulasSize = writeJSON(join(OUT_DIR, "formulas.json"), formulas);
   report.record("formulas.json", formulasSize.rawBytes, formulasSize.gzBytes);
 
+  const verseSimilaritySize = writeJSON(join(OUT_DIR, "verse-similarity.json"), verseSimilarity);
+  report.record("verse-similarity.json", verseSimilaritySize.rawBytes, verseSimilaritySize.gzBytes);
+
   // Not recorded in `report`/counted against TOTAL_RAW_BUDGET or
   // TOTAL_GZ_BUDGET on purpose: unlike every file above, this is a
   // one-time bulk download a researcher opts into, never fetched by the
@@ -538,6 +544,7 @@ function printSizeEstimate(data: {
   cooccurrence: unknown;
   patterns: unknown;
   formulas: unknown;
+  verseSimilarity: unknown;
   corpusExportBytes: number;
   rootFiles: Map<string, unknown>;
   lemmaFiles: Map<string, unknown>;
@@ -564,6 +571,7 @@ function printSizeEstimate(data: {
   rec("cooccurrence.json", data.cooccurrence);
   rec("patterns.json", data.patterns);
   rec("formulas.json", data.formulas);
+  rec("verse-similarity.json", data.verseSimilarity);
   report.record("export/corpus.csv (est., not budget-counted)", data.corpusExportBytes, 0);
   rec("roots/*.json (est.)", [...data.rootFiles.values()]);
   rec("lemmas/*.json (est.)", [...data.lemmaFiles.values()]);

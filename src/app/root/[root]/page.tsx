@@ -4,7 +4,9 @@ import { buildRootSummary } from "@/lib/root/summary";
 import { buildSurahDistribution } from "@/lib/root/distribution";
 import { buildConjugationTables, hasVerbLemma } from "@/lib/root/conjugation";
 import { buildCollocations } from "@/lib/root/collocations";
+import { buildSurahOccurrenceCounts } from "@/lib/root/surahHeatmap";
 import { RootHeader } from "@/components/root/RootHeader";
+import { SurahHeatmapStrip } from "@/components/root/SurahHeatmapStrip";
 import { CiteButton } from "@/components/root/CiteButton";
 import { SaveButton } from "@/components/notes/SaveButton";
 import { FrequencyChart } from "@/components/root/FrequencyChart";
@@ -67,6 +69,7 @@ export default async function RootPage({ params }: { params: Promise<{ root: str
       <FrequencyChart byCategory={summary.byCategory} byLemma={summary.byLemma} />
       <FormsTable forms={file.forms} lemmas={file.lemmas} />
       {collocations.length > 0 && <Collocations rows={collocations} />}
+      {distribution.bySurah.length > 1 && <SurahHeatmapStrip counts={buildSurahOccurrenceCounts(file)} />}
       {distribution.bySurah.length > 1 && (
         <SurahDistribution
           rows={distribution.bySurah.map((r) => ({
