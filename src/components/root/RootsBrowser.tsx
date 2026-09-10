@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import { normalize } from "@/lib/arabic/normalize";
 import { ARABIC_ALPHABET } from "@/lib/arabic/letters";
+import { classifyRootShape, ROOT_SHAPE_LABELS, ROOT_SHAPE_ORDER, type RootShape } from "@/lib/morphology/rootShape";
 
 interface RootRow {
   ar: string;
@@ -12,10 +13,13 @@ interface RootRow {
   count: number;
 }
 
+type GroupMode = "letter" | "shape";
+
 export function RootsBrowser({ roots }: { roots: RootRow[] }) {
   const [query, setQuery] = useState("");
+  const [groupMode, setGroupMode] = useState<GroupMode>("letter");
 
-  const groups = useMemo(() => {
+  const letterGroups = useMemo(() => {
     const map = new Map<string, RootRow[]>();
     for (const letter of ARABIC_ALPHABET) map.set(letter, []);
     for (const r of roots) {
@@ -27,23 +31,53 @@ export function RootsBrowser({ roots }: { roots: RootRow[] }) {
     return map;
   }, [roots]);
 
+  const shapeGroups = useMemo(() => {
+    const map = new Map<RootShape, RootRow[]>();
+    for (const shape of ROOT_SHAPE_ORDER) map.set(shape, []);
+    for (const r of roots) {
+      map.get(classifyRootShape(r.ar))!.push(r);
+    }
+    return map;
+  }, [roots]);
+
   const filtered = useMemo(() => {
     const q = normalize(query.trim());
     if (q === "") return null;
     return roots.filter((r) => r.key.includes(q)).sort((a, b) => b.count - a.count);
   }, [query, roots]);
 
+  const groups = groupMode === "letter" ? letterGroups : shapeGroups;
+  const groupLabel = (key: string) => (groupMode === "letter" ? key : ROOT_SHAPE_LABELS[key as RootShape]);
+
   return (
     <div>
-      <div className="flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5">
-        <Search size={16} className="text-muted" />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Filter roots…"
-          className="w-full bg-transparent text-sm text-ink placeholder:text-muted focus:outline-none"
-        />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-1 items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5">
+          <Search size={16} className="text-muted" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Filter roots…"
+            className="w-full bg-transparent text-sm text-ink placeholder:text-muted focus:outline-none"
+          />
+        </div>
+        <div className="flex rounded-lg border border-border p-0.5 text-xs">
+          <button
+            type="button"
+            onClick={() => setGroupMode("letter")}
+            className={`rounded-md px-2.5 py-1 ${groupMode === "letter" ? "bg-accent text-accent-fg" : "text-muted"}`}
+          >
+            By letter
+          </button>
+          <button
+            type="button"
+            onClick={() => setGroupMode("shape")}
+            className={`rounded-md px-2.5 py-1 ${groupMode === "shape" ? "bg-accent text-accent-fg" : "text-muted"}`}
+          >
+            By shape
+          </button>
+        </div>
       </div>
 
       {filtered ? (
@@ -57,9 +91,20 @@ export function RootsBrowser({ roots }: { roots: RootRow[] }) {
         <div className="mt-6 space-y-6">
           {[...groups.entries()]
             .filter(([, list]) => list.length > 0)
-            .map(([letter, list]) => (
-              <div key={letter}>
-                <h2 className="arabic-ui text-left text-lg font-semibold text-accent">{letter}</h2>
+            .map(([key, list]) => (
+              <div key={key}>
+                <h2 className="inline-flex items-center gap-2">
+                  <span
+                    className={
+                      groupMode === "letter"
+                        ? "arabic-ui text-left text-lg font-semibold text-accent"
+                        : "text-sm font-semibold text-accent"
+                    }
+                  >
+                    {groupLabel(key)}
+                  </span>
+                  <span className="text-xs font-normal text-muted">{list.length.toLocaleString()} roots</span>
+                </h2>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {list
                     .sort((a, b) => b.count - a.count)
