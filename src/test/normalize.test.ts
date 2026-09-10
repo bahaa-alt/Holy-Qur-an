@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { altKeyFor, isArabic, normalize, normalizeRootKey } from "@/lib/arabic/normalize";
+import {
+  altKeyFor,
+  collapseRepeatedAlif,
+  isArabic,
+  normalize,
+  normalizeForPhraseSearch,
+  normalizeRootKey,
+} from "@/lib/arabic/normalize";
 
 describe("normalize", () => {
   it("strips tashkeel and dagger alif, unifying it away (كِتَٰبُ -> كتب)", () => {
@@ -58,6 +65,41 @@ describe("altKeyFor", () => {
   it("returns null when there is no dagger alif", () => {
     expect(altKeyFor("كِتَابُ")).toBeNull();
     expect(altKeyFor("hello")).toBeNull();
+  });
+});
+
+describe("normalizeForPhraseSearch", () => {
+  it("expands a dagger alif to a full alif instead of stripping it", () => {
+    // plain normalize() would give "الرحمن" (dagger alif stripped away)
+    expect(normalizeForPhraseSearch("ٱلرَّحْمَٰنِ")).toBe("الرحمان");
+  });
+
+  it("folds every hamza carrier (ء ؤ ئ), not just standalone ء, to ا", () => {
+    expect(normalizeForPhraseSearch("ءَامَنُوا")).toBe("امنوا");
+    expect(normalizeForPhraseSearch("مُؤْمِنِينَ")).toBe("مامنين");
+  });
+
+  it("reconciles the three common spellings of a hamza+alif word to one key", () => {
+    const viaMadda = normalizeForPhraseSearch("آمَنُوا"); // آ, madda-alif
+    const viaHamzaSeat = normalizeForPhraseSearch("ءَامَنُوا"); // ء then ا
+    const viaPlainAlif = normalizeForPhraseSearch("امَنُوا"); // plain ا
+    expect(viaMadda).toBe(viaHamzaSeat);
+    expect(viaMadda).toBe(viaPlainAlif);
+  });
+
+  it("collapses a run of repeated alifs produced by the hamza fold", () => {
+    expect(normalizeForPhraseSearch("ءامنوا")).not.toMatch(/ا{2,}/);
+  });
+});
+
+describe("collapseRepeatedAlif", () => {
+  it("collapses two or more consecutive alifs to one", () => {
+    expect(collapseRepeatedAlif("ياادم")).toBe("يادم");
+    expect(collapseRepeatedAlif("ياااب")).toBe("ياب");
+  });
+
+  it("leaves text with no repeated alif unchanged", () => {
+    expect(collapseRepeatedAlif("يابني")).toBe("يابني");
   });
 });
 

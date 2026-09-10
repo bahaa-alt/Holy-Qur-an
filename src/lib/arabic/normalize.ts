@@ -72,3 +72,46 @@ export function altKeyFor(text: string): string | null {
 export function isArabic(text: string): boolean {
   return ARABIC_BLOCK.test(text);
 }
+
+// Every hamza carrier (ء ؤ ئ), folded to ا for phrase search only -- see
+// normalizeForPhraseSearch below for why this needs to be more aggressive
+// than normalizeRootKey's hamza fold (which only covers standalone ء).
+const HAMZA_CARRIERS = /[ءؤئ]/g;
+// Two-or-more alifs in a row, collapsed to one. Arises legitimately when
+// normalizeForPhraseSearch's hamza fold turns e.g. "ءا" into "اا", or when
+// phrase search concatenates a vocative "يا" directly onto a following
+// alif-initial word (see arabicPhrase.ts) -- never from ordinary text.
+const REPEATED_ALIF = /ا{2,}/g;
+
+/**
+ * Normalizes text for LITERAL phrase/sentence search matching only (see
+ * src/lib/search/arabicPhrase.ts) -- never for root/lemma/form keys, where
+ * a hamza carrier's exact letter and a dagger alif's exact presence can be
+ * meaningful. Phrase search only cares whether two spellings a user might
+ * reasonably type denote the same running text, so this is deliberately
+ * more aggressive than {@link normalize} in two ways:
+ *
+ * 1. Expands a dagger alif to a full alif (via {@link altKeyFor}) rather
+ *    than stripping it, since the Uthmani script often represents a vowel
+ *    that a typed query spells with an ordinary alif (e.g. the Qur'anic
+ *    ٱلْعَٰلَمِينَ vs. a plainly-typed العالمين) as a dagger-alif diacritic
+ *    instead of a letter.
+ * 2. Folds every hamza carrier (ء ؤ ئ, not just standalone ء) to ا, then
+ *    collapses any resulting run of 2+ alifs to one. Combined with (1),
+ *    this reconciles spellings like ءامنوا/آمنوا/امنوا (a hamza-seat
+ *    letter, a madda-alif, or a bare alif for the same sound) to one key.
+ */
+export function normalizeForPhraseSearch(text: string): string {
+  const expanded = altKeyFor(text) ?? normalize(text);
+  return expanded.replace(HAMZA_CARRIERS, "ا").replace(REPEATED_ALIF, "ا");
+}
+
+/**
+ * Collapses a run of 2+ alifs to one. Exposed for arabicPhrase.ts: joining
+ * two already-{@link normalizeForPhraseSearch}'d words directly (merging a
+ * vocative "يا" onto the word it precedes) can produce a fresh double-alif
+ * at the join that per-word normalization couldn't have caught.
+ */
+export function collapseRepeatedAlif(text: string): string {
+  return text.replace(REPEATED_ALIF, "ا");
+}

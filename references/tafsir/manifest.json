@@ -1,0 +1,83 @@
+{
+  "purpose": "Reference tafsir (Qur'anic commentary) texts requested for future, gradual use in this project -- not read by the shipped app today, and not part of public/data's build pipeline.",
+  "source": {
+    "name": "spa5k/tafsir_api (mirrors qul.tarteel.ai's tafsir resources)",
+    "url": "https://github.com/spa5k/tafsir_api",
+    "servedFrom": "https://raw.githubusercontent.com/spa5k/tafsir_api/main/tafsir",
+    "license": "MIT (repository packaging). The tafsir texts themselves are classical Islamic scholarship, not original works of the repository's maintainer.",
+    "fetchedWith": "scripts/fetch-tafsir.ts",
+    "checkedOn": "2026-09-10"
+  },
+  "notes": [
+    "Unreachable from this project's build/research environment at the time of checking: archive.org, altafsir.com, api.quran.com, tanzil.net, qul.tarteel.ai (direct), and api.alquran.cloud -- all blocked by network policy. Only raw.githubusercontent.com and cdn.jsdelivr.net (GitHub mirrors) were reachable, which is why every available entry below is sourced through spa5k/tafsir_api rather than directly from its ultimate origin.",
+    "Sizes are estimated from a real download of surah 2 (Al-Baqarah, 286 verses) for each work, extrapolated linearly to the Qur'an's 6,236 verses -- actual totals will vary somewhat by surah."
+  ],
+  "requested": [
+    {
+      "titleAr": "تفسير الجلالين",
+      "titleEn": "Tafsir al-Jalalayn",
+      "author": "Jalal al-Din al-Mahalli and Jalal al-Din al-Suyuti",
+      "status": "committed",
+      "slug": "ar-tafsir-al-jalalayn",
+      "estimatedTotalMB": 3.1,
+      "note": "Downloaded in full and committed to this repo under references/tafsir/ar-tafsir-al-jalalayn/ -- small enough not to need on-demand fetching."
+    },
+    {
+      "titleAr": "الكشاف عن حقائق غوامض التنزيل",
+      "titleEn": "Al-Kashshaf ('an Haqa'iq Ghawamid al-Tanzil)",
+      "author": "Abu al-Qasim al-Zamakhshari",
+      "status": "available-not-committed",
+      "slug": "al-kashshaf-al-zamakhshari",
+      "estimatedTotalMB": 56,
+      "note": "Reachable and verified (surah 1 and 2 fetched successfully); not committed due to size. Fetch with: pnpm tsx scripts/fetch-tafsir.ts al-kashshaf-al-zamakhshari"
+    },
+    {
+      "titleAr": "روح المعاني في تفسير القرآن العظيم والسبع المثاني",
+      "titleEn": "Ruh al-Ma'ani",
+      "author": "Mahmud al-Alusi",
+      "status": "available-not-committed",
+      "slug": "tafsir-al-alusi",
+      "estimatedTotalMB": 100,
+      "note": "Listed twice in the original request (once with and once without the author's given name); treated as one work here. Reachable and verified; not committed due to size. Fetch with: pnpm tsx scripts/fetch-tafsir.ts tafsir-al-alusi"
+    },
+    {
+      "titleAr": "مفاتيح الغيب (التفسير الكبير)",
+      "titleEn": "Mafatih al-Ghayb / al-Tafsir al-Kabir",
+      "author": "Fakhr al-Din al-Razi",
+      "status": "available-not-committed",
+      "slug": "tafsir-al-razi",
+      "estimatedTotalMB": 200,
+      "note": "Reachable and verified; by far the largest of the four. Not committed due to size. Fetch with: pnpm tsx scripts/fetch-tafsir.ts tafsir-al-razi"
+    },
+    {
+      "titleAr": "تفسير القرآن العظيم (التفسير الإشاري)",
+      "titleEn": "Tafsir al-Tustari",
+      "author": "Sahl al-Tustari",
+      "status": "available-english-only",
+      "slug": "en-tafsir-al-tustari",
+      "estimatedTotalMB": 1,
+      "note": "Only an English translation was found at any reachable source, not the Arabic original the request asked for. Fetchable as-is if the English translation is useful: pnpm tsx scripts/fetch-tafsir.ts en-tafsir-al-tustari (not in the default candidate list checked by --list; add it manually to scripts/fetch-tafsir.ts's CANDIDATES if wanted)."
+    },
+    {
+      "titleAr": "حقائق التفسير",
+      "titleEn": "Haqa'iq al-Tafsir",
+      "author": "Abu 'Abd al-Rahman al-Sulami",
+      "status": "unavailable",
+      "note": "Not found in any dataset or site reachable from this environment (checked spa5k/tafsir_api's full 122-tafsir catalog; archive.org and altafsir.com are blocked by network policy). May exist only as a printed critical edition or unstructured scans."
+    },
+    {
+      "titleAr": "عرائس البيان في حقائق القرآن",
+      "titleEn": "Ara'is al-Bayan fi Haqa'iq al-Qur'an",
+      "author": "Ruzbihan al-Baqli al-Shirazi",
+      "status": "unavailable",
+      "note": "Same as al-Sulami above: not found in any reachable structured source."
+    },
+    {
+      "titleAr": "البحر المديد في تفسير القرآن المجيد",
+      "titleEn": "Al-Bahr al-Madid",
+      "author": "Ahmad ibn 'Ajiba al-Fasi",
+      "status": "unavailable",
+      "note": "Same as al-Sulami above: not found in any reachable structured source."
+    }
+  ]
+}

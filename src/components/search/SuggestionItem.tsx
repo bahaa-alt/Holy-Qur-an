@@ -4,6 +4,7 @@ const KIND_LABEL: Record<Suggestion["kind"], string> = {
   root: "جذر",
   lemma: "كلمة",
   verse: "آية",
+  search: "بحث",
 };
 
 export function SuggestionItem({
@@ -15,7 +16,7 @@ export function SuggestionItem({
   active: boolean;
   onSelect: () => void;
 }) {
-  const isArabicPrimary = suggestion.kind !== "verse";
+  const isArabicPrimary = suggestion.kind !== "verse" && suggestion.kind !== "search";
 
   return (
     <li>

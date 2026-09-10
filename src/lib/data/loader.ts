@@ -1,4 +1,5 @@
 import type {
+  ArIndexFile,
   EnIndexFile,
   IndexFile,
   ManifestFile,
@@ -59,6 +60,15 @@ export function getEnIndex(): Promise<EnIndexFile> {
 
 export function getVerseRoots(): Promise<VerseRootsFile> {
   return cachedFetch(`${DATA_BASE}/verse-roots.json`);
+}
+
+/**
+ * Fetched lazily (not part of `prefetchAll`'s eager-shell set) -- only
+ * needed once a user actually types a multi-word Arabic phrase query, so
+ * most sessions never pay for it.
+ */
+export function getArIndex(): Promise<ArIndexFile> {
+  return cachedFetch(`${DATA_BASE}/ar-index.json`);
 }
 
 export function getRoot(root: string): Promise<RootFile> {

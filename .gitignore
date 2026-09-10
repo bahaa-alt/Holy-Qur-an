@@ -45,6 +45,13 @@ next-env.d.ts
 /public/data/*
 !/public/data/.gitkeep
 
+# reference tafsir downloads (scripts/fetch-tafsir.ts) -- only the small
+# ar-tafsir-al-jalalayn is committed; the rest are fetched on demand
+/references/tafsir/*
+!/references/tafsir/README.md
+!/references/tafsir/manifest.json
+!/references/tafsir/ar-tafsir-al-jalalayn/
+
 # vitest
 /coverage
 

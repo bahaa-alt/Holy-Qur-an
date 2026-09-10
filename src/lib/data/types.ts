@@ -150,6 +150,17 @@ export type VerseRootOccurrence = [rootIdx: number, w: number];
  */
 export type VerseRootsFile = VerseRootOccurrence[][];
 
+/**
+ * arIndex[globalVerseId] = every token of that verse (every whitespace word,
+ * particles and pronouns included -- unlike VerseRootsFile, which only
+ * carries rooted segments), each run through the same `normalize()` used at
+ * query time. Powers literal Arabic phrase/sentence search (contiguous
+ * multi-word matching, e.g. "يا أيها الناس"), which needs the exact running
+ * text, not just root tags. Indexed by the same stable global verse id as
+ * EnIndexFile.postings and VerseRootsFile.
+ */
+export type ArIndexFile = string[][];
+
 export interface SurahVerse {
   /** ayah number, 1-based */
   a: number;

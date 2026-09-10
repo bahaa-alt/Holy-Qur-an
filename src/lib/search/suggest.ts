@@ -2,7 +2,7 @@ import { normalize, normalizeRootKey } from "@/lib/arabic/normalize";
 import { prefixRange } from "./binarySearch";
 import type { FormsEntry, IndexFile } from "@/lib/data/types";
 
-export type SuggestionKind = "root" | "lemma" | "verse";
+export type SuggestionKind = "root" | "lemma" | "verse" | "search";
 
 export interface Suggestion {
   kind: SuggestionKind;
@@ -26,6 +26,11 @@ export function wordHref(globalLemmaIdx: number): string {
 
 export function verseHref(s: number, a: number): string {
   return `/surah/${s}/?ayah=${a}`;
+}
+
+/** Link to the dedicated literal phrase/sentence search results page. */
+export function phraseSearchHref(query: string): string {
+  return `/search/?q=${encodeURIComponent(query)}`;
 }
 
 /**

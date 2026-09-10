@@ -2,10 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { isArabic } from "@/lib/arabic/normalize";
-import { getEnIndex, getForms, getIndex, getMeta, getVerses } from "@/lib/data/loader";
+import { getArIndex, getEnIndex, getForms, getIndex, getMeta, getVerses } from "@/lib/data/loader";
 import { globalIdToRef } from "@/lib/data/verseId";
+import { searchArabicPhrase } from "@/lib/search/arabicPhrase";
 import { searchEnglish, searchGlossText } from "@/lib/search/english";
-import { buildArabicSuggestions, buildBuckwalterSuggestions, verseHref, type Suggestion } from "@/lib/search/suggest";
+import {
+  buildArabicSuggestions,
+  buildBuckwalterSuggestions,
+  phraseSearchHref,
+  verseHref,
+  type Suggestion,
+} from "@/lib/search/suggest";
 import type { EnIndexFile, FormsEntry, IndexFile, MetaFile } from "@/lib/data/types";
 
 interface LoadedData {
@@ -69,10 +76,61 @@ export function useSearch(query: string): UseSearchResult {
   return useMemo(() => ({ suggestions: effectiveSuggestions }), [effectiveSuggestions]);
 }
 
+const PHRASE_SUGGESTION_LIMIT = 6;
+
+/**
+ * A multi-word Arabic query ("يا أيها الناس") is a literal phrase/sentence
+ * search, not a single root/lemma/form lookup -- fetches ar-index.json
+ * (lazily; single-word queries never pay for this) and matches the exact
+ * running text. A single word still goes through `buildArabicSuggestions`,
+ * which is the more useful match there (root/lemma navigation, not a list
+ * of every verse containing one common word).
+ */
+async function computePhraseSuggestions(query: string, meta: MetaFile): Promise<Suggestion[]> {
+  const arIndex = await getArIndex();
+  const matches = searchArabicPhrase(query, arIndex);
+  if (matches.length === 0) return [];
+
+  const shown = matches.slice(0, PHRASE_SUGGESTION_LIMIT);
+  const refs = shown.map((m) => globalIdToRef(meta, m.globalId)).filter((r) => r !== null);
+  const verses = await getVerses(refs);
+
+  const results: Suggestion[] = [];
+  for (const m of shown) {
+    const ref = globalIdToRef(meta, m.globalId);
+    if (!ref) continue;
+    const verse = verses.get(`${ref.s}:${ref.a}`);
+    if (!verse) continue;
+    results.push({
+      kind: "verse",
+      key: `phrase-${ref.s}-${ref.a}-${m.startW}`,
+      primary: `${ref.s}:${ref.a}`,
+      secondary: verse.t,
+      href: verseHref(ref.s, ref.a),
+    });
+  }
+
+  if (matches.length > shown.length) {
+    results.push({
+      kind: "search",
+      key: "phrase-see-all",
+      primary: `See all ${matches.length.toLocaleString()} matches`,
+      secondary: query,
+      href: phraseSearchHref(query),
+    });
+  }
+
+  return results;
+}
+
 async function computeSuggestions(query: string, data: LoadedData): Promise<Suggestion[]> {
   const arabic = isArabic(query);
 
   if (arabic) {
+    const wordCount = query.trim().split(/\s+/).filter(Boolean).length;
+    if (wordCount > 1) {
+      return computePhraseSuggestions(query, data.meta);
+    }
     return buildArabicSuggestions(query, data.index, data.forms);
   }
 

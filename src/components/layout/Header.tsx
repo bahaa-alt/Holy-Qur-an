@@ -26,10 +26,22 @@ export function Header() {
             Compare
           </Link>
           <Link
+            href="/search/"
+            className="rounded-lg px-3 py-1.5 text-muted transition-colors hover:bg-surface hover:text-ink"
+          >
+            Search
+          </Link>
+          <Link
             href="/phrases/"
             className="rounded-lg px-3 py-1.5 text-muted transition-colors hover:bg-surface hover:text-ink"
           >
             Phrases
+          </Link>
+          <Link
+            href="/topics/"
+            className="rounded-lg px-3 py-1.5 text-muted transition-colors hover:bg-surface hover:text-ink"
+          >
+            Topics
           </Link>
           <Link
             href="/saved/"

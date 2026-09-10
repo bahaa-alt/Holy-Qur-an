@@ -14,9 +14,12 @@ import { parseMorphologyTSV, type RawWord } from "./lib/parse-morphology";
 import { buildSurahs, type QuranJsonChapter } from "./lib/build-surahs";
 import { buildRoots, type RootsGlossMap } from "./lib/build-roots";
 import { buildEnIndex, type IndexableVerse } from "./lib/build-en-index";
+import { buildArIndex, type ArIndexableVerse } from "./lib/build-ar-index";
 import { buildVerseRoots } from "./lib/build-verse-roots";
 import { SizeReport, recordGroup, writeJSON } from "./lib/emit";
-import type { ManifestFile, ManifestSource, VerseRootsFile } from "../src/lib/data/types";
+import { ALL_TOPICS } from "../src/lib/topics/topicDefinitions";
+import { topicSourceFileKey } from "../src/lib/topics/buildTopicOccurrences";
+import type { ArIndexFile, ManifestFile, ManifestSource, VerseRootsFile } from "../src/lib/data/types";
 
 interface PickthallEdition {
   quran: { chapter: number; verse: number; text: string }[];
@@ -90,6 +93,11 @@ const BUDGETS_RAW_BYTES = {
   "forms.json": 1000 * 1024,
   "en-index.json": 500 * 1024,
   "verse-roots.json": 700 * 1024,
+  // Measured ~875 KB raw (every token of every verse, unlike verse-roots.json
+  // which only carries rooted segments) -- less headroom than the other
+  // budgets since there's little further to dedupe, but kept above the
+  // measured size so a real regression still trips it.
+  "ar-index.json": 1000 * 1024,
 };
 const LARGEST_ROOT_BUDGET_RAW = 60 * 1024;
 // Raised from 9 MiB: adding Pickthall's translation to every verse grew
@@ -174,6 +182,7 @@ async function main() {
 
   // --- 5. Build English inverted index ---
   const indexableVerses: IndexableVerse[] = [];
+  const arIndexableVerses: ArIndexableVerse[] = [];
   let globalId = 0;
   const globalIdOf = new Map<string, number>();
   for (const surahMeta of meta.surahs) {
@@ -181,10 +190,12 @@ async function main() {
     for (const verse of surah.verses) {
       globalIdOf.set(`${surahMeta.n}:${verse.a}`, globalId);
       indexableVerses.push({ globalId, translation: verse.t });
+      arIndexableVerses.push({ globalId, tokens: verse.w });
       globalId++;
     }
   }
   const enIndex = buildEnIndex(indexableVerses);
+  const arIndex: ArIndexFile = buildArIndex(arIndexableVerses);
 
   // --- 5b. Build the global per-verse rooted-word index ---
   const verseRoots: VerseRootsFile = buildVerseRoots(words, rootTextToGlobalIdx, globalIdOf);
@@ -219,6 +230,12 @@ async function main() {
     );
   }
 
+  if (arIndex.length !== indexableVerses.length) {
+    errors.push(`ar-index.json length: expected ${indexableVerses.length} (one per verse), got ${arIndex.length}`);
+  }
+  const arIndexTokenCount = arIndex.reduce((sum, v) => sum + v.length, 0);
+  assertEqual("ar-index.json token count", arIndexTokenCount, EXPECTED.words, errors);
+
   for (const [root, expectedCount] of Object.entries(EXPECTED.rootCounts)) {
     const row = indexRoots.find((r) => r.ar === root);
     if (!row) {
@@ -240,6 +257,48 @@ async function main() {
       errors.push(`root key collision: "${prior}" and "${row.ar}" both normalize to "${row.key}"`);
     }
     seenRootKeys.set(row.key, row.ar);
+  }
+
+  // Assert every curated topic's roots/lemmas actually resolve in this
+  // corpus build -- a typo'd root/lemma key in topicDefinitions.ts would
+  // otherwise silently resolve to zero verses at runtime instead of
+  // failing here.
+  const seenTopicSlugs = new Set<string>();
+  for (const topic of ALL_TOPICS) {
+    if (seenTopicSlugs.has(topic.slug)) {
+      errors.push(`topic slug collision: "${topic.slug}" is used by more than one topic`);
+    }
+    seenTopicSlugs.add(topic.slug);
+    if (topic.sources.length === 0) {
+      errors.push(`topic "${topic.slug}": has no sources`);
+    }
+    const seenSourceKeys = new Set<string>();
+    for (const source of topic.sources) {
+      const sourceKey = topicSourceFileKey(source) + (source.kind === "rootedLemma" ? `:${source.lemmaKey}` : "");
+      if (seenSourceKeys.has(sourceKey)) {
+        errors.push(`topic "${topic.slug}": duplicate source ${sourceKey}`);
+      }
+      seenSourceKeys.add(sourceKey);
+
+      if (source.kind === "root") {
+        if (!rootFiles.has(source.root)) {
+          errors.push(`topic "${topic.slug}": root "${source.root}" not found in this corpus build`);
+        }
+      } else if (source.kind === "rootedLemma") {
+        const rf = rootFiles.get(source.root);
+        if (!rf) {
+          errors.push(`topic "${topic.slug}": root "${source.root}" not found in this corpus build`);
+        } else if (!rf.lemmas.some((l) => l.key === source.lemmaKey)) {
+          errors.push(
+            `topic "${topic.slug}": lemma key "${source.lemmaKey}" not found under root "${source.root}"`,
+          );
+        }
+      } else {
+        if (!lemmaFiles.has(source.lemmaKey)) {
+          errors.push(`topic "${topic.slug}": rootless lemma key "${source.lemmaKey}" not found in this corpus build`);
+        }
+      }
+    }
   }
 
   if (errors.length > 0) {
@@ -279,6 +338,7 @@ async function main() {
       formsEntries,
       enIndex,
       verseRoots,
+      arIndex,
       rootFiles,
       lemmaFiles,
       manifest,
@@ -327,6 +387,12 @@ async function main() {
     fail(
       `verse-roots.json exceeds its budget: ${verseRootsSize.rawBytes} > ${BUDGETS_RAW_BYTES["verse-roots.json"]} bytes`,
     );
+  }
+
+  const arIndexSize = writeJSON(join(OUT_DIR, "ar-index.json"), arIndex);
+  report.record("ar-index.json", arIndexSize.rawBytes, arIndexSize.gzBytes);
+  if (arIndexSize.rawBytes > BUDGETS_RAW_BYTES["ar-index.json"]) {
+    fail(`ar-index.json exceeds its budget: ${arIndexSize.rawBytes} > ${BUDGETS_RAW_BYTES["ar-index.json"]} bytes`);
   }
 
   const surahSizes = [...surahFiles.entries()]
@@ -378,6 +444,7 @@ function printSizeEstimate(data: {
   formsEntries: unknown;
   enIndex: unknown;
   verseRoots: unknown;
+  arIndex: unknown;
   rootFiles: Map<string, unknown>;
   lemmaFiles: Map<string, unknown>;
   manifest: unknown;
@@ -393,6 +460,7 @@ function printSizeEstimate(data: {
   rec("forms.json", data.formsEntries);
   rec("en-index.json", data.enIndex);
   rec("verse-roots.json", data.verseRoots);
+  rec("ar-index.json", data.arIndex);
   rec("roots/*.json (est.)", [...data.rootFiles.values()]);
   rec("lemmas/*.json (est.)", [...data.lemmaFiles.values()]);
   report.print();
