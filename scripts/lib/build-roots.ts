@@ -27,6 +27,11 @@ export interface BuildRootsResult {
   formsEntries: FormsEntry[];
   unmappedGlossRoots: string[]; // roots present in morphology but missing a gloss
   unusedGlossRoots: string[]; // roots present in the gloss dataset but absent from morphology
+  /** root text (Arabic) -> its index into indexRoots -- the same "rootIdx" used
+   *  throughout the app (IndexLemmaRow.rootIdx, FormsEntry.rootIdx, etc).
+   *  Exposed so build-verse-roots.ts can resolve rootIdx without recomputing
+   *  the sort order itself. */
+  rootTextToGlobalIdx: Map<string, number>;
 }
 
 function glossShortFrom(text: string, maxLen = 140): string {
@@ -405,5 +410,6 @@ export function buildRoots(words: readonly RawWord[], gloss: RootsGlossMap): Bui
     formsEntries,
     unmappedGlossRoots,
     unusedGlossRoots,
+    rootTextToGlobalIdx,
   };
 }

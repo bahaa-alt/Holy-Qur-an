@@ -6,6 +6,7 @@ import type {
   RootFile,
   SurahFile,
   SurahVerse,
+  VerseRootsFile,
 } from "./types";
 
 // Matches next.config.ts's basePath: empty for the default (root-domain)
@@ -54,6 +55,10 @@ export function getForms(): Promise<import("./types").FormsEntry[]> {
 
 export function getEnIndex(): Promise<EnIndexFile> {
   return cachedFetch(`${DATA_BASE}/en-index.json`);
+}
+
+export function getVerseRoots(): Promise<VerseRootsFile> {
+  return cachedFetch(`${DATA_BASE}/verse-roots.json`);
 }
 
 export function getRoot(root: string): Promise<RootFile> {

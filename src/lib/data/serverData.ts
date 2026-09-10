@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { IndexFile, ManifestFile, MetaFile, RootFile, SurahFile } from "./types";
+import type { IndexFile, ManifestFile, MetaFile, RootFile, SurahFile, VerseRootsFile } from "./types";
 
 /**
  * Reads a static data file directly from disk. Only valid at build time
@@ -36,4 +36,18 @@ export function readLemmaFile(key: string): RootFile {
 
 export function readSurahFile(n: number): SurahFile {
   return readDataFile<SurahFile>(`surahs/${n}.json`);
+}
+
+// Unlike the other readers above, verse-roots.json is large (~every rooted
+// word in the corpus) and identical across every call within one build
+// process -- static export calls readVerseRoots() once per root page
+// (1,651+ times), so a plain readFileSync per call would reread the same
+// ~600KB file that often. Memoized per-worker-process instead.
+let verseRootsCache: VerseRootsFile | null = null;
+
+export function readVerseRoots(): VerseRootsFile {
+  if (!verseRootsCache) {
+    verseRootsCache = readDataFile<VerseRootsFile>("verse-roots.json");
+  }
+  return verseRootsCache;
 }

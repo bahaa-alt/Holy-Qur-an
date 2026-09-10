@@ -1,13 +1,15 @@
 import { notFound } from "next/navigation";
-import { readIndex, readManifest, readMeta, readRootFile } from "@/lib/data/serverData";
+import { readIndex, readManifest, readMeta, readRootFile, readVerseRoots } from "@/lib/data/serverData";
 import { buildRootSummary } from "@/lib/root/summary";
 import { buildSurahDistribution } from "@/lib/root/distribution";
 import { buildConjugationTables, hasVerbLemma } from "@/lib/root/conjugation";
+import { buildCollocations } from "@/lib/root/collocations";
 import { RootHeader } from "@/components/root/RootHeader";
 import { CiteButton } from "@/components/root/CiteButton";
 import { FrequencyChart } from "@/components/root/FrequencyChart";
 import { FormsTable } from "@/components/root/FormsTable";
 import { SurahDistribution } from "@/components/root/SurahDistribution";
+import { Collocations } from "@/components/root/Collocations";
 import { RootInteractive } from "@/components/root/RootInteractive";
 
 export function generateStaticParams() {
@@ -39,6 +41,16 @@ export default async function RootPage({ params }: { params: Promise<{ root: str
   const surahLabels = new Map(meta.surahs.map((s) => [s.n, s.translit]));
   const conjugationTables = hasVerbLemma(file) ? buildConjugationTables(file) : [];
 
+  const index = readIndex();
+  const currentRootIdx = index.roots.findIndex((r) => r.ar === root);
+  const collocations =
+    currentRootIdx === -1
+      ? []
+      : buildCollocations(file, currentRootIdx, readVerseRoots(), meta).map((c) => ({
+          ar: index.roots[c.rootIdx].ar,
+          count: c.count,
+        }));
+
   return (
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
       <RootHeader
@@ -48,6 +60,7 @@ export default async function RootPage({ params }: { params: Promise<{ root: str
       />
       <FrequencyChart byCategory={summary.byCategory} byLemma={summary.byLemma} />
       <FormsTable forms={file.forms} lemmas={file.lemmas} />
+      {collocations.length > 0 && <Collocations rows={collocations} />}
       {distribution.bySurah.length > 1 && (
         <SurahDistribution
           rows={distribution.bySurah.map((r) => ({

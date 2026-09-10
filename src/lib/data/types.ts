@@ -137,6 +137,19 @@ export interface EnIndexFile {
   postings: number[][];
 }
 
+/** [rootIdx (into IndexFile.roots), w (1-based word index)], one per rooted segment. */
+export type VerseRootOccurrence = [rootIdx: number, w: number];
+
+/**
+ * verseRoots[globalVerseId] = every rooted word in that verse, in word order.
+ * Indexed by the same stable global verse id used by EnIndexFile.postings
+ * (see src/lib/data/verseId.ts). Powers collocations (what else occurs in
+ * this root's verses), adjacent-root phrase search, and shared-root
+ * "related verses" -- all otherwise impossible to answer client-side from a
+ * single root's own file, since none of those carry other roots' data.
+ */
+export type VerseRootsFile = VerseRootOccurrence[][];
+
 export interface SurahVerse {
   /** ayah number, 1-based */
   a: number;

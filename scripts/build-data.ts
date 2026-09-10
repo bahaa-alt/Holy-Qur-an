@@ -14,8 +14,9 @@ import { parseMorphologyTSV, type RawWord } from "./lib/parse-morphology";
 import { buildSurahs, type QuranJsonChapter } from "./lib/build-surahs";
 import { buildRoots, type RootsGlossMap } from "./lib/build-roots";
 import { buildEnIndex, type IndexableVerse } from "./lib/build-en-index";
+import { buildVerseRoots } from "./lib/build-verse-roots";
 import { SizeReport, recordGroup, writeJSON } from "./lib/emit";
-import type { ManifestFile, ManifestSource } from "../src/lib/data/types";
+import type { ManifestFile, ManifestSource, VerseRootsFile } from "../src/lib/data/types";
 
 const args = process.argv.slice(2);
 const CHECK_ONLY = args.includes("--check");
@@ -75,6 +76,7 @@ const BUDGETS_RAW_BYTES = {
   "index.json": 800 * 1024,
   "forms.json": 1000 * 1024,
   "en-index.json": 500 * 1024,
+  "verse-roots.json": 700 * 1024,
 };
 const LARGEST_ROOT_BUDGET_RAW = 60 * 1024;
 const TOTAL_RAW_BUDGET = 9 * 1024 * 1024;
@@ -129,6 +131,7 @@ async function main() {
     formsEntries,
     unmappedGlossRoots,
     unusedGlossRoots,
+    rootTextToGlobalIdx,
   } = buildRoots(words, rootsGloss.data);
 
   if (unusedGlossRoots.length > 0) {
@@ -156,6 +159,9 @@ async function main() {
   }
   const enIndex = buildEnIndex(indexableVerses);
 
+  // --- 5b. Build the global per-verse rooted-word index ---
+  const verseRoots: VerseRootsFile = buildVerseRoots(words, rootTextToGlobalIdx, globalIdOf);
+
   // --- 6. Validate invariants ---
   const errors: string[] = [];
   assertEqual("words", words.length, EXPECTED.words, errors);
@@ -177,6 +183,14 @@ async function main() {
   );
   const totalOccurrences = indexRoots.reduce((sum, r) => sum + r.count, 0);
   assertEqual("occurrences", totalOccurrences, EXPECTED.occurrences, errors);
+
+  const verseRootsEntryCount = verseRoots.reduce((sum, v) => sum + v.length, 0);
+  assertEqual("verse-roots.json entry count", verseRootsEntryCount, EXPECTED.occurrences, errors);
+  if (verseRoots.length !== indexableVerses.length) {
+    errors.push(
+      `verse-roots.json length: expected ${indexableVerses.length} (one per verse), got ${verseRoots.length}`,
+    );
+  }
 
   for (const [root, expectedCount] of Object.entries(EXPECTED.rootCounts)) {
     const row = indexRoots.find((r) => r.ar === root);
@@ -231,7 +245,17 @@ async function main() {
 
   if (CHECK_ONLY) {
     console.log("\n--check mode: skipping file writes.");
-    printSizeEstimate({ meta, indexRoots, indexLemmas, formsEntries, enIndex, rootFiles, lemmaFiles, manifest });
+    printSizeEstimate({
+      meta,
+      indexRoots,
+      indexLemmas,
+      formsEntries,
+      enIndex,
+      verseRoots,
+      rootFiles,
+      lemmaFiles,
+      manifest,
+    });
     return;
   }
 
@@ -268,6 +292,14 @@ async function main() {
   report.record("en-index.json", enIndexSize.rawBytes, enIndexSize.gzBytes);
   if (enIndexSize.rawBytes > BUDGETS_RAW_BYTES["en-index.json"]) {
     fail(`en-index.json exceeds its budget: ${enIndexSize.rawBytes} > ${BUDGETS_RAW_BYTES["en-index.json"]} bytes`);
+  }
+
+  const verseRootsSize = writeJSON(join(OUT_DIR, "verse-roots.json"), verseRoots);
+  report.record("verse-roots.json", verseRootsSize.rawBytes, verseRootsSize.gzBytes);
+  if (verseRootsSize.rawBytes > BUDGETS_RAW_BYTES["verse-roots.json"]) {
+    fail(
+      `verse-roots.json exceeds its budget: ${verseRootsSize.rawBytes} > ${BUDGETS_RAW_BYTES["verse-roots.json"]} bytes`,
+    );
   }
 
   const surahSizes = [...surahFiles.entries()]
@@ -318,6 +350,7 @@ function printSizeEstimate(data: {
   indexLemmas: unknown;
   formsEntries: unknown;
   enIndex: unknown;
+  verseRoots: unknown;
   rootFiles: Map<string, unknown>;
   lemmaFiles: Map<string, unknown>;
   manifest: unknown;
@@ -332,6 +365,7 @@ function printSizeEstimate(data: {
   rec("index.json", { roots: data.indexRoots, lemmas: data.indexLemmas });
   rec("forms.json", data.formsEntries);
   rec("en-index.json", data.enIndex);
+  rec("verse-roots.json", data.verseRoots);
   rec("roots/*.json (est.)", [...data.rootFiles.values()]);
   rec("lemmas/*.json (est.)", [...data.lemmaFiles.values()]);
   report.print();
