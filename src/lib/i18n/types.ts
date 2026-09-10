@@ -245,6 +245,7 @@ export interface Dict {
     subtitle: string;
     themes: string;
     prophets: string;
+    compareLink: string;
   };
   topicPage: {
     prophetLabel: string;
@@ -255,6 +256,21 @@ export interface Dict {
   topicVerseList: {
     noMatches: string;
     copyThisPage: string;
+  };
+  topicCompare: {
+    title: string;
+    subtitle: string;
+  };
+  topicCompareView: {
+    loadingTopics: string;
+    pickAtLeastOneMore: string;
+    verseCount: (count: number) => string;
+  };
+  topicPicker: {
+    heading: string;
+    subtitle: (max: number) => string;
+    removeAria: (label: string) => string;
+    searchPlaceholder: string;
   };
   insightsPage: {
     title: string;

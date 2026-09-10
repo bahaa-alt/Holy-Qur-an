@@ -271,6 +271,7 @@ export const ar: Dict = {
       "فهرس مُنتقى يدويًا يربط كل موضوع بالجذور/الكلمات التي تغطيه -- وليس مستخرجًا من أي تفسير. استخدمه لإيجاد الآيات المرشّحة بسرعة؛ فهو ليس حكمًا على معنى الآية، وقد تكون الآية متعلقة بموضوع دون أن تحوي أيًا من الجذور المذكورة.",
     themes: "المواضيع",
     prophets: "الأنبياء",
+    compareLink: "قارن المواضيع جنبًا إلى جنب ←",
   },
   topicPage: {
     prophetLabel: "نبي",
@@ -282,6 +283,21 @@ export const ar: Dict = {
   topicVerseList: {
     noMatches: "لم تُطابق أي آية جذور/كلمات هذا الموضوع.",
     copyThisPage: "نسخ هذه الصفحة",
+  },
+  topicCompare: {
+    title: "مقارنة المواضيع",
+    subtitle: "اختر بضعة مواضيع لعرض آياتها المطابقة جنبًا إلى جنب.",
+  },
+  topicCompareView: {
+    loadingTopics: "جارٍ تحميل المواضيع…",
+    pickAtLeastOneMore: "اختر موضوعًا واحدًا آخر على الأقل للمقارنة.",
+    verseCount: (count) => `${count.toLocaleString()} آية`,
+  },
+  topicPicker: {
+    heading: "المواضيع المراد مقارنتها",
+    subtitle: (max) => `اختر حتى ${max} مواضيع لمقارنتها جنبًا إلى جنب.`,
+    removeAria: (label) => `إزالة ${label}`,
+    searchPlaceholder: "ابحث عن موضوع لإضافته…",
   },
   insightsPage: {
     title: "إحصاءات",

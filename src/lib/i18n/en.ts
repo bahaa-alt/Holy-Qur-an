@@ -248,6 +248,7 @@ export const en: Dict = {
       "A curated index from topic to the roots/lemmas that cover it -- hand-picked, not derived from any tafsir (classical commentary). Use it to find candidate verses quickly; it is not a claim about what a verse means, and a verse can be relevant to a topic without using any of the listed roots.",
     themes: "Themes",
     prophets: "Prophets",
+    compareLink: "Compare topics side by side →",
   },
   topicPage: {
     prophetLabel: "Prophet",
@@ -259,6 +260,21 @@ export const en: Dict = {
   topicVerseList: {
     noMatches: "No verses matched this topic's roots/lemmas.",
     copyThisPage: "Copy this page",
+  },
+  topicCompare: {
+    title: "Compare topics",
+    subtitle: "Pick a few topics to see their matched verses side by side.",
+  },
+  topicCompareView: {
+    loadingTopics: "Loading topics…",
+    pickAtLeastOneMore: "Pick at least one more topic to compare.",
+    verseCount: (count) => `${count.toLocaleString()} verse${count === 1 ? "" : "s"}`,
+  },
+  topicPicker: {
+    heading: "Topics to compare",
+    subtitle: (max) => `Pick up to ${max} topics to compare side by side.`,
+    removeAria: (label) => `Remove ${label}`,
+    searchPlaceholder: "Search for a topic to add…",
   },
   insightsPage: {
     title: "Insights",

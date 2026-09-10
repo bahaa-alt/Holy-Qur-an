@@ -12,6 +12,9 @@ export function TopicsPageContent() {
       <div>
         <h1 className="text-2xl font-semibold text-ink">{t.topicsPage.title}</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted">{t.topicsPage.subtitle}</p>
+        <Link href="/topics/compare/" className="mt-3 inline-block text-sm text-accent hover:underline">
+          {t.topicsPage.compareLink}
+        </Link>
       </div>
 
       <section>
