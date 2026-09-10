@@ -161,6 +161,32 @@ export type VerseRootsFile = VerseRootOccurrence[][];
  */
 export type ArIndexFile = string[][];
 
+/**
+ * One rooted occurrence's facets, denormalized for cross-corpus faceted
+ * search (see /search/advanced): surah, ayah, word index, root index (into
+ * IndexFile.roots), lemma index (into IndexFile.lemmas), category index
+ * (into OccurrenceIndexFile.cats), and verb Form (0 = not applicable/no VF
+ * tag, 1-11 = Form I-XI per classify.ts's ROMAN_FORMS). Rooted occurrences
+ * only, matching this app's documented "occurrence" methodology (About
+ * page) -- particles/pronouns/clitics never appear here, same as
+ * VerseRootsFile and every RootFile.occ.
+ */
+export type OccurrenceIndexRow = [
+  s: number,
+  a: number,
+  w: number,
+  rootIdx: number,
+  lemmaIdx: number,
+  catIdx: number,
+  verbForm: number,
+];
+
+export interface OccurrenceIndexFile {
+  /** Cat values referenced by each row's catIdx, in index order. */
+  cats: Cat[];
+  rows: OccurrenceIndexRow[];
+}
+
 export interface SurahVerse {
   /** ayah number, 1-based */
   a: number;

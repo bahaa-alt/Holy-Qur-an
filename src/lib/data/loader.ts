@@ -4,6 +4,7 @@ import type {
   IndexFile,
   ManifestFile,
   MetaFile,
+  OccurrenceIndexFile,
   RootFile,
   SurahFile,
   SurahVerse,
@@ -69,6 +70,14 @@ export function getVerseRoots(): Promise<VerseRootsFile> {
  */
 export function getArIndex(): Promise<ArIndexFile> {
   return cachedFetch(`${DATA_BASE}/ar-index.json`);
+}
+
+/**
+ * Fetched lazily, same reasoning as getArIndex -- only needed by the
+ * cross-corpus advanced search page, not the common browsing paths.
+ */
+export function getOccurrenceIndex(): Promise<OccurrenceIndexFile> {
+  return cachedFetch(`${DATA_BASE}/occurrences.json`);
 }
 
 export function getRoot(root: string): Promise<RootFile> {

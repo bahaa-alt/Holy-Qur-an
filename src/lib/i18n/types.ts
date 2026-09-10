@@ -204,6 +204,31 @@ export interface Dict {
     subtitle: string;
     phrasesLinkLabel: string;
     subtitleAfterLink: string;
+    advancedSearchLinkLabel: string;
+  };
+  advancedSearchPage: {
+    title: string;
+    subtitle: string;
+    loading: string;
+    categoryLabel: string;
+    verbFormLabel: string;
+    rootLabel: string;
+    rootPlaceholder: string;
+    rootClear: string;
+    surahRangeLabel: string;
+    surahFromLabel: string;
+    surahToLabel: string;
+    revelationLabel: string;
+    revelationAll: string;
+    revelationMeccan: string;
+    revelationMedinan: string;
+    clearFilters: string;
+    resultCount: (count: number) => string;
+    noResults: string;
+    pageOf: (page: number, total: number) => string;
+    previousPage: string;
+    nextPage: string;
+    verbFormShort: (roman: string) => string;
   };
   phraseTextSearch: {
     label: string;

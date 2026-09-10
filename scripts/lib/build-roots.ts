@@ -1,10 +1,13 @@
 import { altKeyFor, normalize, normalizeRootKey } from "../../src/lib/arabic/normalize";
 import { classify, extractVerbForm } from "../../src/lib/morphology/classify";
+import { CATEGORY_LABELS } from "../../src/lib/data/types";
 import type {
   Cat,
   FormsEntry,
   IndexLemmaRow,
   IndexRootRow,
+  OccurrenceIndexFile,
+  OccurrenceIndexRow,
   RootFile,
   RootFormEntry,
   RootLemmaEntry,
@@ -25,6 +28,8 @@ export interface BuildRootsResult {
   rootFiles: Map<string, RootFile>; // keyed by root text (Arabic), emit to roots/{root}.json
   lemmaFiles: Map<string, RootFile>; // keyed by rootless lemma key, emit to lemmas/{key}.json
   formsEntries: FormsEntry[];
+  /** cross-corpus faceted search index (rooted occurrences only) -- see /search/advanced */
+  occurrenceIndex: OccurrenceIndexFile;
   unmappedGlossRoots: string[]; // roots present in morphology but missing a gloss
   unusedGlossRoots: string[]; // roots present in the gloss dataset but absent from morphology
   /** root text (Arabic) -> its index into indexRoots -- the same "rootIdx" used
@@ -44,6 +49,17 @@ function glossShortFrom(text: string, maxLen = 140): string {
     short = (lastSpace > maxLen * 0.6 ? cut.slice(0, lastSpace) : cut).trimEnd() + "…";
   }
   return short;
+}
+
+/** Extracts the raw VF: numeric code (1-11), or 0 when no VF tag is present. */
+function extractVerbFormCode(tags: readonly string[]): number {
+  for (const tag of tags) {
+    if (tag.startsWith("VF:")) {
+      const n = Number(tag.slice("VF:".length));
+      return Number.isFinite(n) ? n : 0;
+    }
+  }
+  return 0;
 }
 
 function dominantCategory(cats: Map<Cat, number>): Cat {
@@ -354,6 +370,29 @@ export function buildRoots(words: readonly RawWord[], gloss: RootsGlossMap): Bui
   }
   formsEntries.sort((a, b) => a.key.localeCompare(b.key));
 
+  // --- Build global occurrence index for cross-corpus faceted search (rooted occurrences only) ---
+  const catList = Object.keys(CATEGORY_LABELS) as Cat[];
+  const catToIdx = new Map(catList.map((c, i) => [c, i]));
+  const occurrenceIndexRows: OccurrenceIndexRow[] = [];
+  for (const root of sortedRoots) {
+    const rootIdx = rootTextToGlobalIdx.get(root)!;
+    const file = rootFiles.get(root)!;
+    const formsWithLemmaText = perRootFormsWithLemmaText.get(root)!;
+    for (const [s, a, w, , formIdx, featIdx] of file.occ) {
+      const { entry: form, lemmaText } = formsWithLemmaText[formIdx];
+      const lemmaIdx = globalLemmaLookup.get(`${root} ${lemmaText}`)!;
+      const tags = (file.feats[featIdx] ?? "").split("|").filter((t) => t !== "");
+      const verbForm = extractVerbFormCode(tags);
+      occurrenceIndexRows.push([s, a, w, rootIdx, lemmaIdx, catToIdx.get(form.cat)!, verbForm]);
+    }
+  }
+  // Built by iterating roots in alphabetical order, so at this point rows
+  // are grouped root-by-root rather than in Qur'an order. Re-sort by
+  // (surah, ayah, word) so an unfiltered/lightly-filtered result set reads
+  // in the same natural order every other results list in the app uses.
+  occurrenceIndexRows.sort((x, y) => x[0] - y[0] || x[1] - y[1] || x[2] - y[2]);
+  const occurrenceIndex: OccurrenceIndexFile = { cats: catList, rows: occurrenceIndexRows };
+
   // --- Rootless lemma files (lemmas/{key}.json), root: null ---
   // Each rootless lemma gets a self-contained RootFile (root:null, exactly one
   // lemma at index 0) so its word page can render forms/occurrences the same
@@ -408,6 +447,7 @@ export function buildRoots(words: readonly RawWord[], gloss: RootsGlossMap): Bui
     rootFiles,
     lemmaFiles,
     formsEntries,
+    occurrenceIndex,
     unmappedGlossRoots,
     unusedGlossRoots,
     rootTextToGlobalIdx,

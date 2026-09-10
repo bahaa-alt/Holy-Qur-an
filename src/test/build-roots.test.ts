@@ -152,4 +152,43 @@ describe("buildRoots", () => {
       }
     }
   });
+
+  describe("occurrenceIndex", () => {
+    it("includes one row per rooted occurrence, sorted into Qur'an order (not grouped by root)", () => {
+      const refs = result.occurrenceIndex.rows.map(([s, a, w]) => [s, a, w]);
+      expect(refs).toEqual([
+        [1, 1, 1], // سمو
+        [1, 1, 2], // أله
+        [1, 1, 3], // رحم
+        [1, 1, 4], // رحم
+        [2, 2, 2], // كتب
+        [2, 79, 3], // كتب
+        [20, 94, 2], // أمم (tie-broken by alphabetical root order, same as بني below)
+        [20, 94, 2], // بني
+      ]);
+    });
+
+    it("resolves every row's rootIdx/lemmaIdx/catIdx to a valid entry", () => {
+      for (const [, , , rootIdx, lemmaIdx, catIdx] of result.occurrenceIndex.rows) {
+        expect(result.indexRoots[rootIdx]).toBeDefined();
+        expect(result.indexLemmas[lemmaIdx]).toBeDefined();
+        expect(result.occurrenceIndex.cats[catIdx]).toBeDefined();
+      }
+    });
+
+    it("records the VF: numeric code for a verb and 0 when there's no VF tag", () => {
+      const firstRow = result.occurrenceIndex.rows[0]; // (1,1,1) سمو, no VF tag
+      expect(firstRow[6]).toBe(0);
+
+      const verbRow = result.occurrenceIndex.rows.find(([s, a]) => s === 2 && a === 79)!;
+      expect(verbRow[6]).toBe(1); // VF:1
+    });
+
+    it("attributes the double-rooted word's two rows to their respective roots", () => {
+      const doubleRows = result.occurrenceIndex.rows.filter(([s, a, w]) => s === 20 && a === 94 && w === 2);
+      expect(doubleRows).toHaveLength(2);
+      const rootArs = doubleRows.map(([, , , rootIdx]) => result.indexRoots[rootIdx].ar).sort();
+      expect(rootArs).toEqual(["أمم", "بني"].sort());
+    });
+  });
 });

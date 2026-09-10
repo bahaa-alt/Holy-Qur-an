@@ -18,6 +18,11 @@ export function SearchPageContent() {
           </Link>{" "}
           {t.searchPage.subtitleAfterLink}
         </p>
+        <p className="mt-2 text-sm">
+          <Link href="/search/advanced/" className="text-accent hover:text-accent-strong">
+            {t.searchPage.advancedSearchLinkLabel}
+          </Link>
+        </p>
       </div>
       <PhraseTextSearch />
     </div>

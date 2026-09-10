@@ -98,14 +98,20 @@ const BUDGETS_RAW_BYTES = {
   // budgets since there's little further to dedupe, but kept above the
   // measured size so a real regression still trips it.
   "ar-index.json": 1000 * 1024,
+  // One row per rooted occurrence (~50,269), fully numeric (s,a,w,rootIdx,
+  // lemmaIdx,catIdx,verbForm) -- see OccurrenceIndexFile.
+  "occurrences.json": 2000 * 1024,
 };
 const LARGEST_ROOT_BUDGET_RAW = 60 * 1024;
 // Raised from 9 MiB: adding Pickthall's translation to every verse grew
 // surahs/*.json by ~900 KB raw (measured 9.18 MiB total). Gzipped total
 // barely moved (~2.66 MiB, well under TOTAL_GZ_BUDGET) since English prose
 // compresses well -- raw is what actually needed headroom.
-const TOTAL_RAW_BUDGET = 10.5 * 1024 * 1024;
-const TOTAL_GZ_BUDGET = 3 * 1024 * 1024;
+// Raised again for occurrences.json (cross-corpus faceted search index,
+// ~1.4 MB raw / ~350 KB gz measured) -- both budgets kept with headroom
+// above the current measured totals, not tight to them.
+const TOTAL_RAW_BUDGET = 12.5 * 1024 * 1024;
+const TOTAL_GZ_BUDGET = 3.5 * 1024 * 1024;
 
 function fail(message: string): never {
   console.error(`\n✗ ${message}`);
@@ -164,6 +170,7 @@ async function main() {
     rootFiles,
     lemmaFiles,
     formsEntries,
+    occurrenceIndex,
     unmappedGlossRoots,
     unusedGlossRoots,
     rootTextToGlobalIdx,
@@ -224,6 +231,7 @@ async function main() {
 
   const verseRootsEntryCount = verseRoots.reduce((sum, v) => sum + v.length, 0);
   assertEqual("verse-roots.json entry count", verseRootsEntryCount, EXPECTED.occurrences, errors);
+  assertEqual("occurrences.json row count", occurrenceIndex.rows.length, EXPECTED.occurrences, errors);
   if (verseRoots.length !== indexableVerses.length) {
     errors.push(
       `verse-roots.json length: expected ${indexableVerses.length} (one per verse), got ${verseRoots.length}`,
@@ -339,6 +347,7 @@ async function main() {
       enIndex,
       verseRoots,
       arIndex,
+      occurrenceIndex,
       rootFiles,
       lemmaFiles,
       manifest,
@@ -395,6 +404,14 @@ async function main() {
     fail(`ar-index.json exceeds its budget: ${arIndexSize.rawBytes} > ${BUDGETS_RAW_BYTES["ar-index.json"]} bytes`);
   }
 
+  const occurrencesSize = writeJSON(join(OUT_DIR, "occurrences.json"), occurrenceIndex);
+  report.record("occurrences.json", occurrencesSize.rawBytes, occurrencesSize.gzBytes);
+  if (occurrencesSize.rawBytes > BUDGETS_RAW_BYTES["occurrences.json"]) {
+    fail(
+      `occurrences.json exceeds its budget: ${occurrencesSize.rawBytes} > ${BUDGETS_RAW_BYTES["occurrences.json"]} bytes`,
+    );
+  }
+
   const surahSizes = [...surahFiles.entries()]
     .sort(([a], [b]) => a - b)
     .map(([n, file]) => writeJSON(join(OUT_DIR, "surahs", `${n}.json`), file));
@@ -445,6 +462,7 @@ function printSizeEstimate(data: {
   enIndex: unknown;
   verseRoots: unknown;
   arIndex: unknown;
+  occurrenceIndex: unknown;
   rootFiles: Map<string, unknown>;
   lemmaFiles: Map<string, unknown>;
   manifest: unknown;
@@ -461,6 +479,7 @@ function printSizeEstimate(data: {
   rec("en-index.json", data.enIndex);
   rec("verse-roots.json", data.verseRoots);
   rec("ar-index.json", data.arIndex);
+  rec("occurrences.json", data.occurrenceIndex);
   rec("roots/*.json (est.)", [...data.rootFiles.values()]);
   rec("lemmas/*.json (est.)", [...data.lemmaFiles.values()]);
   report.print();
