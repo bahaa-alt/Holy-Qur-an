@@ -107,6 +107,19 @@ body {
   unicode-bidi: plaintext;
 }
 
+/* HighlightedVerse wraps each word in its own <button> so it can be
+   clicked, and browsers give buttons their own bidi isolate. `.uthmani`'s
+   `unicode-bidi: plaintext` determines the paragraph's base direction by
+   scanning content for the first strong character (UAX#9 rule P2), but
+   that scan skips over isolates entirely -- so with nothing left to look
+   at, it falls back to LTR and the per-word isolates line up in source
+   order instead of being reversed as a group. Overriding to `normal` here
+   makes the paragraph use `.uthmani`'s explicit `direction: rtl` instead
+   of auto-detecting, which is what actually reverses the words. */
+.uthmani-interactive {
+  unicode-bidi: normal;
+}
+
 .word-highlight {
   background: var(--color-highlight-bg);
   color: var(--color-highlight-fg);

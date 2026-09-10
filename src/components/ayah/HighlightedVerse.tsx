@@ -23,13 +23,14 @@ export function HighlightedVerse({
 
   return (
     <div>
-      <p className="uthmani text-ink">
+      <p className="uthmani uthmani-interactive text-ink" dir="rtl">
         {parts.map((part, i) => {
           const w = i + 1;
           return (
             <span key={i}>
               <button
                 type="button"
+                dir="rtl"
                 onClick={() => setSelectedWord((prev) => (prev === w ? null : w))}
                 className={`rounded transition-colors hover:bg-accent/10 ${
                   selectedWord === w ? "bg-accent/15" : ""
