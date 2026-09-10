@@ -34,6 +34,7 @@ export const en: Dict = {
     topics: "Topics",
     insights: "Insights",
     saved: "Saved",
+    games: "Games",
     about: "About",
   },
   footer: {
@@ -281,6 +282,44 @@ export const en: Dict = {
     subtitle: (max) => `Pick up to ${max} topics to compare side by side.`,
     removeAria: (label) => `Remove ${label}`,
     searchPlaceholder: "Search for a topic to add…",
+  },
+  gamesPage: {
+    title: "Games",
+    subtitle: "A few quick knowledge games built from the same corpus data -- no accounts, scores stay on this device.",
+    backToGames: "← Back to Games",
+  },
+  gamesHub: {
+    played: (n) => `${n.toLocaleString()} played`,
+    bestStreak: (n) => `Best streak: ${n}`,
+    play: "Play →",
+  },
+  gameShell: {
+    score: (correct, total) => `${correct} / ${total} correct`,
+    streak: (n) => `Streak: ${n}`,
+    correct: "Correct!",
+    incorrect: "Not quite.",
+    nextRound: "Next round",
+  },
+  rootFrequencyGame: {
+    title: "Which root is more frequent?",
+    description: "Guess which of two roots occurs more often in the Qur'an.",
+    prompt: "Which root occurs more often in the Qur'an?",
+  },
+  rootMeaningGame: {
+    title: "Guess the meaning",
+    description: "Match a root to its meaning among 4 choices.",
+    prompt: "What does this root mean?",
+  },
+  lemmaRootGame: {
+    title: "Match word to root",
+    description: "Pick the root a word derives from among 4 choices.",
+    prompt: "Which root does this word come from?",
+  },
+  fillBlankGame: {
+    title: "Complete the verse",
+    description: "Fill in the missing word in a real verse.",
+    prompt: "Which word completes this verse?",
+    loading: "Loading a verse…",
   },
   insightsPage: {
     title: "Insights",

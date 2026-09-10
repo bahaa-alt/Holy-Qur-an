@@ -16,6 +16,8 @@
   --color-highlight-fg: #047857;
   --color-emphasis-bg: rgba(5, 150, 105, 0.3);
   --color-emphasis-fg: #065f46;
+  --color-danger: #dc2626;
+  --color-danger-bg: rgba(220, 38, 38, 0.12);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -33,6 +35,8 @@
     --color-highlight-fg: #6ee7b7;
     --color-emphasis-bg: rgba(52, 211, 153, 0.34);
     --color-emphasis-fg: #a7f3d0;
+    --color-danger: #f87171;
+    --color-danger-bg: rgba(248, 113, 113, 0.18);
   }
 }
 
@@ -50,6 +54,8 @@
   --color-highlight-fg: #6ee7b7;
   --color-emphasis-bg: rgba(52, 211, 153, 0.34);
   --color-emphasis-fg: #a7f3d0;
+  --color-danger: #f87171;
+  --color-danger-bg: rgba(248, 113, 113, 0.18);
 }
 
 @theme inline {
@@ -62,6 +68,8 @@
   --color-accent: var(--color-accent);
   --color-accent-strong: var(--color-accent-strong);
   --color-accent-fg: var(--color-accent-fg);
+  --color-danger: var(--color-danger);
+  --color-danger-bg: var(--color-danger-bg);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-arabic: var(--font-naskh), "Noto Naskh Arabic", ui-sans-serif, sans-serif;
   --font-uthmani: var(--font-amiri), "Amiri Quran", "Scheherazade New", serif;

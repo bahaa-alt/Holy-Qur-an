@@ -57,6 +57,7 @@ export const ar: Dict = {
     topics: "المواضيع",
     insights: "إحصاءات",
     saved: "المحفوظات",
+    games: "الألعاب",
     about: "عن الموقع",
   },
   footer: {
@@ -304,6 +305,44 @@ export const ar: Dict = {
     subtitle: (max) => `اختر حتى ${max} مواضيع لمقارنتها جنبًا إلى جنب.`,
     removeAria: (label) => `إزالة ${label}`,
     searchPlaceholder: "ابحث عن موضوع لإضافته…",
+  },
+  gamesPage: {
+    title: "الألعاب",
+    subtitle: "بضع ألعاب معرفية سريعة مبنية على بيانات المدونة نفسها -- بلا حسابات، والنتائج تبقى على هذا الجهاز فقط.",
+    backToGames: "← العودة إلى الألعاب",
+  },
+  gamesHub: {
+    played: (n) => `${n.toLocaleString()} مرة لُعبت`,
+    bestStreak: (n) => `أفضل سلسلة: ${n}`,
+    play: "العب ←",
+  },
+  gameShell: {
+    score: (correct, total) => `${correct} / ${total} إجابة صحيحة`,
+    streak: (n) => `السلسلة: ${n}`,
+    correct: "إجابة صحيحة!",
+    incorrect: "ليست كذلك.",
+    nextRound: "الجولة التالية",
+  },
+  rootFrequencyGame: {
+    title: "أي جذر أكثر ورودًا؟",
+    description: "خمّن أي الجذرين يرد أكثر في القرآن.",
+    prompt: "أي جذر يرد أكثر في القرآن؟",
+  },
+  rootMeaningGame: {
+    title: "خمّن المعنى",
+    description: "طابق الجذر بمعناه من بين 4 خيارات.",
+    prompt: "ما معنى هذا الجذر؟",
+  },
+  lemmaRootGame: {
+    title: "طابق الكلمة بجذرها",
+    description: "اختر الجذر الذي تشتق منه الكلمة من بين 4 خيارات.",
+    prompt: "من أي جذر تُشتق هذه الكلمة؟",
+  },
+  fillBlankGame: {
+    title: "أكمل الآية",
+    description: "أكمل الكلمة الناقصة في آية حقيقية.",
+    prompt: "ما الكلمة التي تكمل هذه الآية؟",
+    loading: "جارٍ تحميل آية…",
   },
   insightsPage: {
     title: "إحصاءات",
