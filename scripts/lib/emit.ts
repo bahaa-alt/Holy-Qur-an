@@ -45,6 +45,14 @@ export function writeJSON(path: string, data: unknown): { rawBytes: number; gzBy
   return { rawBytes: Buffer.byteLength(json, "utf8"), gzBytes: gz.length };
 }
 
+/** Writes plain text (e.g. CSV) to `path`, creating parent directories as needed. Returns raw/gz byte sizes. */
+export function writeText(path: string, text: string): { rawBytes: number; gzBytes: number } {
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, text, "utf8");
+  const gz = gzipSync(Buffer.from(text, "utf8"));
+  return { rawBytes: Buffer.byteLength(text, "utf8"), gzBytes: gz.length };
+}
+
 /** Aggregates the raw/gz byte totals for a group of already-written files under one report label. */
 export function recordGroup(
   report: SizeReport,

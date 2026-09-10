@@ -7,6 +7,7 @@ import { normalize } from "@/lib/arabic/normalize";
 import { CATEGORY_LABELS } from "@/lib/data/types";
 import { ROMAN_FORMS } from "@/lib/morphology/classify";
 import { filterOccurrences, type AdvancedSearchFilters, type AdvancedSearchRow } from "@/lib/search/advancedSearch";
+import { decodeAdvancedSearchQuery, encodeAdvancedSearchQuery } from "@/lib/search/advancedSearchQuery";
 import { AdvancedSearchResults } from "./AdvancedSearchResults";
 import { useT } from "@/lib/i18n/LanguageContext";
 import type { Cat, IndexFile, MetaFile, OccurrenceIndexFile } from "@/lib/data/types";
@@ -34,12 +35,69 @@ export function AdvancedSearchView() {
   const [surahFrom, setSurahFrom] = useState(1);
   const [surahTo, setSurahTo] = useState(114);
   const [page, setPage] = useState(0);
+  // Starts false to match the prerendered static HTML (a static-export page
+  // has no server to answer differing query strings, so the initial state
+  // above -- all defaults -- is what gets prerendered). The real filters
+  // are read from the URL in the mount effect below, strictly *after*
+  // hydration, matching /compare/'s CompareView (see its comments for why
+  // reading the URL via useState's lazy initializer instead would trip a
+  // hydration mismatch on a direct/deep link carrying query params).
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     Promise.all([getOccurrenceIndex(), getMeta(), getIndex()]).then(([occ, meta, index]) =>
       setData({ occ, meta, index }),
     );
   }, []);
+
+  // One-time hydration from the URL so a shared/bookmarked link restores
+  // its filters. Runs once on mount; see the `hydrated` comment above.
+  useEffect(() => {
+    const decoded = decodeAdvancedSearchQuery(window.location.search, new Set(ALL_CATS));
+    if (decoded.cats.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration from the URL, not a subscription; see the `hydrated` comment above.
+      setCats(new Set(decoded.cats));
+    }
+    if (decoded.verbForms.length > 0) {
+      setForms(new Set(decoded.verbForms));
+    }
+    if (decoded.revelation !== "all") {
+      setRevelation(decoded.revelation);
+    }
+    if (decoded.rootAr) {
+      setRootFilterAr(decoded.rootAr);
+    }
+    if (decoded.surahFrom !== 1) {
+      setSurahFrom(decoded.surahFrom);
+    }
+    if (decoded.surahTo !== 114) {
+      setSurahTo(decoded.surahTo);
+    }
+    if (decoded.page !== 0) {
+      setPage(decoded.page);
+    }
+    setHydrated(true);
+  }, []);
+
+  // Keeps the URL in sync with the current filters so the page is
+  // shareable/bookmarkable -- a legitimate "sync state to an external
+  // system" effect, not a state-reset-on-prop-change. Skipped until after
+  // the hydration effect above has run, so it never clobbers a query
+  // string with the pre-hydration default filters.
+  useEffect(() => {
+    if (!hydrated) return;
+    const query = encodeAdvancedSearchQuery({
+      cats: [...cats],
+      verbForms: [...forms],
+      revelation,
+      rootAr: rootFilterAr,
+      surahFrom,
+      surahTo,
+      page,
+    });
+    const next = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+    window.history.replaceState(null, "", next);
+  }, [cats, forms, revelation, rootFilterAr, surahFrom, surahTo, page, hydrated]);
 
   const rootMatches = useMemo(() => {
     if (!data) return [];

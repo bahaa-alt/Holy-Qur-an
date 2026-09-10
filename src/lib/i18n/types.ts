@@ -266,6 +266,8 @@ export interface Dict {
     tabCollocations: string;
     tabAbjad: string;
     tabCooccurrence: string;
+    tabPatterns: string;
+    tabFormulas: string;
     letterFrequencyHeading: string;
     letterFrequencyDescription: string;
     scopeAyah: string;
@@ -334,6 +336,24 @@ export interface Dict {
     cooccurrenceNoResults: string;
     cooccurrencePickPrompt: string;
     cooccurrenceSharedVerses: (n: number) => string;
+    patternsHeading: string;
+    patternsDescription: string;
+    patternsVerbFormsHeading: string;
+    patternsVerbFormsDescription: string;
+    patternsCategoriesHeading: string;
+    patternsCategoriesDescription: string;
+    patternsRootShapesHeading: string;
+    patternsRootShapesDescription: string;
+    patternsLoading: string;
+    patternsRootsCount: (n: number) => string;
+    patternsLemmasCount: (n: number) => string;
+    formulasHeading: string;
+    formulasDescription: string;
+    formulasWordsLength: (n: number) => string;
+    formulasLoading: string;
+    formulasNoResults: string;
+    formulasOccurrencesCount: (n: number) => string;
+    formulasShowingFirstRefs: (n: number) => string;
   };
   surahPage: {
     previous: string;
@@ -461,6 +481,10 @@ export interface Dict {
     juzHizbBody: string;
     cooccurrenceMethodHeading: string;
     cooccurrenceMethodBody: string;
+    patternsMethodHeading: string;
+    patternsMethodBody: string;
+    formulasMethodHeading: string;
+    formulasMethodBody: string;
     dataSourcesHeading: string;
     laneLexiconNote: string;
     offlineHeading: string;
@@ -470,5 +494,8 @@ export interface Dict {
     downloadEverything: string;
     dataBuildHeading: string;
     dataBuildSummary: (date: string, words: number, roots: number, occurrences: number, verses: number) => string;
+    corpusExportHeading: string;
+    corpusExportBody: string;
+    corpusExportDownload: (size: string) => string;
   };
 }

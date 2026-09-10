@@ -59,6 +59,14 @@ export function AboutContent({ manifest, rootNames }: { manifest: ManifestFile; 
             <h3 className="font-medium">{t.aboutPage.cooccurrenceMethodHeading}</h3>
             <p className="mt-1 text-muted">{t.aboutPage.cooccurrenceMethodBody}</p>
           </div>
+          <div>
+            <h3 className="font-medium">{t.aboutPage.patternsMethodHeading}</h3>
+            <p className="mt-1 text-muted">{t.aboutPage.patternsMethodBody}</p>
+          </div>
+          <div>
+            <h3 className="font-medium">{t.aboutPage.formulasMethodHeading}</h3>
+            <p className="mt-1 text-muted">{t.aboutPage.formulasMethodBody}</p>
+          </div>
         </div>
       </div>
 
@@ -88,6 +96,17 @@ export function AboutContent({ manifest, rootNames }: { manifest: ManifestFile; 
       </div>
 
       <div>
+        <h2 className="text-lg font-semibold">{t.aboutPage.corpusExportHeading}</h2>
+        <p className="mt-2 text-muted">{t.aboutPage.corpusExportBody}</p>
+        <a
+          href={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/data/v1/export/corpus.csv`}
+          className="mt-3 inline-block rounded-lg border border-accent/40 bg-accent/10 px-4 py-2 text-sm text-accent hover:bg-accent/20"
+        >
+          {t.aboutPage.corpusExportDownload(formatBytes(manifest.counts.corpusExportBytes))}
+        </a>
+      </div>
+
+      <div>
         <h2 className="text-lg font-semibold">{t.aboutPage.dataBuildHeading}</h2>
         <p className="mt-2 text-muted">
           {t.aboutPage.dataBuildSummary(
@@ -101,4 +120,8 @@ export function AboutContent({ manifest, rootNames }: { manifest: ManifestFile; 
       </div>
     </div>
   );
+}
+
+function formatBytes(bytes: number): string {
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }

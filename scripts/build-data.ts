@@ -22,7 +22,10 @@ import { buildDistinctiveVocab } from "./lib/build-distinctive-vocab";
 import { buildCollocations } from "./lib/build-collocations";
 import { buildAbjad } from "./lib/build-abjad";
 import { buildCooccurrence } from "./lib/build-cooccurrence";
-import { SizeReport, recordGroup, writeJSON } from "./lib/emit";
+import { buildPatterns } from "./lib/build-patterns";
+import { buildFormulas } from "./lib/build-formulas";
+import { buildCorpusExportCsv } from "./lib/build-corpus-export";
+import { SizeReport, recordGroup, writeJSON, writeText } from "./lib/emit";
 import { ALL_TOPICS } from "../src/lib/topics/topicDefinitions";
 import { topicSourceFileKey } from "../src/lib/topics/buildTopicOccurrences";
 import type { ArIndexFile, ManifestFile, ManifestSource, VerseRootsFile } from "../src/lib/data/types";
@@ -220,6 +223,10 @@ async function main() {
   const collocations = buildCollocations(words);
   const abjad = buildAbjad(words, meta.surahs.length);
   const cooccurrence = buildCooccurrence(words);
+  const patterns = buildPatterns(words);
+  const formulas = buildFormulas(surahFiles);
+  const corpusExportCsv = buildCorpusExportCsv(words, surahFiles, meta);
+  const corpusExportBytes = Buffer.byteLength(corpusExportCsv, "utf8");
 
   // --- 6. Validate invariants ---
   const errors: string[] = [];
@@ -346,6 +353,7 @@ async function main() {
       rootedLemmas: indexLemmas.filter((l) => l.rootIdx !== -1).length,
       rootlessLemmas: indexLemmas.filter((l) => l.rootIdx === -1).length,
       occurrences: totalOccurrences,
+      corpusExportBytes,
     },
     sources: SOURCES,
     mismatches,
@@ -368,6 +376,9 @@ async function main() {
       collocations,
       abjad,
       cooccurrence,
+      patterns,
+      formulas,
+      corpusExportBytes,
       rootFiles,
       lemmaFiles,
       manifest,
@@ -450,6 +461,23 @@ async function main() {
   const cooccurrenceSize = writeJSON(join(OUT_DIR, "cooccurrence.json"), cooccurrence);
   report.record("cooccurrence.json", cooccurrenceSize.rawBytes, cooccurrenceSize.gzBytes);
 
+  const patternsSize = writeJSON(join(OUT_DIR, "patterns.json"), patterns);
+  report.record("patterns.json", patternsSize.rawBytes, patternsSize.gzBytes);
+
+  const formulasSize = writeJSON(join(OUT_DIR, "formulas.json"), formulas);
+  report.record("formulas.json", formulasSize.rawBytes, formulasSize.gzBytes);
+
+  // Not recorded in `report`/counted against TOTAL_RAW_BUDGET or
+  // TOTAL_GZ_BUDGET on purpose: unlike every file above, this is a
+  // one-time bulk download a researcher opts into, never fetched by the
+  // app itself (no getX() loader, no service-worker precache entry) --
+  // it shouldn't compete with the app-shell size budgets those exist to
+  // protect. Printed on its own line below instead.
+  const exportSize = writeText(join(OUT_DIR, "export", "corpus.csv"), corpusExportCsv);
+  console.log(
+    `\nexport/corpus.csv          raw ${(exportSize.rawBytes / 1024 / 1024).toFixed(2)} MB  gz ${(exportSize.gzBytes / 1024 / 1024).toFixed(2)} MB (not counted toward the size budgets above)`,
+  );
+
   const surahSizes = [...surahFiles.entries()]
     .sort(([a], [b]) => a - b)
     .map(([n, file]) => writeJSON(join(OUT_DIR, "surahs", `${n}.json`), file));
@@ -507,6 +535,9 @@ function printSizeEstimate(data: {
   collocations: unknown;
   abjad: unknown;
   cooccurrence: unknown;
+  patterns: unknown;
+  formulas: unknown;
+  corpusExportBytes: number;
   rootFiles: Map<string, unknown>;
   lemmaFiles: Map<string, unknown>;
   manifest: unknown;
@@ -530,6 +561,9 @@ function printSizeEstimate(data: {
   rec("collocations.json", data.collocations);
   rec("abjad.json", data.abjad);
   rec("cooccurrence.json", data.cooccurrence);
+  rec("patterns.json", data.patterns);
+  rec("formulas.json", data.formulas);
+  report.record("export/corpus.csv (est., not budget-counted)", data.corpusExportBytes, 0);
   rec("roots/*.json (est.)", [...data.rootFiles.values()]);
   rec("lemmas/*.json (est.)", [...data.lemmaFiles.values()]);
   report.print();

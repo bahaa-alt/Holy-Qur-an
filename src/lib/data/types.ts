@@ -6,6 +6,7 @@
  * runtime and at build time (`generateStaticParams`). Keep it dependency-free
  * (no Next.js / React imports) so it can be imported from plain `tsx` scripts.
  */
+import type { RootShape } from "@/lib/morphology/rootShape";
 
 /** Grammatical category a rooted word form is classified into. */
 export type Cat =
@@ -75,6 +76,8 @@ export interface ManifestFile {
     rootedLemmas: number;
     rootlessLemmas: number;
     occurrences: number;
+    /** byte size of the bulk corpus CSV export (public/data/v1/export/corpus.csv), for display before download */
+    corpusExportBytes: number;
   };
   sources: ManifestSource[];
   mismatches: ManifestMismatch[];
@@ -406,4 +409,77 @@ export interface CooccurrenceFile {
   topPairs: RootPairRow[];
   /** root (Arabic text) -> its top 5 co-occurring partners, sorted by count desc */
   byRoot: Record<string, RootCooccurrencePartner[]>;
+}
+
+/** How often verb Form n (I-XI) is attested across the whole corpus. */
+export interface VerbFormStatRow {
+  /** 1-11, matching classify.ts's ROMAN_FORMS; an untagged verb defaults to 1 (Form I), same as ConjugationTable */
+  form: number;
+  count: number;
+  rootCount: number;
+  /** distinct (root, lemma) pairs attested in this Form */
+  lemmaCount: number;
+}
+
+/** How often a derivational category is attested across the whole corpus. */
+export interface CategoryStatRow {
+  cat: Cat;
+  count: number;
+  rootCount: number;
+}
+
+/** How the corpus's roots (and their occurrences) split across the seven classical root shapes. */
+export interface RootShapeStatRow {
+  shape: RootShape;
+  count: number;
+  rootCount: number;
+}
+
+/**
+ * Corpus-wide morphological "pattern" productivity: which verb Forms,
+ * derivational categories, and root shapes (see
+ * src/lib/morphology/rootShape.ts) are attested how often across ALL
+ * roots -- a cross-root view distinct from any single root's own
+ * FormsTable/ConjugationTable, for studying which grammatical patterns
+ * are productive in the language as a whole. Powers /insights/'s
+ * Patterns tab.
+ */
+export interface PatternsFile {
+  /** every attested Form, ordered by form number ascending */
+  verbForms: VerbFormStatRow[];
+  /** every attested category, ordered per CATEGORY_ORDER */
+  categories: CategoryStatRow[];
+  /** every attested shape, ordered per ROOT_SHAPE_ORDER */
+  rootShapes: RootShapeStatRow[];
+}
+
+/** One recurring multi-word phrase (a candidate Qur'anic "formula"). */
+export interface FormulaRow {
+  /** normalize()-d tokens, space-joined -- the grouping key */
+  phraseKey: string;
+  /** the diacritized surface text of its first attested occurrence, space-joined */
+  display: string;
+  /** total occurrences across the whole Qur'an */
+  count: number;
+  /** verses it occurs in, capped at 12 (see count for the true total when it exceeds that) */
+  refs: { s: number; a: number }[];
+}
+
+/** Top recurring phrases of one fixed word-length. */
+export interface FormulaLengthGroup {
+  length: number;
+  rows: FormulaRow[];
+}
+
+/**
+ * Recurring multi-word sequences (candidate Qur'anic "formulas") -- a
+ * sliding window of 3-6 consecutive words within each verse (never
+ * crossing a verse boundary), grouped by normalize()-d text and counted
+ * across the whole corpus. Surfaces fixed expressions classical Qur'anic
+ * stylistics studies as takrar (repetition), e.g. recurring refrains and
+ * formulaic openings/closings. Powers /insights/'s Formulas tab.
+ */
+export interface FormulasFile {
+  /** one group per phrase length 3-6, ordered by length ascending */
+  lengths: FormulaLengthGroup[];
 }

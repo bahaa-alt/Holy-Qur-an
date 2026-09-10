@@ -5,11 +5,13 @@ import type {
   CooccurrenceFile,
   DistinctiveVocabFile,
   EnIndexFile,
+  FormulasFile,
   IndexFile,
   InsightsFile,
   ManifestFile,
   MetaFile,
   OccurrenceIndexFile,
+  PatternsFile,
   RhymeFile,
   RootFile,
   SurahFile,
@@ -108,6 +110,14 @@ export function getAbjad(): Promise<AbjadTotalsFile> {
 
 export function getCooccurrence(): Promise<CooccurrenceFile> {
   return cachedFetch(`${DATA_BASE}/cooccurrence.json`);
+}
+
+export function getPatterns(): Promise<PatternsFile> {
+  return cachedFetch(`${DATA_BASE}/patterns.json`);
+}
+
+export function getFormulas(): Promise<FormulasFile> {
+  return cachedFetch(`${DATA_BASE}/formulas.json`);
 }
 
 export function getRoot(root: string): Promise<RootFile> {

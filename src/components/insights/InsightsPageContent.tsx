@@ -10,6 +10,8 @@ import { DistinctiveVocabTab } from "./DistinctiveVocabTab";
 import { CollocationsTab } from "./CollocationsTab";
 import { AbjadTab } from "./AbjadTab";
 import { CooccurrenceTab } from "./CooccurrenceTab";
+import { PatternsTab } from "./PatternsTab";
+import { FormulasTab } from "./FormulasTab";
 import type {
   InsightsFile,
   MetaFile,
@@ -24,7 +26,17 @@ interface LemmaCoverageRow extends SurahCoverageLemmaRow {
   href: string | null;
 }
 
-type Tab = "facts" | "letters" | "coverage" | "rhyme" | "vocabulary" | "collocations" | "abjad" | "cooccurrence";
+type Tab =
+  | "facts"
+  | "letters"
+  | "coverage"
+  | "rhyme"
+  | "vocabulary"
+  | "collocations"
+  | "abjad"
+  | "cooccurrence"
+  | "patterns"
+  | "formulas";
 const TAB_PILL_CLASS = (active: boolean) => `rounded-md px-3 py-1.5 ${active ? "bg-accent text-accent-fg" : "text-muted"}`;
 
 function VerseLink({ s, a, label }: { s: number; a: number; label: string }) {
@@ -98,6 +110,12 @@ export function InsightsPageContent({
         </button>
         <button type="button" onClick={() => setTab("cooccurrence")} className={TAB_PILL_CLASS(tab === "cooccurrence")}>
           {t.insightsPage.tabCooccurrence}
+        </button>
+        <button type="button" onClick={() => setTab("patterns")} className={TAB_PILL_CLASS(tab === "patterns")}>
+          {t.insightsPage.tabPatterns}
+        </button>
+        <button type="button" onClick={() => setTab("formulas")} className={TAB_PILL_CLASS(tab === "formulas")}>
+          {t.insightsPage.tabFormulas}
         </button>
       </div>
 
@@ -199,6 +217,8 @@ export function InsightsPageContent({
       {tab === "collocations" && <CollocationsTab />}
       {tab === "abjad" && <AbjadTab meta={meta} />}
       {tab === "cooccurrence" && <CooccurrenceTab />}
+      {tab === "patterns" && <PatternsTab />}
+      {tab === "formulas" && <FormulasTab />}
     </div>
   );
 }

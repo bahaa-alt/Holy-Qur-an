@@ -271,6 +271,8 @@ export const en: Dict = {
     tabCollocations: "Verb collocations",
     tabAbjad: "Abjad value",
     tabCooccurrence: "Root network",
+    tabPatterns: "Patterns",
+    tabFormulas: "Formulas",
     letterFrequencyHeading: "Letter frequency",
     letterFrequencyDescription:
       "How often each Arabic letter appears, diacritics stripped but letter variants (ة vs ه, ا vs أ/إ/آ/ٱ) kept distinct. Pick a scope below.",
@@ -347,6 +349,29 @@ export const en: Dict = {
     cooccurrenceNoResults: "This root shares fewer than 3 verses with any other root.",
     cooccurrencePickPrompt: "Pick a root above to see which other roots co-occur with it most.",
     cooccurrenceSharedVerses: (n) => `${n.toLocaleString()} shared verses`,
+    patternsHeading: "Morphological patterns",
+    patternsDescription:
+      "How productive each verb Form, derivational category, and root shape is across the whole corpus -- a cross-root view of which grammatical patterns are common or rare, distinct from any single root's own forms table.",
+    patternsVerbFormsHeading: "Verb Form productivity (I–XI)",
+    patternsVerbFormsDescription:
+      "How often each of the classical verb Forms is attested (an untagged verb counts as Form I), and how many distinct roots and root-lemma pairs produce it.",
+    patternsCategoriesHeading: "Derivational category distribution",
+    patternsCategoriesDescription:
+      "How often each grammatical category occurs across the whole Qur'an, and how many distinct roots produce it.",
+    patternsRootShapesHeading: "Root shape distribution",
+    patternsRootShapesDescription:
+      "How the corpus's roots (and their occurrences) split across the seven classical root shapes -- sound, hollow, defective, assimilated, geminate, hamzated, and quadriliteral.",
+    patternsLoading: "Loading patterns…",
+    patternsRootsCount: (n) => `${n.toLocaleString()} root${n === 1 ? "" : "s"}`,
+    patternsLemmasCount: (n) => `${n.toLocaleString()} root-lemma pair${n === 1 ? "" : "s"}`,
+    formulasHeading: "Recurring phrases (formulas)",
+    formulasDescription:
+      "Word sequences that recur often enough, in exactly the same words, to be candidate fixed expressions -- classical Qur'anic rhetorical studies call this takrar (repetition). Sliding windows of 3-6 consecutive words within a single verse, never crossing a verse boundary; shorter phrases need a higher repeat count to qualify, since they recur more often by grammatical chance alone.",
+    formulasWordsLength: (n) => `${n} words`,
+    formulasLoading: "Loading phrases…",
+    formulasNoResults: "No phrase of this length recurs often enough to qualify.",
+    formulasOccurrencesCount: (n) => `${n.toLocaleString()} occurrences`,
+    formulasShowingFirstRefs: (n) => `showing the first ${n}`,
   },
   surahPage: {
     previous: "Previous",
@@ -484,6 +509,12 @@ export const en: Dict = {
     cooccurrenceMethodHeading: "Root co-occurrence network",
     cooccurrenceMethodBody:
       "For every verse, collects its distinct rooted-word roots, then tallies every unordered pair of roots that share at least one verse, across the whole Qur'an -- unlike the per-root Collocations feature (what else appears in one root's own verses), this ranks pairs corpus-wide. A pair sharing fewer than 3 verses is excluded as noise; the top 50 pairs overall and each root's top 5 partners are shown.",
+    patternsMethodHeading: "Morphological patterns",
+    patternsMethodBody:
+      "Every rooted segment is classified by verb Form (I-XI; an untagged verb defaults to Form I, matching the per-root Conjugation table's convention), by the same derivational category used everywhere else in this app, and by root shape (sound, hollow, defective, assimilated, geminate, hamzated, quadriliteral -- see the Roots browse page's \"by shape\" grouping). Each is then tallied across every root in the corpus, giving occurrence and distinct-root counts per Form/category/shape -- a cross-root productivity view, not a per-root breakdown.",
+    formulasMethodHeading: "Recurring phrases (formulas)",
+    formulasMethodBody:
+      "For every verse, every contiguous run of 3, 4, 5, and 6 words (a sliding window, never crossing into the next verse) is normalized and counted across the whole Qur'an; each length is ranked independently, so a 3-word phrase and the 4-word phrase containing it appear as separate entries. Shorter phrases need more repeats to qualify (minimums of 6/4/3/3 occurrences for lengths 3-6) since short sequences recur more often by grammatical chance alone; the top 25 phrases per length are shown, each linking to up to 12 of its occurrences.",
     dataSourcesHeading: "Data sources & licenses",
     laneLexiconNote:
       'Root meanings are given as "after Lane\'s Lexicon" -- a summary drawn from that dataset, not a verbatim quotation of the original 19th-century lexicon. This project\'s own source code is licensed GPL-3.0, matching the copyleft terms of the morphology dataset it builds on.',
@@ -496,5 +527,9 @@ export const en: Dict = {
     dataBuildHeading: "Data build",
     dataBuildSummary: (date, words, roots, occurrences, verses) =>
       `Built ${date} · ${words.toLocaleString()} words · ${roots.toLocaleString()} roots · ${occurrences.toLocaleString()} root occurrences across ${verses.toLocaleString()} verses.`,
+    corpusExportHeading: "Bulk corpus export",
+    corpusExportBody:
+      "Every word of the Qur'an in one CSV file -- surah, ayah, word, root, lemma, grammatical category, tags, and both English translations -- for analysis in Excel, pandas, R, or any other tool outside this app. This is the same data every page here is built from, unfiltered.",
+    corpusExportDownload: (size) => `Download full corpus (CSV, ${size})`,
   },
 };
