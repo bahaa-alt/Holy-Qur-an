@@ -10,11 +10,14 @@ export function SaveButton({
   kind,
   label,
   href,
+  compact,
 }: {
   id: string;
   kind: SavedKind;
   label: string;
   href: string;
+  /** Icon-only, no "Save"/"Saved" text -- for dense lists (e.g. collocation chips). */
+  compact?: boolean;
 }) {
   // Starts false to match the prerendered static HTML (localStorage doesn't
   // exist during SSR/static export, so the initial markup is always
@@ -46,10 +49,15 @@ export function SaveButton({
       type="button"
       onClick={toggle}
       aria-pressed={saved}
-      className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs text-muted transition-colors hover:border-accent hover:text-accent"
+      aria-label={compact ? (saved ? `Remove ${label} from saved` : `Save ${label}`) : undefined}
+      className={
+        compact
+          ? "shrink-0 text-muted transition-colors hover:text-accent"
+          : "inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs text-muted transition-colors hover:border-accent hover:text-accent"
+      }
     >
       {saved ? <BookmarkCheck size={13} className="text-accent" /> : <Bookmark size={13} />}
-      {saved ? "Saved" : "Save"}
+      {!compact && (saved ? "Saved" : "Save")}
     </button>
   );
 }

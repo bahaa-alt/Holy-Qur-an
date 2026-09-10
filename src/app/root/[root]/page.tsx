@@ -47,7 +47,7 @@ export default async function RootPage({ params }: { params: Promise<{ root: str
   const collocations =
     currentRootIdx === -1
       ? []
-      : buildCollocations(file, currentRootIdx, readVerseRoots(), meta).map((c) => ({
+      : buildCollocations(file, currentRootIdx, readVerseRoots(), meta, index).map((c) => ({
           ar: index.roots[c.rootIdx].ar,
           count: c.count,
         }));
