@@ -41,6 +41,7 @@ export interface Dict {
     insights: string;
     saved: string;
     games: string;
+    flashcards: string;
     about: string;
   };
   footer: {
@@ -316,6 +317,21 @@ export interface Dict {
     description: string;
     prompt: string;
     loading: string;
+  };
+  flashcardsPage: {
+    title: string;
+    subtitle: string;
+    deckRoots: string;
+    deckLemmas: string;
+    flip: string;
+    again: string;
+    hard: string;
+    good: string;
+    easy: string;
+    sessionComplete: (n: number) => string;
+    noCardsDue: string;
+    startSession: string;
+    cardOf: (current: number, total: number) => string;
   };
   insightsPage: {
     title: string;

@@ -35,6 +35,7 @@ export const en: Dict = {
     insights: "Insights",
     saved: "Saved",
     games: "Games",
+    flashcards: "Flashcards",
     about: "About",
   },
   footer: {
@@ -320,6 +321,22 @@ export const en: Dict = {
     description: "Fill in the missing word in a real verse.",
     prompt: "Which word completes this verse?",
     loading: "Loading a verse…",
+  },
+  flashcardsPage: {
+    title: "Flashcards",
+    subtitle:
+      "A simple spaced-repetition drill over roots or lemmas -- progress stays on this device, no accounts.",
+    deckRoots: "Roots",
+    deckLemmas: "Lemmas",
+    flip: "Show meaning",
+    again: "Again",
+    hard: "Hard",
+    good: "Good",
+    easy: "Easy",
+    sessionComplete: (n) => `Session complete -- reviewed ${n.toLocaleString()} card${n === 1 ? "" : "s"}.`,
+    noCardsDue: "No cards due right now -- come back later.",
+    startSession: "Start session",
+    cardOf: (current, total) => `Card ${current} of ${total}`,
   },
   insightsPage: {
     title: "Insights",
