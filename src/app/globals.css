@@ -148,3 +148,40 @@ body {
 ::selection {
   background: var(--color-highlight-bg);
 }
+
+/* Print / "Save as PDF" support (topics, root/topic comparisons). Deliberately
+   a plain print stylesheet + window.print(), not a PDF-generation library --
+   see PrintButton.tsx's doc comment for why. Tailwind's built-in print:
+   variant (print:hidden / print:block) handles most per-element hiding
+   inline in components; this block covers what only makes sense as global
+   print rules: forcing light-mode colors and dropping ink-heavy fills. */
+@media print {
+  :root {
+    /* Force the light palette regardless of the viewer's theme -- printing
+       white-on-black or emerald-on-black wastes ink and reads poorly. */
+    --color-bg: #f7faf9;
+    --color-surface: #ffffff;
+    --color-surface-raised: #ffffff;
+    --color-ink: #0b0f0e;
+    --color-muted: #5b6560;
+    --color-border: #e1e8e4;
+    --color-accent: #059669;
+    --color-accent-strong: #047857;
+    --color-accent-fg: #ffffff;
+    --color-highlight-bg: transparent;
+    --color-highlight-fg: #047857;
+    --color-emphasis-bg: transparent;
+    --color-emphasis-fg: #065f46;
+  }
+
+  .word-highlight,
+  .word-emphasis {
+    background: transparent;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+  }
+
+  .print-avoid-break {
+    break-inside: avoid;
+  }
+}

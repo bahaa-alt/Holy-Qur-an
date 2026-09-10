@@ -12,6 +12,7 @@ import { CompareStatsTable } from "./CompareStatsTable";
 import { CompareCategoryBars } from "./CompareCategoryBars";
 import { SurahHeatmapStrip } from "@/components/root/SurahHeatmapStrip";
 import { CopyTextButton } from "@/components/export/CopyTextButton";
+import { PrintButton } from "@/components/export/PrintButton";
 import { useT } from "@/lib/i18n/LanguageContext";
 
 export function CompareView({ roots }: { roots: CompareRootRow[] }) {
@@ -86,18 +87,24 @@ export function CompareView({ roots }: { roots: CompareRootRow[] }) {
 
   return (
     <div className="space-y-6">
-      <RootPicker roots={roots} selected={selected} onChange={setSelected} />
+      <div className="print:hidden">
+        <RootPicker roots={roots} selected={selected} onChange={setSelected} />
+      </div>
 
       {stillLoading && (
-        <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted">
+        <div className="print:hidden flex items-center justify-center gap-2 py-10 text-sm text-muted">
           <Loader2 size={16} className="animate-spin" /> {t.compareView.loadingRoots}
         </div>
       )}
 
       {!stillLoading && loadedSummaries.length >= 2 && (
         <>
-          <div className="flex justify-end">
+          <h1 className="arabic-ui hidden print:block text-xl font-semibold text-ink">
+            {loadedSummaries.map((s) => s.root).join(" · ")}
+          </h1>
+          <div className="print:hidden flex justify-end gap-2">
             <CopyTextButton text={buildComparisonMarkdown(loadedSummaries, categoryRows)} />
+            <PrintButton />
           </div>
           <CompareStatsTable summaries={loadedSummaries} />
           <CompareCategoryBars

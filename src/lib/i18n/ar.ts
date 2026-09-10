@@ -292,6 +292,11 @@ export const ar: Dict = {
     noMatches: "لم تُطابق أي آية جذور/كلمات هذا الموضوع.",
     copyThisPage: "نسخ هذه الصفحة",
   },
+  printButton: {
+    label: "طباعة / حفظ كملف PDF",
+    printedFrom: (url) => `طُبع من ${url}`,
+    printedOn: (date) => `بتاريخ ${date}`,
+  },
   topicCompare: {
     title: "مقارنة المواضيع",
     subtitle: "اختر بضعة مواضيع لعرض آياتها المطابقة جنبًا إلى جنب.",

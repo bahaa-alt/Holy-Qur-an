@@ -269,6 +269,11 @@ export const en: Dict = {
     noMatches: "No verses matched this topic's roots/lemmas.",
     copyThisPage: "Copy this page",
   },
+  printButton: {
+    label: "Print / Save as PDF",
+    printedFrom: (url) => `Printed from ${url}`,
+    printedOn: (date) => `on ${date}`,
+  },
   topicCompare: {
     title: "Compare topics",
     subtitle: "Pick a few topics to see their matched verses side by side.",

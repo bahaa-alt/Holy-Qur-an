@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { getLemma, getRoot } from "@/lib/data/loader";
 import { ALL_TOPICS, findTopicBySlug, type TopicDefinition } from "@/lib/topics/topicDefinitions";
@@ -8,6 +8,8 @@ import { buildTopicVerseMatches, topicSourceFileKey, type TopicVerseMatch } from
 import { decodeTopicsQuery, encodeTopicsQuery } from "@/lib/topics/query";
 import { TopicPicker } from "./TopicPicker";
 import { TopicVerseList } from "./TopicVerseList";
+import { PrintableTopicVerses, type PrintableTopicVersesHandle } from "./PrintableTopicVerses";
+import { PrintButton } from "@/components/export/PrintButton";
 import { useT } from "@/lib/i18n/LanguageContext";
 import type { RootFile } from "@/lib/data/types";
 
@@ -92,33 +94,60 @@ export function TopicCompareView() {
 
   const stillLoading = selectedTopics.length > 0 && selectedTopics.some((topic) => !topicMatches.has(topic.slug));
 
+  const printRefs = useRef(new Map<string, PrintableTopicVersesHandle | null>());
+  async function resolveAllForPrint() {
+    await Promise.all(selectedTopics.map((topic) => printRefs.current.get(topic.slug)?.resolve()));
+  }
+
   return (
     <div className="space-y-6">
-      <TopicPicker selected={selected} onChange={setSelected} />
+      <div className="print:hidden">
+        <TopicPicker selected={selected} onChange={setSelected} />
+      </div>
 
       {stillLoading && (
-        <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted">
+        <div className="print:hidden flex items-center justify-center gap-2 py-10 text-sm text-muted">
           <Loader2 size={16} className="animate-spin" /> {t.topicCompareView.loadingTopics}
         </div>
       )}
 
       {!stillLoading && selectedTopics.length >= 2 && (
-        <div className="grid gap-6 lg:grid-cols-[repeat(auto-fit,minmax(280px,1fr))]">
-          {selectedTopics.map((topic) => {
-            const matches = topicMatches.get(topic.slug) ?? [];
-            return (
-              <div key={topic.slug} className="min-w-0 space-y-3">
-                <div>
-                  <h2 className="arabic-ui text-lg font-semibold text-ink">{topic.labelAr}</h2>
-                  <p className="text-xs text-muted">
-                    {topic.labelEn} · {t.topicCompareView.verseCount(matches.length)}
-                  </p>
+        <>
+          <div className="flex items-center justify-between">
+            <h1 className="hidden print:block text-xl font-semibold text-ink">
+              {selectedTopics.map((topic) => topic.labelEn).join(" · ")}
+            </h1>
+            <div className="print:hidden ms-auto">
+              <PrintButton onBeforePrint={resolveAllForPrint} />
+            </div>
+          </div>
+          <div className="grid gap-6 print:hidden lg:grid-cols-[repeat(auto-fit,minmax(280px,1fr))]">
+            {selectedTopics.map((topic) => {
+              const matches = topicMatches.get(topic.slug) ?? [];
+              return (
+                <div key={topic.slug} className="min-w-0 space-y-3">
+                  <div>
+                    <h2 className="arabic-ui text-lg font-semibold text-ink">{topic.labelAr}</h2>
+                    <p className="text-xs text-muted">
+                      {topic.labelEn} · {t.topicCompareView.verseCount(matches.length)}
+                    </p>
+                  </div>
+                  <TopicVerseList matches={matches} />
                 </div>
-                <TopicVerseList matches={matches} />
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+          {selectedTopics.map((topic) => (
+            <PrintableTopicVerses
+              key={topic.slug}
+              ref={(handle) => {
+                printRefs.current.set(topic.slug, handle);
+              }}
+              matches={topicMatches.get(topic.slug) ?? []}
+              topic={topic}
+            />
+          ))}
+        </>
       )}
 
       {!stillLoading && selectedTopics.length === 1 && (

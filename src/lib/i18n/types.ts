@@ -265,6 +265,11 @@ export interface Dict {
     noMatches: string;
     copyThisPage: string;
   };
+  printButton: {
+    label: string;
+    printedFrom: (url: string) => string;
+    printedOn: (date: string) => string;
+  };
   topicCompare: {
     title: string;
     subtitle: string;
