@@ -11,15 +11,19 @@ import type { TopicVerseMatch } from "@/lib/topics/buildTopicOccurrences";
 export function TopicPageContent({ topic, matches }: { topic: TopicDefinition; matches: TopicVerseMatch[] }) {
   const t = useT();
   const printRef = useRef<PrintableTopicVersesHandle>(null);
+  const categoryLabel: Record<TopicDefinition["category"], string> = {
+    theme: t.topicPage.topicLabel,
+    prophet: t.topicPage.prophetLabel,
+    person: t.topicPage.personLabel,
+    species: t.topicPage.speciesLabel,
+  };
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
       <div className="print:hidden">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted">
-              {topic.category === "prophet" ? t.topicPage.prophetLabel : t.topicPage.topicLabel}
-            </p>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted">{categoryLabel[topic.category]}</p>
             <h1 className="arabic-ui mt-1 text-3xl font-semibold text-ink">{topic.labelAr}</h1>
             <p className="text-sm text-muted">{topic.labelEn}</p>
           </div>

@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { ALL_TOPICS, findTopicBySlug, PROPHET_TOPICS, THEME_TOPICS } from "@/lib/topics/topicDefinitions";
+import {
+  ALL_TOPICS,
+  findTopicBySlug,
+  PEOPLE_TOPICS,
+  PROPHET_TOPICS,
+  SPECIES_TOPICS,
+  THEME_TOPICS,
+} from "@/lib/topics/topicDefinitions";
 
 // Corpus-existence (does root/lemma "X" actually exist in this build?) is
 // checked by scripts/build-data.ts itself, against the real built corpus --
@@ -8,7 +15,7 @@ import { ALL_TOPICS, findTopicBySlug, PROPHET_TOPICS, THEME_TOPICS } from "@/lib
 // are internally well-formed.
 
 describe("topicDefinitions", () => {
-  it("has no duplicate slugs across themes and prophets", () => {
+  it("has no duplicate slugs across themes, prophets, people and species", () => {
     const slugs = ALL_TOPICS.map((t) => t.slug);
     expect(new Set(slugs).size).toBe(slugs.length);
   });
@@ -26,13 +33,15 @@ describe("topicDefinitions", () => {
     }
   });
 
-  it("categorizes every theme as 'theme' and every prophet as 'prophet'", () => {
+  it("categorizes every topic array with its own matching category", () => {
     expect(THEME_TOPICS.every((t) => t.category === "theme")).toBe(true);
     expect(PROPHET_TOPICS.every((t) => t.category === "prophet")).toBe(true);
+    expect(PEOPLE_TOPICS.every((t) => t.category === "person")).toBe(true);
+    expect(SPECIES_TOPICS.every((t) => t.category === "species")).toBe(true);
   });
 
-  it("ALL_TOPICS is exactly the concatenation of themes and prophets", () => {
-    expect(ALL_TOPICS).toEqual([...THEME_TOPICS, ...PROPHET_TOPICS]);
+  it("ALL_TOPICS is exactly the concatenation of themes, prophets, people and species", () => {
+    expect(ALL_TOPICS).toEqual([...THEME_TOPICS, ...PROPHET_TOPICS, ...PEOPLE_TOPICS, ...SPECIES_TOPICS]);
   });
 
   it("rootedLemma sources carry both a root and a lemma key", () => {

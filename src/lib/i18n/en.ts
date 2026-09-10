@@ -256,11 +256,15 @@ export const en: Dict = {
       "A curated index from topic to the roots/lemmas that cover it -- hand-picked, not derived from any tafsir (classical commentary). Use it to find candidate verses quickly; it is not a claim about what a verse means, and a verse can be relevant to a topic without using any of the listed roots.",
     themes: "Themes",
     prophets: "Prophets",
+    people: "People",
+    species: "Plants & Animals",
     compareLink: "Compare topics side by side →",
   },
   topicPage: {
     prophetLabel: "Prophet",
     topicLabel: "Topic",
+    personLabel: "Person",
+    speciesLabel: "Plant / Animal",
     description: (count) =>
       `A curated root/lemma index, not derived from tafsir (classical commentary) -- a starting point for finding candidate verses, not a claim about what a verse means. ${count.toLocaleString()} verse${count === 1 ? "" : "s"} matched.`,
     noteLabel: "Note: ",

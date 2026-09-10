@@ -2,7 +2,28 @@
 
 import Link from "next/link";
 import { useT } from "@/lib/i18n/LanguageContext";
-import { PROPHET_TOPICS, THEME_TOPICS } from "@/lib/topics/topicDefinitions";
+import { PEOPLE_TOPICS, PROPHET_TOPICS, SPECIES_TOPICS, THEME_TOPICS } from "@/lib/topics/topicDefinitions";
+import type { TopicDefinition } from "@/lib/topics/topicDefinitions";
+
+function TopicSection({ heading, topics }: { heading: string; topics: readonly TopicDefinition[] }) {
+  return (
+    <section>
+      <h2 className="text-sm font-medium uppercase tracking-wide text-muted">{heading}</h2>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {topics.map((topic) => (
+          <Link
+            key={topic.slug}
+            href={`/topics/${topic.slug}/`}
+            className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
+          >
+            <span className="arabic-ui">{topic.labelAr}</span>
+            <span className="ms-2 text-xs text-muted">{topic.labelEn}</span>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export function TopicsPageContent() {
   const t = useT();
@@ -17,37 +38,10 @@ export function TopicsPageContent() {
         </Link>
       </div>
 
-      <section>
-        <h2 className="text-sm font-medium uppercase tracking-wide text-muted">{t.topicsPage.themes}</h2>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {THEME_TOPICS.map((topic) => (
-            <Link
-              key={topic.slug}
-              href={`/topics/${topic.slug}/`}
-              className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
-            >
-              <span className="arabic-ui">{topic.labelAr}</span>
-              <span className="ms-2 text-xs text-muted">{topic.labelEn}</span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <h2 className="text-sm font-medium uppercase tracking-wide text-muted">{t.topicsPage.prophets}</h2>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {PROPHET_TOPICS.map((topic) => (
-            <Link
-              key={topic.slug}
-              href={`/topics/${topic.slug}/`}
-              className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
-            >
-              <span className="arabic-ui">{topic.labelAr}</span>
-              <span className="ms-2 text-xs text-muted">{topic.labelEn}</span>
-            </Link>
-          ))}
-        </div>
-      </section>
+      <TopicSection heading={t.topicsPage.themes} topics={THEME_TOPICS} />
+      <TopicSection heading={t.topicsPage.prophets} topics={PROPHET_TOPICS} />
+      <TopicSection heading={t.topicsPage.people} topics={PEOPLE_TOPICS} />
+      <TopicSection heading={t.topicsPage.species} topics={SPECIES_TOPICS} />
     </div>
   );
 }

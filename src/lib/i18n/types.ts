@@ -253,11 +253,15 @@ export interface Dict {
     subtitle: string;
     themes: string;
     prophets: string;
+    people: string;
+    species: string;
     compareLink: string;
   };
   topicPage: {
     prophetLabel: string;
     topicLabel: string;
+    personLabel: string;
+    speciesLabel: string;
     description: (count: number) => string;
     noteLabel: string;
   };
