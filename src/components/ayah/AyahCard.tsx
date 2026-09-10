@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { HighlightedVerse } from "./HighlightedVerse";
 import { AyahActions } from "./AyahActions";
+import { RelatedVerses } from "./RelatedVerses";
 import type { SurahMeta } from "@/lib/data/types";
 
 export function AyahCard({
@@ -37,13 +38,14 @@ export function AyahCard({
       </div>
       <p className="mt-2 text-sm text-muted">{translation}</p>
 
-      <div className="mt-3 border-t border-border pt-3">
+      <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
         <AyahActions
           arabic={tokens.join(" ")}
           translation={translation}
           surah={surahMeta.n}
           ayah={ayah}
         />
+        <RelatedVerses s={surahMeta.n} a={ayah} />
       </div>
     </div>
   );
