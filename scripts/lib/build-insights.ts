@@ -108,10 +108,19 @@ export function buildInsights(
       entry.roots.add(seg.root);
     }
   }
-  let mostRootDenseVerse = { s: 0, a: 0, distinctRootCount: -1 };
+  // Ranked by density (distinct roots ÷ word count), not raw count -- raw
+  // count just picks out the longest verse again (2:282, already reported
+  // as longestVerse), telling nothing new. A minimum word count keeps a
+  // trivial short verse (e.g. one word, one root -> density 1.0) from
+  // "winning" without actually being notable.
+  const MIN_WORDS_FOR_DENSITY = 10;
+  let mostRootDenseVerse = { s: 0, a: 0, distinctRootCount: -1, wordCount: 0, density: -1 };
   for (const { s, a, roots } of rootsByVerse.values()) {
-    if (roots.size > mostRootDenseVerse.distinctRootCount) {
-      mostRootDenseVerse = { s, a, distinctRootCount: roots.size };
+    const wordCount = verseWordCounts.get(`${s}:${a}`)?.count ?? 0;
+    if (wordCount < MIN_WORDS_FOR_DENSITY) continue;
+    const density = roots.size / wordCount;
+    if (density > mostRootDenseVerse.density) {
+      mostRootDenseVerse = { s, a, distinctRootCount: roots.size, wordCount, density };
     }
   }
 

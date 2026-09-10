@@ -263,6 +263,12 @@ export const en: Dict = {
     title: "Insights",
     subtitle:
       "Corpus-wide statistics and curiosities -- letter frequency across any scope, plus a set of facts computed once across the whole Qur'an that no single root or word page can answer on its own.",
+    tabFacts: "Facts",
+    tabLetters: "Letter frequency",
+    tabCoverage: "Vocabulary coverage",
+    tabRhyme: "Rhyme patterns",
+    tabVocabulary: "Distinctive vocabulary",
+    tabCollocations: "Verb collocations",
     letterFrequencyHeading: "Letter frequency",
     letterFrequencyDescription:
       "How often each Arabic letter appears, diacritics stripped but letter variants (ة vs ه, ا vs أ/إ/آ/ٱ) kept distinct. Pick a scope below.",
@@ -274,9 +280,6 @@ export const en: Dict = {
     ayahLabel: "Ayah",
     juzLabel: "Juz'",
     loading: "Counting letters…",
-    letterColumn: "Letter",
-    countColumn: "Count",
-    shareColumn: "Share",
     noLetters: "No letters to count for this selection.",
     factsHeading: "Interesting facts",
     factsDescription:
@@ -302,8 +305,28 @@ export const en: Dict = {
     mostFormsRootLabel: "Root with the most surface forms",
     formsCount: (n) => `${n.toLocaleString()} distinct forms`,
     mostRootDenseVerseLabel: "Most root-dense verse",
-    rootsInVerseCount: (n) => `${n.toLocaleString()} distinct roots`,
-    viewVerse: "View verse →",
+    rootsInVerseCount: (roots, words) => `${roots} distinct roots across ${words} words`,
+    rhymeHeading: "Rhyme patterns (fawāṣil)",
+    rhymeDescription:
+      "Classical Qur'anic rhetorical studies (fawāṣil/sajʿ) classify verse-endings by their final letter. Click one to see the verses that end with it.",
+    rhymeLoading: "Loading verse endings…",
+    rhymePickPrompt: "Pick an ending letter above to see matching verses.",
+    rhymeShowingCount: (shown, total) => `Showing ${shown.toLocaleString()} of ${total.toLocaleString()} verses`,
+    vocabHeading: "Distinctive vocabulary",
+    vocabDescription:
+      "Which roots are over-represented in one surah relative to their corpus-wide average rate -- what makes this surah's word choice distinct, not just what's common everywhere.",
+    vocabSurahLabel: "Surah",
+    vocabLoading: "Loading…",
+    vocabRatio: (ratio) => `${ratio}× avg`,
+    vocabOccurrences: (n) => `${n.toLocaleString()} occurrences in this surah`,
+    vocabNoResults: "No root repeats often enough in this surah to rank (minimum 3 occurrences).",
+    collocationsHeading: "Verb–preposition collocations",
+    collocationsDescription:
+      "Which preposition typically follows a given verb root's occurrences -- a real question in Arabic grammar (a verb's sense can shift with the preposition it takes, e.g. آمن بـ vs آمن لـ).",
+    collocationsRootPlaceholder: "Type a verb root…",
+    collocationsLoading: "Loading…",
+    collocationsNoResults: "This root was never immediately followed by one of the tracked prepositions.",
+    collocationsPickPrompt: "Pick a root above to see which prepositions follow its verb occurrences.",
   },
   surahPage: {
     previous: "Previous",

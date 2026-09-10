@@ -1,11 +1,14 @@
 import type {
   ArIndexFile,
+  CollocationsFile,
+  DistinctiveVocabFile,
   EnIndexFile,
   IndexFile,
   InsightsFile,
   ManifestFile,
   MetaFile,
   OccurrenceIndexFile,
+  RhymeFile,
   RootFile,
   SurahFile,
   SurahVerse,
@@ -83,6 +86,18 @@ export function getOccurrenceIndex(): Promise<OccurrenceIndexFile> {
 
 export function getInsights(): Promise<InsightsFile> {
   return cachedFetch(`${DATA_BASE}/insights.json`);
+}
+
+export function getRhyme(): Promise<RhymeFile> {
+  return cachedFetch(`${DATA_BASE}/rhyme.json`);
+}
+
+export function getDistinctiveVocab(): Promise<DistinctiveVocabFile> {
+  return cachedFetch(`${DATA_BASE}/distinctive-vocab.json`);
+}
+
+export function getCollocations(): Promise<CollocationsFile> {
+  return cachedFetch(`${DATA_BASE}/collocations.json`);
 }
 
 export function getRoot(root: string): Promise<RootFile> {

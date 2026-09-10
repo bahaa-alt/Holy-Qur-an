@@ -17,6 +17,9 @@ import { buildEnIndex, type IndexableVerse } from "./lib/build-en-index";
 import { buildArIndex, type ArIndexableVerse } from "./lib/build-ar-index";
 import { buildVerseRoots } from "./lib/build-verse-roots";
 import { buildInsights } from "./lib/build-insights";
+import { buildRhyme } from "./lib/build-rhyme";
+import { buildDistinctiveVocab } from "./lib/build-distinctive-vocab";
+import { buildCollocations } from "./lib/build-collocations";
 import { SizeReport, recordGroup, writeJSON } from "./lib/emit";
 import { ALL_TOPICS } from "../src/lib/topics/topicDefinitions";
 import { topicSourceFileKey } from "../src/lib/topics/buildTopicOccurrences";
@@ -210,6 +213,9 @@ async function main() {
 
   // --- 5c. Build corpus-wide curiosities for /insights/ ---
   const insights = buildInsights(words, rootFiles, lemmaFiles, indexRoots, indexLemmas, meta.surahs.length);
+  const rhyme = buildRhyme(surahFiles);
+  const distinctiveVocab = buildDistinctiveVocab(words, rootFiles, indexRoots, meta.surahs.length);
+  const collocations = buildCollocations(words);
 
   // --- 6. Validate invariants ---
   const errors: string[] = [];
@@ -353,6 +359,9 @@ async function main() {
       arIndex,
       occurrenceIndex,
       insights,
+      rhyme,
+      distinctiveVocab,
+      collocations,
       rootFiles,
       lemmaFiles,
       manifest,
@@ -420,6 +429,15 @@ async function main() {
   const insightsSize = writeJSON(join(OUT_DIR, "insights.json"), insights);
   report.record("insights.json", insightsSize.rawBytes, insightsSize.gzBytes);
 
+  const rhymeSize = writeJSON(join(OUT_DIR, "rhyme.json"), rhyme);
+  report.record("rhyme.json", rhymeSize.rawBytes, rhymeSize.gzBytes);
+
+  const distinctiveVocabSize = writeJSON(join(OUT_DIR, "distinctive-vocab.json"), distinctiveVocab);
+  report.record("distinctive-vocab.json", distinctiveVocabSize.rawBytes, distinctiveVocabSize.gzBytes);
+
+  const collocationsSize = writeJSON(join(OUT_DIR, "collocations.json"), collocations);
+  report.record("collocations.json", collocationsSize.rawBytes, collocationsSize.gzBytes);
+
   const surahSizes = [...surahFiles.entries()]
     .sort(([a], [b]) => a - b)
     .map(([n, file]) => writeJSON(join(OUT_DIR, "surahs", `${n}.json`), file));
@@ -472,6 +490,9 @@ function printSizeEstimate(data: {
   arIndex: unknown;
   occurrenceIndex: unknown;
   insights: unknown;
+  rhyme: unknown;
+  distinctiveVocab: unknown;
+  collocations: unknown;
   rootFiles: Map<string, unknown>;
   lemmaFiles: Map<string, unknown>;
   manifest: unknown;
@@ -490,6 +511,9 @@ function printSizeEstimate(data: {
   rec("ar-index.json", data.arIndex);
   rec("occurrences.json", data.occurrenceIndex);
   rec("insights.json", data.insights);
+  rec("rhyme.json", data.rhyme);
+  rec("distinctive-vocab.json", data.distinctiveVocab);
+  rec("collocations.json", data.collocations);
   rec("roots/*.json (est.)", [...data.rootFiles.values()]);
   rec("lemmas/*.json (est.)", [...data.lemmaFiles.values()]);
   report.print();

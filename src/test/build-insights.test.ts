@@ -29,11 +29,45 @@ const DOUBLE_ROOT_WORD = [
   "20:94:2:4\t\tN\tPRON|SUFF|1S",
 ].join("\n");
 
+// Two 10-word verses (the density metric's minimum length), used only to
+// exercise mostRootDenseVerse's ranking -- density (distinct roots ÷ word
+// count), not raw count. Uses fresh roots (each a hapax, one lemma/form
+// apiece) rather than reusing كتب/رحم/etc., so every *other* assertion in
+// this file -- coverage rankings, hapax counts, most-derived-root -- stays
+// unaffected by these two verses existing.
+const LOW_DENSITY_VERSE = [
+  "5:1:1:1\tش1\tN\tROOT:شكر|LEM:شكرلفظ|M|NOM",
+  "5:1:2:1\tص1\tN\tROOT:صبر|LEM:صبرلفظ|M|NOM",
+  "5:1:3:1\tف1\tP\tP|PREF|LEM:فد1",
+  "5:1:4:1\tف2\tP\tP|PREF|LEM:فد2",
+  "5:1:5:1\tف3\tP\tP|PREF|LEM:فد3",
+  "5:1:6:1\tف4\tP\tP|PREF|LEM:فد4",
+  "5:1:7:1\tف5\tP\tP|PREF|LEM:فد5",
+  "5:1:8:1\tف6\tP\tP|PREF|LEM:فد6",
+  "5:1:9:1\tف7\tP\tP|PREF|LEM:فد7",
+  "5:1:10:1\tف8\tP\tP|PREF|LEM:فد8",
+].join("\n"); // 10 words, 2 distinct roots (شكر, صبر) -> density 0.2
+
+const HIGH_DENSITY_VERSE = [
+  "6:1:1:1\tف1\tN\tROOT:فرح|LEM:فرحلفظ|M|NOM",
+  "6:1:2:1\tح1\tN\tROOT:حزن|LEM:حزنلفظ|M|NOM",
+  "6:1:3:1\tخ1\tN\tROOT:خوف|LEM:خوفلفظ|M|NOM",
+  "6:1:4:1\tس1\tN\tROOT:سلم|LEM:سلملفظ|M|NOM",
+  "6:1:5:1\tف2\tP\tP|PREF|LEM:فه1",
+  "6:1:6:1\tف3\tP\tP|PREF|LEM:فه2",
+  "6:1:7:1\tف4\tP\tP|PREF|LEM:فه3",
+  "6:1:8:1\tف5\tP\tP|PREF|LEM:فه4",
+  "6:1:9:1\tف6\tP\tP|PREF|LEM:فه5",
+  "6:1:10:1\tف7\tP\tP|PREF|LEM:فه6",
+].join("\n"); // 10 words, 4 distinct roots (فرح, حزن, خوف, سلم) -> density 0.4
+
 function words() {
   return [
     ...parseMorphologyTSV(AYAH_1_1),
     ...parseMorphologyTSV(KATABA_ROWS),
     ...parseMorphologyTSV(DOUBLE_ROOT_WORD),
+    ...parseMorphologyTSV(LOW_DENSITY_VERSE),
+    ...parseMorphologyTSV(HIGH_DENSITY_VERSE),
   ];
 }
 
@@ -52,7 +86,7 @@ describe("buildInsights", () => {
     // root here only spans 1 surah, so count is the deciding factor.
     expect(insights.rootsBySurahCoverage[0]).toMatchObject({ ar: "رحم", surahCount: 1, count: 2 });
     expect(insights.rootsBySurahCoverage[1]).toMatchObject({ ar: "كتب", surahCount: 1, count: 2 });
-    expect(insights.rootsBySurahCoverage).toHaveLength(6); // every root in this fixture
+    expect(insights.rootsBySurahCoverage).toHaveLength(12); // every root in this fixture
   });
 
   it("ranks lemmas (rooted + rootless) by distinct-surah coverage", () => {
@@ -61,7 +95,9 @@ describe("buildInsights", () => {
   });
 
   it("finds the longest and shortest verse by word count", () => {
-    expect(insights.longestVerse).toEqual({ s: 1, a: 1, wordCount: 4 });
+    // 5:1 and 6:1 (the density-metric fixture verses) both have 10 words --
+    // the most in this fixture; the first one encountered (Qur'an order) wins the tie.
+    expect(insights.longestVerse).toEqual({ s: 5, a: 1, wordCount: 10 });
     // 2:2, 2:79 and 20:94 are each defined with only 1 word in this fixture; the
     // first one encountered (Qur'an order) wins the tie.
     expect(insights.shortestVerse).toEqual({ s: 2, a: 2, wordCount: 1 });
@@ -80,10 +116,11 @@ describe("buildInsights", () => {
   });
 
   it("counts hapax legomena (roots/lemmas occurring exactly once)", () => {
-    // أله, أمم, بني, سمو occur once each = 4 hapax roots.
-    expect(insights.hapaxRootCount).toBe(4);
-    // every lemma except "ال" (count 3) occurs exactly once = 10 of 11 lemmas.
-    expect(insights.hapaxLemmaCount).toBe(10);
+    // أله, أمم, بني, سمو occur once each, plus the 6 fresh roots from the
+    // two density-metric verses (شكر, صبر, فرح, حزن, خوف, سلم) = 10 hapax roots.
+    expect(insights.hapaxRootCount).toBe(10);
+    // every lemma except "ال" (count 3) occurs exactly once.
+    expect(insights.hapaxLemmaCount).toBe(30);
   });
 
   it("finds the root with the most distinct lemmas and the most distinct forms", () => {
@@ -91,8 +128,11 @@ describe("buildInsights", () => {
     expect(insights.mostFormsRoot).toEqual({ ar: "رحم", formCount: 2 });
   });
 
-  it("finds the verse touching the most distinct roots", () => {
-    // 1:1 touches سمو, أله, رحم (رحم twice, but that's 1 distinct root) = 3 distinct roots.
-    expect(insights.mostRootDenseVerse).toEqual({ s: 1, a: 1, distinctRootCount: 3 });
+  it("ranks the most root-dense verse by density, not raw root count, among verses of at least 10 words", () => {
+    // 1:1 has the highest raw distinct-root count (3) but only 4 words --
+    // below the density metric's 10-word minimum, so it's excluded. Between
+    // the two 10-word fixture verses, 6:1 (4 distinct roots, density 0.4)
+    // beats 5:1 (2 distinct roots, density 0.2).
+    expect(insights.mostRootDenseVerse).toEqual({ s: 6, a: 1, distinctRootCount: 4, wordCount: 10, density: 0.4 });
   });
 });

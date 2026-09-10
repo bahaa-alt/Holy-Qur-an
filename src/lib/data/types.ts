@@ -309,6 +309,56 @@ export interface InsightsFile {
   mostDerivedRoot: { ar: string; lemmaCount: number };
   /** the root with the most distinct surface forms */
   mostFormsRoot: { ar: string; formCount: number };
-  /** the verse touching the most distinct roots */
-  mostRootDenseVerse: { s: number; a: number; distinctRootCount: number };
+  /**
+   * The verse with the highest distinct-root density (distinct roots ÷ word
+   * count) among verses of at least 10 words -- ranked by density, not raw
+   * count, so it doesn't just re-report the longest verse.
+   */
+  mostRootDenseVerse: { s: number; a: number; distinctRootCount: number; wordCount: number; density: number };
+}
+
+/**
+ * One verse's ending letter (fāṣila), diacritics stripped -- the final
+ * letter of its last word, the unit classical Qur'anic rhetorical studies
+ * (fawāṣil/sajʿ) classify verse-endings by. Powers /insights/'s rhyme tab.
+ */
+export interface RhymeRow {
+  s: number;
+  a: number;
+  ending: string;
+}
+
+export interface RhymeFile {
+  /** one row per verse (6,236 total), in Qur'an order */
+  rows: RhymeRow[];
+}
+
+/** One root ranked by how over/under-represented it is in one surah vs. its corpus-wide average rate. */
+export interface DistinctiveRootRow {
+  ar: string;
+  glossShort: string;
+  /** occurrences of this root within this surah */
+  localCount: number;
+  /** (localCount / this surah's word count) ÷ (corpus-wide count / corpus-wide word count) */
+  ratio: number;
+}
+
+export interface DistinctiveVocabFile {
+  /** bySurah[n - 1] = that surah's top distinctive roots, ranked by ratio desc (min. 3 occurrences in-surah to qualify) */
+  bySurah: DistinctiveRootRow[][];
+}
+
+/** How often a given root's verb occurrences are immediately followed by a given preposition. */
+export interface VerbPrepositionRow {
+  verbRootAr: string;
+  /** normalized preposition key, e.g. "ب", "من", "الي" (إلى normalized) */
+  prepositionKey: string;
+  /** canonical diacritized display form, e.g. "بِ", "مِن", "إِلَى" */
+  prepositionLemma: string;
+  count: number;
+}
+
+export interface CollocationsFile {
+  /** sorted by verbRootAr, then count desc within each root */
+  verbPrepositions: VerbPrepositionRow[];
 }

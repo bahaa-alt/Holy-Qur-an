@@ -258,6 +258,12 @@ export interface Dict {
   insightsPage: {
     title: string;
     subtitle: string;
+    tabFacts: string;
+    tabLetters: string;
+    tabCoverage: string;
+    tabRhyme: string;
+    tabVocabulary: string;
+    tabCollocations: string;
     letterFrequencyHeading: string;
     letterFrequencyDescription: string;
     scopeAyah: string;
@@ -268,9 +274,6 @@ export interface Dict {
     ayahLabel: string;
     juzLabel: string;
     loading: string;
-    letterColumn: string;
-    countColumn: string;
-    shareColumn: string;
     noLetters: string;
     factsHeading: string;
     factsDescription: string;
@@ -294,8 +297,25 @@ export interface Dict {
     mostFormsRootLabel: string;
     formsCount: (n: number) => string;
     mostRootDenseVerseLabel: string;
-    rootsInVerseCount: (n: number) => string;
-    viewVerse: string;
+    rootsInVerseCount: (roots: number, words: number) => string;
+    rhymeHeading: string;
+    rhymeDescription: string;
+    rhymeLoading: string;
+    rhymePickPrompt: string;
+    rhymeShowingCount: (shown: number, total: number) => string;
+    vocabHeading: string;
+    vocabDescription: string;
+    vocabSurahLabel: string;
+    vocabLoading: string;
+    vocabRatio: (ratio: string) => string;
+    vocabOccurrences: (n: number) => string;
+    vocabNoResults: string;
+    collocationsHeading: string;
+    collocationsDescription: string;
+    collocationsRootPlaceholder: string;
+    collocationsLoading: string;
+    collocationsNoResults: string;
+    collocationsPickPrompt: string;
   };
   surahPage: {
     previous: string;
