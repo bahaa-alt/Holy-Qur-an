@@ -4,7 +4,7 @@ const DATA_CACHE = "data-812d0c2978a6b409";
 const STATIC_CACHE = "static-812d0c2978a6b409";
 const RUNTIME_CACHE = "runtime-812d0c2978a6b409";
 const CURRENT_CACHES = ["shell-812d0c2978a6b409","data-812d0c2978a6b409","static-812d0c2978a6b409","runtime-812d0c2978a6b409"];
-const PRECACHE_URLS = ["/Holy-Qur-an/","/Holy-Qur-an/offline.html","/Holy-Qur-an/manifest.webmanifest","/Holy-Qur-an/icons/icon-192.png","/Holy-Qur-an/icons/icon-512.png","/Holy-Qur-an/data/v1/manifest.json","/Holy-Qur-an/data/v1/meta.json","/Holy-Qur-an/data/v1/index.json","/Holy-Qur-an/data/v1/forms.json","/Holy-Qur-an/data/v1/en-index.json"];
+const PRECACHE_URLS = ["/Holy-Qur-an/","/Holy-Qur-an/offline.html","/Holy-Qur-an/manifest.webmanifest","/Holy-Qur-an/icons/icon-192.png","/Holy-Qur-an/icons/icon-512.png","/Holy-Qur-an/data/v1/manifest.json","/Holy-Qur-an/data/v1/meta.json","/Holy-Qur-an/data/v1/index.json","/Holy-Qur-an/data/v1/forms.json","/Holy-Qur-an/data/v1/en-index.json","/Holy-Qur-an/data/v1/verse-roots.json"];
 const BASE_PATH = "/Holy-Qur-an";
 const OFFLINE_URL = "/Holy-Qur-an/offline.html";
 
