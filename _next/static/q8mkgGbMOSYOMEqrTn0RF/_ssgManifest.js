@@ -1,0 +1,1 @@
+self.__SSG_MANIFEST=new Set(["\u002Finsights\u002Fformulas\u002F[length]\u002F[key]","\u002Froot\u002F[root]","\u002Fsurah\u002F[n]","\u002Ftopics\u002F[slug]","\u002Fword\u002F[idx]"]);self.__SSG_MANIFEST_CB&&self.__SSG_MANIFEST_CB()
