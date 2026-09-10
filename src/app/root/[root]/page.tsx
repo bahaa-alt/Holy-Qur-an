@@ -6,6 +6,7 @@ import { buildConjugationTables, hasVerbLemma } from "@/lib/root/conjugation";
 import { buildCollocations } from "@/lib/root/collocations";
 import { RootHeader } from "@/components/root/RootHeader";
 import { CiteButton } from "@/components/root/CiteButton";
+import { SaveButton } from "@/components/notes/SaveButton";
 import { FrequencyChart } from "@/components/root/FrequencyChart";
 import { FormsTable } from "@/components/root/FormsTable";
 import { SurahDistribution } from "@/components/root/SurahDistribution";
@@ -56,7 +57,12 @@ export default async function RootPage({ params }: { params: Promise<{ root: str
       <RootHeader
         summary={summary}
         distribution={distribution}
-        actions={<CiteButton subject={{ kind: "root", label: root }} manifest={manifest} />}
+        actions={
+          <>
+            <SaveButton id={`root:${root}`} kind="root" label={root} href={`/root/${encodeURIComponent(root)}/`} />
+            <CiteButton subject={{ kind: "root", label: root }} manifest={manifest} />
+          </>
+        }
       />
       <FrequencyChart byCategory={summary.byCategory} byLemma={summary.byLemma} />
       <FormsTable forms={file.forms} lemmas={file.lemmas} />

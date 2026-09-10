@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { readIndex, readLemmaFile, readManifest, readRootFile } from "@/lib/data/serverData";
 import { WordHeader } from "@/components/word/WordHeader";
 import { CiteButton } from "@/components/root/CiteButton";
+import { SaveButton } from "@/components/notes/SaveButton";
 import { FormsTable } from "@/components/root/FormsTable";
 import { AyahExplorer } from "@/components/ayah/AyahExplorer";
 import type { RootFormEntry, RootLemmaEntry } from "@/lib/data/types";
@@ -51,7 +52,12 @@ export default async function WordPage({ params }: { params: Promise<{ idx: stri
         cat={row.cat}
         count={row.count}
         formCount={forms.length}
-        actions={<CiteButton subject={{ kind: "word", label: row.lemma }} manifest={manifest} />}
+        actions={
+          <>
+            <SaveButton id={`word:${row.key}`} kind="word" label={row.lemma} href={`/word/${idx}/`} />
+            <CiteButton subject={{ kind: "word", label: row.lemma }} manifest={manifest} />
+          </>
+        }
       />
       <FormsTable forms={forms} lemmas={lemmas} />
       <AyahExplorer

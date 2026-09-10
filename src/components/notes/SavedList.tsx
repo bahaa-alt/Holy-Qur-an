@@ -1,0 +1,109 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Check, Copy, Trash2 } from "lucide-react";
+import { getSavedItems, removeItem, updateNote } from "@/lib/notes/store";
+import { copyToClipboard } from "@/lib/clipboard";
+import type { SavedItem, SavedKind } from "@/lib/notes/types";
+
+const KIND_LABELS: Record<SavedKind, string> = { root: "Roots", word: "Words", verse: "Verses" };
+const KIND_ORDER: SavedKind[] = ["root", "word", "verse"];
+
+function buildMarkdown(items: readonly SavedItem[]): string {
+  return items.map((i) => `- [${i.label}](${i.href})${i.note ? `\n  ${i.note}` : ""}`).join("\n");
+}
+
+export function SavedList() {
+  const [items, setItems] = useState<SavedItem[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    // One-time hydration from localStorage (unavailable during SSR/static
+    // export, so the initial render is always empty) -- not a subscription.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setItems(getSavedItems());
+    setLoaded(true);
+  }, []);
+
+  function handleRemove(id: string) {
+    removeItem(id);
+    setItems(getSavedItems());
+  }
+
+  function handleNoteChange(id: string, note: string) {
+    updateNote(id, note);
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, note } : i)));
+  }
+
+  async function handleCopyMarkdown() {
+    const ok = await copyToClipboard(buildMarkdown(items));
+    if (ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
+  }
+
+  if (!loaded) return null;
+
+  if (items.length === 0) {
+    return (
+      <p className="text-sm text-muted">
+        Nothing saved yet. Use the &quot;Save&quot; button on a root, word, or verse page to bookmark it here.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={handleCopyMarkdown}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs text-muted transition-colors hover:border-accent hover:text-accent"
+        >
+          {copied ? <Check size={13} className="text-accent" /> : <Copy size={13} />}
+          {copied ? "Copied" : "Copy as Markdown"}
+        </button>
+      </div>
+
+      {KIND_ORDER.filter((kind) => items.some((i) => i.kind === kind)).map((kind) => (
+        <div key={kind}>
+          <h2 className="text-sm font-medium text-ink">{KIND_LABELS[kind]}</h2>
+          <div className="mt-3 space-y-3">
+            {items
+              .filter((i) => i.kind === kind)
+              .map((item) => (
+                <div key={item.id} className="rounded-xl border border-border bg-surface p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <Link
+                      href={item.href}
+                      className="arabic-ui text-sm font-medium text-accent hover:text-accent-strong"
+                    >
+                      {item.label}
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => handleRemove(item.id)}
+                      aria-label={`Remove ${item.label}`}
+                      className="text-muted hover:text-ink"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                  <textarea
+                    value={item.note}
+                    onChange={(e) => handleNoteChange(item.id, e.target.value)}
+                    placeholder="Add a note…"
+                    rows={2}
+                    className="mt-2 w-full resize-y rounded-lg border border-border bg-bg px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+                  />
+                </div>
+              ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { HighlightedVerse } from "./HighlightedVerse";
 import { AyahActions } from "./AyahActions";
 import { RelatedVerses } from "./RelatedVerses";
+import { SaveButton } from "@/components/notes/SaveButton";
 import type { SurahMeta } from "@/lib/data/types";
 
 export function AyahCard({
@@ -39,12 +40,20 @@ export function AyahCard({
       <p className="mt-2 text-sm text-muted">{translation}</p>
 
       <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
-        <AyahActions
-          arabic={tokens.join(" ")}
-          translation={translation}
-          surah={surahMeta.n}
-          ayah={ayah}
-        />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <AyahActions
+            arabic={tokens.join(" ")}
+            translation={translation}
+            surah={surahMeta.n}
+            ayah={ayah}
+          />
+          <SaveButton
+            id={`verse:${surahMeta.n}:${ayah}`}
+            kind="verse"
+            label={`${surahMeta.n}:${ayah}`}
+            href={`/surah/${surahMeta.n}/?ayah=${ayah}`}
+          />
+        </div>
         <RelatedVerses s={surahMeta.n} a={ayah} />
       </div>
     </div>

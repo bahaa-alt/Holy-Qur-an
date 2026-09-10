@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { AyahActions } from "@/components/ayah/AyahActions";
 import { RelatedVerses } from "@/components/ayah/RelatedVerses";
+import { SaveButton } from "@/components/notes/SaveButton";
 import type { SurahMeta, SurahVerse } from "@/lib/data/types";
 
 export function SurahVerseList({ surahMeta, verses }: { surahMeta: SurahMeta; verses: SurahVerse[] }) {
@@ -41,7 +42,15 @@ export function SurahVerseList({ surahMeta, verses }: { surahMeta: SurahMeta; ve
             <p className="uthmani mt-2 text-ink">{verse.w.join(" ")}</p>
             <p className="mt-2 text-sm text-muted">{verse.t}</p>
             <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
-              <AyahActions arabic={verse.w.join(" ")} translation={verse.t} surah={surahMeta.n} ayah={verse.a} />
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <AyahActions arabic={verse.w.join(" ")} translation={verse.t} surah={surahMeta.n} ayah={verse.a} />
+                <SaveButton
+                  id={`verse:${surahMeta.n}:${verse.a}`}
+                  kind="verse"
+                  label={`${surahMeta.n}:${verse.a}`}
+                  href={`/surah/${surahMeta.n}/?ayah=${verse.a}`}
+                />
+              </div>
               <RelatedVerses s={surahMeta.n} a={verse.a} />
             </div>
           </div>

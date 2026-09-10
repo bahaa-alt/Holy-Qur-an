@@ -32,6 +32,12 @@ export function Header() {
             Phrases
           </Link>
           <Link
+            href="/saved/"
+            className="rounded-lg px-3 py-1.5 text-muted transition-colors hover:bg-surface hover:text-ink"
+          >
+            Saved
+          </Link>
+          <Link
             href="/about/"
             className="rounded-lg px-3 py-1.5 text-muted transition-colors hover:bg-surface hover:text-ink"
           >
