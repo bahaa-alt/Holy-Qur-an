@@ -8,6 +8,7 @@ import { CoverageBarList } from "./CoverageBarList";
 import { RhymeTab } from "./RhymeTab";
 import { DistinctiveVocabTab } from "./DistinctiveVocabTab";
 import { CollocationsTab } from "./CollocationsTab";
+import { AbjadTab } from "./AbjadTab";
 import type {
   InsightsFile,
   MetaFile,
@@ -22,7 +23,7 @@ interface LemmaCoverageRow extends SurahCoverageLemmaRow {
   href: string | null;
 }
 
-type Tab = "facts" | "letters" | "coverage" | "rhyme" | "vocabulary" | "collocations";
+type Tab = "facts" | "letters" | "coverage" | "rhyme" | "vocabulary" | "collocations" | "abjad";
 const TAB_PILL_CLASS = (active: boolean) => `rounded-md px-3 py-1.5 ${active ? "bg-accent text-accent-fg" : "text-muted"}`;
 
 function VerseLink({ s, a, label }: { s: number; a: number; label: string }) {
@@ -90,6 +91,9 @@ export function InsightsPageContent({
         </button>
         <button type="button" onClick={() => setTab("collocations")} className={TAB_PILL_CLASS(tab === "collocations")}>
           {t.insightsPage.tabCollocations}
+        </button>
+        <button type="button" onClick={() => setTab("abjad")} className={TAB_PILL_CLASS(tab === "abjad")}>
+          {t.insightsPage.tabAbjad}
         </button>
       </div>
 
@@ -189,6 +193,7 @@ export function InsightsPageContent({
       {tab === "rhyme" && <RhymeTab />}
       {tab === "vocabulary" && <DistinctiveVocabTab meta={meta} />}
       {tab === "collocations" && <CollocationsTab />}
+      {tab === "abjad" && <AbjadTab meta={meta} />}
     </div>
   );
 }

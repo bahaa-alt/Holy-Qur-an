@@ -20,6 +20,7 @@ import { buildInsights } from "./lib/build-insights";
 import { buildRhyme } from "./lib/build-rhyme";
 import { buildDistinctiveVocab } from "./lib/build-distinctive-vocab";
 import { buildCollocations } from "./lib/build-collocations";
+import { buildAbjad } from "./lib/build-abjad";
 import { SizeReport, recordGroup, writeJSON } from "./lib/emit";
 import { ALL_TOPICS } from "../src/lib/topics/topicDefinitions";
 import { topicSourceFileKey } from "../src/lib/topics/buildTopicOccurrences";
@@ -216,6 +217,7 @@ async function main() {
   const rhyme = buildRhyme(surahFiles);
   const distinctiveVocab = buildDistinctiveVocab(words, rootFiles, indexRoots, meta.surahs.length);
   const collocations = buildCollocations(words);
+  const abjad = buildAbjad(words, meta.surahs.length);
 
   // --- 6. Validate invariants ---
   const errors: string[] = [];
@@ -362,6 +364,7 @@ async function main() {
       rhyme,
       distinctiveVocab,
       collocations,
+      abjad,
       rootFiles,
       lemmaFiles,
       manifest,
@@ -438,6 +441,9 @@ async function main() {
   const collocationsSize = writeJSON(join(OUT_DIR, "collocations.json"), collocations);
   report.record("collocations.json", collocationsSize.rawBytes, collocationsSize.gzBytes);
 
+  const abjadSize = writeJSON(join(OUT_DIR, "abjad.json"), abjad);
+  report.record("abjad.json", abjadSize.rawBytes, abjadSize.gzBytes);
+
   const surahSizes = [...surahFiles.entries()]
     .sort(([a], [b]) => a - b)
     .map(([n, file]) => writeJSON(join(OUT_DIR, "surahs", `${n}.json`), file));
@@ -493,6 +499,7 @@ function printSizeEstimate(data: {
   rhyme: unknown;
   distinctiveVocab: unknown;
   collocations: unknown;
+  abjad: unknown;
   rootFiles: Map<string, unknown>;
   lemmaFiles: Map<string, unknown>;
   manifest: unknown;
@@ -514,6 +521,7 @@ function printSizeEstimate(data: {
   rec("rhyme.json", data.rhyme);
   rec("distinctive-vocab.json", data.distinctiveVocab);
   rec("collocations.json", data.collocations);
+  rec("abjad.json", data.abjad);
   rec("roots/*.json (est.)", [...data.rootFiles.values()]);
   rec("lemmas/*.json (est.)", [...data.lemmaFiles.values()]);
   report.print();

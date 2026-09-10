@@ -292,6 +292,7 @@ export const ar: Dict = {
     tabRhyme: "أنماط القوافي",
     tabVocabulary: "المفردات المميزة",
     tabCollocations: "تلازم الأفعال",
+    tabAbjad: "حساب الجُمَّل",
     letterFrequencyHeading: "تكرار الحروف",
     letterFrequencyDescription:
       "عدد مرات ورود كل حرف عربي، مع حذف التشكيل والإبقاء على تمايز صور الحرف (ة مقابل ه، ا مقابل أ/إ/آ/ٱ). اختر نطاقًا أدناه.",
@@ -349,6 +350,15 @@ export const ar: Dict = {
     collocationsLoading: "جارٍ التحميل…",
     collocationsNoResults: "لم يُتبع هذا الجذر مباشرةً بأحد حروف الجر المرصودة قط.",
     collocationsPickPrompt: "اختر جذرًا أعلاه لرؤية حروف الجر التي تتبع ورودات فعله.",
+    abjadHeading: "حساب الجُمَّل (القيمة العددية للحروف)",
+    abjadDescription:
+      "النظام العربي القديم لترقيم الحروف (أبجد هوز حطي...) المستخدم تاريخيًا في التأريخ الشعري وعلم الحروف. لكل حرف قيمة ثابتة؛ وقيمة كلمة أو آية أو مقطع أكبر هي مجموع قيم حروفه.",
+    abjadReferenceHeading: "قيم الحروف",
+    abjadLoading: "جارٍ التحميل…",
+    scopeHizb: "حزب",
+    hizbLabel: "الحزب",
+    abjadTotalLabel: "القيمة الإجمالية",
+    abjadWordBreakdownHeading: "لكل كلمة",
   },
   surahPage: {
     previous: "السابقة",

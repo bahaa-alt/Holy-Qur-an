@@ -362,3 +362,20 @@ export interface CollocationsFile {
   /** sorted by verbRootAr, then count desc within each root */
   verbPrepositions: VerbPrepositionRow[];
 }
+
+/**
+ * Precomputed classical Abjad-value totals (see src/lib/arabic/abjad.ts)
+ * at every traditional scale above a single ayah -- summing all ~77,429
+ * words client-side just to answer "what's the Abjad value of the whole
+ * Qur'an" would mean fetching every surah file. Ayah-level totals are
+ * cheap enough (one surah file) to compute on demand instead.
+ */
+export interface AbjadTotalsFile {
+  bookTotal: number;
+  /** index n-1 -> surah n's total (114 entries) */
+  bySurah: number[];
+  /** index n-1 -> Hizb n's total (60 entries) */
+  byHizb: number[];
+  /** index n-1 -> Juz' n's total (30 entries) */
+  byJuz: number[];
+}

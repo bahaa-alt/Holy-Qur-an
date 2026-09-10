@@ -1,4 +1,5 @@
 import type {
+  AbjadTotalsFile,
   ArIndexFile,
   CollocationsFile,
   DistinctiveVocabFile,
@@ -98,6 +99,10 @@ export function getDistinctiveVocab(): Promise<DistinctiveVocabFile> {
 
 export function getCollocations(): Promise<CollocationsFile> {
   return cachedFetch(`${DATA_BASE}/collocations.json`);
+}
+
+export function getAbjad(): Promise<AbjadTotalsFile> {
+  return cachedFetch(`${DATA_BASE}/abjad.json`);
 }
 
 export function getRoot(root: string): Promise<RootFile> {

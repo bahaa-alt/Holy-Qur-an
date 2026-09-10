@@ -264,6 +264,7 @@ export interface Dict {
     tabRhyme: string;
     tabVocabulary: string;
     tabCollocations: string;
+    tabAbjad: string;
     letterFrequencyHeading: string;
     letterFrequencyDescription: string;
     scopeAyah: string;
@@ -316,6 +317,14 @@ export interface Dict {
     collocationsLoading: string;
     collocationsNoResults: string;
     collocationsPickPrompt: string;
+    abjadHeading: string;
+    abjadDescription: string;
+    abjadReferenceHeading: string;
+    abjadLoading: string;
+    scopeHizb: string;
+    hizbLabel: string;
+    abjadTotalLabel: string;
+    abjadWordBreakdownHeading: string;
   };
   surahPage: {
     previous: string;

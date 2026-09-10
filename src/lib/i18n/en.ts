@@ -269,6 +269,7 @@ export const en: Dict = {
     tabRhyme: "Rhyme patterns",
     tabVocabulary: "Distinctive vocabulary",
     tabCollocations: "Verb collocations",
+    tabAbjad: "Abjad value",
     letterFrequencyHeading: "Letter frequency",
     letterFrequencyDescription:
       "How often each Arabic letter appears, diacritics stripped but letter variants (ة vs ه, ا vs أ/إ/آ/ٱ) kept distinct. Pick a scope below.",
@@ -327,6 +328,15 @@ export const en: Dict = {
     collocationsLoading: "Loading…",
     collocationsNoResults: "This root was never immediately followed by one of the tracked prepositions.",
     collocationsPickPrompt: "Pick a root above to see which prepositions follow its verb occurrences.",
+    abjadHeading: "Abjad value (ḥisāb al-jummal)",
+    abjadDescription:
+      "The ancient Arabic letter-numeral system (أبجد هوز حطي...) used historically for chronograms and numerology. Every letter carries a fixed value; a word, verse, or larger passage's value is the sum of its letters.",
+    abjadReferenceHeading: "Letter values",
+    abjadLoading: "Loading…",
+    scopeHizb: "Hizb",
+    hizbLabel: "Hizb",
+    abjadTotalLabel: "Total value",
+    abjadWordBreakdownHeading: "Per word",
   },
   surahPage: {
     previous: "Previous",
