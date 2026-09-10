@@ -1,1 +1,1 @@
-{"root":null,"total":1,"lemmas":[{"lemma":"يَثْرِب","key":"يثرب","pos":"N","count":1,"cats":{"properNoun":1}}],"forms":[{"form":"يَثْرِبَ","key":"يثرب","lemmaIdx":0,"cat":"properNoun","count":1}],"feats":["PN|ACC"],"occ":[[33,13,6,1,0,0]]}
+{"root":null,"total":1,"lemmas":[{"lemma":"يَثْرِب","key":"يثرب","pos":"N","count":1,"cats":{"properNoun":1},"wordIdx":4512}],"forms":[{"form":"يَثْرِبَ","key":"يثرب","lemmaIdx":0,"cat":"properNoun","count":1}],"feats":["PN|ACC"],"occ":[[33,13,6,1,0,0]]}

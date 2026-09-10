@@ -1,1 +1,1 @@
-{"root":null,"total":1,"lemmas":[{"lemma":"بَدْر","key":"بدر","pos":"N","count":1,"cats":{"properNoun":1}}],"forms":[{"form":"بَدْرٍ","key":"بدر","lemmaIdx":0,"cat":"properNoun","count":1}],"feats":["PN|GEN"],"occ":[[3,123,4,2,0,0]]}
+{"root":null,"total":1,"lemmas":[{"lemma":"بَدْر","key":"بدر","pos":"N","count":1,"cats":{"properNoun":1},"wordIdx":769}],"forms":[{"form":"بَدْرٍ","key":"بدر","lemmaIdx":0,"cat":"properNoun","count":1}],"feats":["PN|GEN"],"occ":[[3,123,4,2,0,0]]}

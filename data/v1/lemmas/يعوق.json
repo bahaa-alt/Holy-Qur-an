@@ -1,1 +1,1 @@
-{"root":null,"total":1,"lemmas":[{"lemma":"يَعُوق","key":"يعوق","pos":"N","count":1,"cats":{"properNoun":1}}],"forms":[{"form":"يَعُوقَ","key":"يعوق","lemmaIdx":0,"cat":"properNoun","count":1}],"feats":["PN|ACC"],"occ":[[71,23,12,2,0,0]]}
+{"root":null,"total":1,"lemmas":[{"lemma":"يَعُوق","key":"يعوق","pos":"N","count":1,"cats":{"properNoun":1},"wordIdx":4689}],"forms":[{"form":"يَعُوقَ","key":"يعوق","lemmaIdx":0,"cat":"properNoun","count":1}],"feats":["PN|ACC"],"occ":[[71,23,12,2,0,0]]}

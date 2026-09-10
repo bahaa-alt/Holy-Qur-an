@@ -1,1 +1,1 @@
-{"root":null,"total":2,"lemmas":[{"lemma":"الْيَسَع","key":"اليسع","pos":"N","count":2,"cats":{"properNoun":2}}],"forms":[{"form":"يَسَعَ","key":"يسع","lemmaIdx":0,"cat":"properNoun","count":2}],"feats":["PN|ACC"],"occ":[[6,86,2,3,0,0],[38,48,3,3,0,0]]}
+{"root":null,"total":2,"lemmas":[{"lemma":"الْيَسَع","key":"اليسع","pos":"N","count":2,"cats":{"properNoun":2},"wordIdx":548}],"forms":[{"form":"يَسَعَ","key":"يسع","lemmaIdx":0,"cat":"properNoun","count":2}],"feats":["PN|ACC"],"occ":[[6,86,2,3,0,0],[38,48,3,3,0,0]]}

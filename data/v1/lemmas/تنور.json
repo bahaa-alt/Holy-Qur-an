@@ -1,1 +1,1 @@
-{"root":null,"total":2,"lemmas":[{"lemma":"تَنُّور","key":"تنور","pos":"N","count":2,"cats":{"noun":2}}],"forms":[{"form":"تَّنُّورُ","key":"تنور","lemmaIdx":0,"cat":"noun","count":2}],"feats":["M|NOM"],"occ":[[11,40,6,2,0,0],[23,27,12,2,0,0]]}
+{"root":null,"total":2,"lemmas":[{"lemma":"تَنُّور","key":"تنور","pos":"N","count":2,"cats":{"noun":2},"wordIdx":1169}],"forms":[{"form":"تَّنُّورُ","key":"تنور","lemmaIdx":0,"cat":"noun","count":2}],"feats":["M|NOM"],"occ":[[11,40,6,2,0,0],[23,27,12,2,0,0]]}

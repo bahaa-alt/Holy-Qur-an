@@ -1,1 +1,1 @@
-{"root":null,"total":1,"lemmas":[{"lemma":"عُزَيْر","key":"عزير","pos":"N","count":1,"cats":{"properNoun":1}}],"forms":[{"form":"عُزَيْرٌ","key":"عزير","lemmaIdx":0,"cat":"properNoun","count":1}],"feats":["PN|NOM"],"occ":[[9,30,3,1,0,0]]}
+{"root":null,"total":1,"lemmas":[{"lemma":"عُزَيْر","key":"عزير","pos":"N","count":1,"cats":{"properNoun":1},"wordIdx":2653}],"forms":[{"form":"عُزَيْرٌ","key":"عزير","lemmaIdx":0,"cat":"properNoun","count":1}],"feats":["PN|NOM"],"occ":[[9,30,3,1,0,0]]}

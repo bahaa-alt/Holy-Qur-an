@@ -1,1 +1,1 @@
-{"root":null,"total":1,"lemmas":[{"lemma":"إِي","key":"اي","pos":"P","count":1,"cats":{"other":1}}],"forms":[{"form":"إِى","key":"اي","lemmaIdx":0,"cat":"other","count":1}],"feats":["ANS"],"occ":[[10,53,5,1,0,0]]}
+{"root":null,"total":1,"lemmas":[{"lemma":"إِي","key":"اي","pos":"P","count":1,"cats":{"other":1},"wordIdx":707}],"forms":[{"form":"إِى","key":"اي","lemmaIdx":0,"cat":"other","count":1}],"feats":["ANS"],"occ":[[10,53,5,1,0,0]]}

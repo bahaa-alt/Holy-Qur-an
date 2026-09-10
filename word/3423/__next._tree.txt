@@ -1,5 +1,5 @@
-:HL["/Holy-Qur-an/_next/static/chunks/1mqhoxty2f__p.css","style"]
+:HL["/Holy-Qur-an/_next/static/chunks/2ivv36nx3h_36.css","style"]
 :HL["/Holy-Qur-an/_next/static/media/130b5bec7367fe75-s.p.28v825rc0jjx9.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/Holy-Qur-an/_next/static/media/318e7a4ab76bee79-s.p.1tl90lbozpx_2.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/Holy-Qur-an/_next/static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
-0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"word","param":null,"prefetchHints":4192,"slots":{"children":{"name":"idx","param":{"type":"d","key":"3423","siblings":[]},"prefetchHints":4192,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}}}},"staleTime":300,"buildId":"Kpevhk8fY5hgQBCXWtW_p"}
+0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"word","param":null,"prefetchHints":4192,"slots":{"children":{"name":"idx","param":{"type":"d","key":"3423","siblings":[]},"prefetchHints":4192,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}}}},"staleTime":300,"buildId":"cIJpnRr0V1Qz4d6aFWklP"}

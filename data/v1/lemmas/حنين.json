@@ -1,1 +1,1 @@
-{"root":null,"total":1,"lemmas":[{"lemma":"حُنَيْن","key":"حنين","pos":"N","count":1,"cats":{"properNoun":1}}],"forms":[{"form":"حُنَيْنٍ","key":"حنين","lemmaIdx":0,"cat":"properNoun","count":1}],"feats":["PN|GEN"],"occ":[[9,25,8,1,0,0]]}
+{"root":null,"total":1,"lemmas":[{"lemma":"حُنَيْن","key":"حنين","pos":"N","count":1,"cats":{"properNoun":1},"wordIdx":1508}],"forms":[{"form":"حُنَيْنٍ","key":"حنين","lemmaIdx":0,"cat":"properNoun","count":1}],"feats":["PN|GEN"],"occ":[[9,25,8,1,0,0]]}

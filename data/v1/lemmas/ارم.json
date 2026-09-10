@@ -1,1 +1,1 @@
-{"root":null,"total":1,"lemmas":[{"lemma":"إِرَم","key":"ارم","pos":"N","count":1,"cats":{"properNoun":1}}],"forms":[{"form":"إِرَمَ","key":"ارم","lemmaIdx":0,"cat":"properNoun","count":1}],"feats":["PN|F|GEN"],"occ":[[89,7,1,1,0,0]]}
+{"root":null,"total":1,"lemmas":[{"lemma":"إِرَم","key":"ارم","pos":"N","count":1,"cats":{"properNoun":1},"wordIdx":206}],"forms":[{"form":"إِرَمَ","key":"ارم","lemmaIdx":0,"cat":"properNoun","count":1}],"feats":["PN|F|GEN"],"occ":[[89,7,1,1,0,0]]}

@@ -1,1 +1,1 @@
-{"root":null,"total":1,"lemmas":[{"lemma":"بابِل","key":"بابل","pos":"N","count":1,"cats":{"properNoun":1}}],"forms":[{"form":"بَابِلَ","key":"بابل","lemmaIdx":0,"cat":"properNoun","count":1}],"feats":["PN|GEN"],"occ":[[2,102,21,2,0,0]]}
+{"root":null,"total":1,"lemmas":[{"lemma":"بابِل","key":"بابل","pos":"N","count":1,"cats":{"properNoun":1},"wordIdx":729}],"forms":[{"form":"بَابِلَ","key":"بابل","lemmaIdx":0,"cat":"properNoun","count":1}],"feats":["PN|GEN"],"occ":[[2,102,21,2,0,0]]}

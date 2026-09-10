@@ -1,1 +1,1 @@
-{"root":null,"total":4,"lemmas":[{"lemma":"نَعَم","key":"نعم","pos":"P","count":4,"cats":{"other":4}}],"forms":[{"form":"نَعَمْ","key":"نعم","lemmaIdx":0,"cat":"other","count":4}],"feats":["ANS"],"occ":[[7,44,20,1,0,0],[7,114,2,1,0,0],[26,42,2,1,0,0],[37,18,2,1,0,0]]}
+{"root":null,"total":4,"lemmas":[{"lemma":"نَعَم","key":"نعم","pos":"P","count":4,"cats":{"other":4},"wordIdx":4200}],"forms":[{"form":"نَعَمْ","key":"نعم","lemmaIdx":0,"cat":"other","count":4}],"feats":["ANS"],"occ":[[7,44,20,1,0,0],[7,114,2,1,0,0],[26,42,2,1,0,0],[37,18,2,1,0,0]]}
