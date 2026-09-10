@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import { rootHref } from "@/lib/search/suggest";
 import type { RootPairRow } from "@/lib/data/types";
 
@@ -85,7 +86,7 @@ export function RootNetworkGraph({ pairs }: { pairs: readonly RootPairRow[] }) {
       {nodes.map((n) => {
         const r = MIN_DOT_R + (MAX_DOT_R - MIN_DOT_R) * Math.sqrt(n.weight / maxWeight);
         return (
-          <a key={n.root} href={rootHref(n.root)}>
+          <Link key={n.root} href={rootHref(n.root)}>
             <circle cx={n.x} cy={n.y} r={r} className="fill-accent" fillOpacity={0.85}>
               <title>{n.root}</title>
             </circle>
@@ -98,7 +99,7 @@ export function RootNetworkGraph({ pairs }: { pairs: readonly RootPairRow[] }) {
             >
               {n.root}
             </text>
-          </a>
+          </Link>
         );
       })}
     </svg>
