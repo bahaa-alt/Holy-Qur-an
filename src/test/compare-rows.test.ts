@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildComparisonCategoryRows } from "@/lib/compare/buildComparisonRows";
+import { buildComparisonCategoryRows, buildComparisonMarkdown } from "@/lib/compare/buildComparisonRows";
 import type { RootSummary } from "@/lib/root/summary";
 
 function summary(overrides: Partial<RootSummary>): RootSummary {
@@ -51,5 +51,45 @@ describe("buildComparisonCategoryRows", () => {
 
   it("returns an empty array for no summaries", () => {
     expect(buildComparisonCategoryRows([])).toEqual([]);
+  });
+});
+
+describe("buildComparisonMarkdown", () => {
+  const katabaSummary = summary({
+    root: "كتب",
+    total: 290,
+    lemmaCount: 2,
+    formCount: 5,
+    verseCount: 250,
+    surahCount: 60,
+    byCategory: [{ cat: "verb.perf", count: 200 }],
+  });
+  const rahmSummary = summary({
+    root: "رحم",
+    total: 180,
+    lemmaCount: 3,
+    formCount: 4,
+    verseCount: 160,
+    surahCount: 40,
+    byCategory: [{ cat: "adj", count: 150 }],
+  });
+
+  it("renders a stats table with one column per root", () => {
+    const md = buildComparisonMarkdown([katabaSummary, rahmSummary], []);
+    expect(md).toContain("| | كتب | رحم |");
+    expect(md).toContain("| Total occurrences | 290 | 180 |");
+    expect(md).toContain("| Verses | 250 | 160 |");
+  });
+
+  it("appends a category table when category rows are given", () => {
+    const rows = buildComparisonCategoryRows([katabaSummary, rahmSummary]);
+    const md = buildComparisonMarkdown([katabaSummary, rahmSummary], rows);
+    expect(md).toContain("| Category | كتب | رحم |");
+    expect(md).toContain(`| ${"Verb (perfect)"} | 200 | 0 |`);
+  });
+
+  it("omits the category table entirely when no category rows are given", () => {
+    const md = buildComparisonMarkdown([katabaSummary, rahmSummary], []);
+    expect(md).not.toContain("Category");
   });
 });

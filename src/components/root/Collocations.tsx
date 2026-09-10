@@ -1,15 +1,23 @@
 import Link from "next/link";
 import { SaveButton } from "@/components/notes/SaveButton";
+import { CopyTextButton } from "@/components/export/CopyTextButton";
 
 export interface CollocationRow {
   ar: string;
   count: number;
 }
 
+function buildMarkdown(rows: readonly CollocationRow[]): string {
+  return rows.map((r) => `- [${r.ar}](/root/${encodeURIComponent(r.ar)}/) (${r.count})`).join("\n");
+}
+
 export function Collocations({ rows }: { rows: CollocationRow[] }) {
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
-      <h2 className="text-sm font-medium text-ink">Co-occurring roots</h2>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-sm font-medium text-ink">Co-occurring roots</h2>
+        <CopyTextButton text={buildMarkdown(rows)} />
+      </div>
       <p className="mt-1 text-xs text-muted">
         Roots most distinctively associated with this one -- ranked by how much more often they share a verse
         with it than their individual frequencies would predict, not just raw frequency.

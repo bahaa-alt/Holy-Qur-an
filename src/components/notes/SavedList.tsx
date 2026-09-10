@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, Copy, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { getSavedItems, removeItem, updateNote } from "@/lib/notes/store";
-import { copyToClipboard } from "@/lib/clipboard";
+import { CopyTextButton } from "@/components/export/CopyTextButton";
 import type { SavedItem, SavedKind } from "@/lib/notes/types";
 
 const KIND_LABELS: Record<SavedKind, string> = { root: "Roots", word: "Words", verse: "Verses" };
@@ -17,7 +17,6 @@ function buildMarkdown(items: readonly SavedItem[]): string {
 export function SavedList() {
   const [items, setItems] = useState<SavedItem[]>([]);
   const [loaded, setLoaded] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     // One-time hydration from localStorage (unavailable during SSR/static
@@ -37,14 +36,6 @@ export function SavedList() {
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, note } : i)));
   }
 
-  async function handleCopyMarkdown() {
-    const ok = await copyToClipboard(buildMarkdown(items));
-    if (ok) {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    }
-  }
-
   if (!loaded) return null;
 
   if (items.length === 0) {
@@ -58,14 +49,7 @@ export function SavedList() {
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={handleCopyMarkdown}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs text-muted transition-colors hover:border-accent hover:text-accent"
-        >
-          {copied ? <Check size={13} className="text-accent" /> : <Copy size={13} />}
-          {copied ? "Copied" : "Copy as Markdown"}
-        </button>
+        <CopyTextButton text={buildMarkdown(items)} />
       </div>
 
       {KIND_ORDER.filter((kind) => items.some((i) => i.kind === kind)).map((kind) => (

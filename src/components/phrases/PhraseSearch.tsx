@@ -6,8 +6,13 @@ import { getMeta, getVerseRoots, getVerses } from "@/lib/data/loader";
 import { globalIdToRef } from "@/lib/data/verseId";
 import { findAdjacentRootPairs } from "@/lib/phrases/findAdjacentPairs";
 import { AyahCard } from "@/components/ayah/AyahCard";
+import { CopyTextButton } from "@/components/export/CopyTextButton";
 import { RootSlotPicker, type RootSlotOption } from "./RootSlotPicker";
 import type { MetaFile, VerseRootsFile } from "@/lib/data/types";
+
+function buildMarkdown(results: readonly { s: number; a: number; translation: string }[]): string {
+  return results.map((r) => `- [${r.s}:${r.a}](/surah/${r.s}/?ayah=${r.a}) -- ${r.translation}`).join("\n");
+}
 
 const RESULT_CAP = 50;
 
@@ -92,13 +97,16 @@ export function PhraseSearch({ roots }: { roots: RootSlotOption[] }) {
       </div>
 
       {searched && !loading && (
-        <p className="text-sm text-muted">
-          {totalMatches === 0
-            ? "No verses found where the leading root is immediately followed by the second root."
-            : `${totalMatches.toLocaleString()} match${totalMatches === 1 ? "" : "es"}${
-                totalMatches > RESULT_CAP ? ` (showing the first ${RESULT_CAP})` : ""
-              }.`}
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-muted">
+            {totalMatches === 0
+              ? "No verses found where the leading root is immediately followed by the second root."
+              : `${totalMatches.toLocaleString()} match${totalMatches === 1 ? "" : "es"}${
+                  totalMatches > RESULT_CAP ? ` (showing the first ${RESULT_CAP})` : ""
+                }.`}
+          </p>
+          {results.length > 0 && <CopyTextButton text={buildMarkdown(results)} />}
+        </div>
       )}
 
       <div className="space-y-3">

@@ -4,11 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { getRoot } from "@/lib/data/loader";
 import { buildRootSummary, type RootSummary } from "@/lib/root/summary";
-import { buildComparisonCategoryRows } from "@/lib/compare/buildComparisonRows";
+import { buildComparisonCategoryRows, buildComparisonMarkdown } from "@/lib/compare/buildComparisonRows";
 import { decodeRootsQuery, encodeRootsQuery } from "@/lib/compare/query";
 import { RootPicker, type CompareRootRow } from "./RootPicker";
 import { CompareStatsTable } from "./CompareStatsTable";
 import { CompareCategoryBars } from "./CompareCategoryBars";
+import { CopyTextButton } from "@/components/export/CopyTextButton";
 
 export function CompareView({ roots }: { roots: CompareRootRow[] }) {
   // Starts empty to match the prerendered static HTML (a static-export page
@@ -83,6 +84,9 @@ export function CompareView({ roots }: { roots: CompareRootRow[] }) {
 
       {!stillLoading && loadedSummaries.length >= 2 && (
         <>
+          <div className="flex justify-end">
+            <CopyTextButton text={buildComparisonMarkdown(loadedSummaries, categoryRows)} />
+          </div>
           <CompareStatsTable summaries={loadedSummaries} />
           <CompareCategoryBars
             rows={categoryRows}
