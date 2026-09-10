@@ -444,6 +444,33 @@ export const en: Dict = {
     howCountsComputedHeading: "How counts are computed",
     howCountsComputedBody:
       'An "occurrence" of a root is a morphological segment tagged with that root in the underlying corpus. Particles, pronouns, and grammatical clitics (prefixes and suffixes such as the determiner "al-" or attached pronouns) never carry a root and are never counted toward one, even though they still appear in the verse text. This matches how the Quranic Arabic Corpus itself counts roots, which may differ from tools that count whole inflected words.',
+    insightsMethodologyHeading: "How the Insights page's numbers are computed",
+    insightsMethodologyIntro:
+      "The Insights page (letter frequency, corpus facts, rhyme patterns, distinctive vocabulary, verb collocations, Abjad value) adds several metrics beyond simple occurrence counts. Each is documented here so a number can be cited and understood, not just displayed.",
+    coverageRankingHeading: "Surah coverage rankings",
+    coverageRankingBody:
+      'The "which roots/words appear in the most surahs" lists rank by the number of distinct surahs a root or exact word (lemma) appears in -- not by raw frequency. A root can occur often while clustering in a handful of surahs, or rarely while spreading across nearly all of them; this ranks the latter kind of breadth. The top 15 are shown for each.',
+    hapaxHeading: "Hapax legomena",
+    hapaxBody:
+      "A root or exact word occurring exactly once anywhere in the Qur'an -- a standard corpus-linguistics measure of vocabulary breadth, counted separately for roots and for exact words (lemmas), since a root can be a hapax while still having multiple surface forms, or vice versa.",
+    rootDensityHeading: "Most root-dense verse",
+    rootDensityBody:
+      "Ranked by density -- distinct roots divided by word count -- among verses of at least 10 words, not by raw root count. Raw count would simply re-report whichever verse is longest (2:282, already shown separately as the longest verse); the 10-word minimum keeps a trivially short verse from topping the list by chance.",
+    distinctiveVocabHeading: "Distinctive vocabulary",
+    distinctiveVocabBody:
+      "For each surah, ranks roots by how over-represented they are there compared to their rate across the whole Qur'an: (occurrences in this surah ÷ this surah's word count) divided by (occurrences overall ÷ the Qur'an's total word count). A root must occur at least 3 times within a surah to qualify -- without that floor, a root appearing just once in a short surah could trivially score as several times the corpus average purely from small numbers.",
+    rhymeMethodHeading: "Rhyme patterns (fawāṣil)",
+    rhymeMethodBody:
+      "Each verse's \"ending\" is the final letter of its last word, diacritics stripped -- the unit classical Qur'anic rhetorical studies (fawāṣil/sajʿ) use to classify verse-endings. Letter variants (ة vs ه, alif forms) are not unified here, matching the letter-frequency table's convention.",
+    collocationsMethodHeading: "Verb–preposition collocations",
+    collocationsMethodBody:
+      "For every occurrence of a verb root, checks whether the immediately following word -- or, for a one-letter proclitic like بِ/لِ/كَ, that word's attached prefix segment -- is one of ten canonical Arabic prepositions (ب ل ك من إلى على في عن مع حتى). Restricted to this list rather than any following particle, so the result reflects verb government (valency) specifically, not incidental adjacency to a conjunction, negation, or interrogative.",
+    abjadMethodHeading: "Abjad value (ḥisāb al-jummal)",
+    abjadMethodBody:
+      "Sums each letter's value in the classical 28-letter Arabic numeral system (أبجد هوز حطي...), after stripping diacritics and folding alif variants and hamza carriers (أ إ آ ٱ ء ؤ ئ) to ا, teh marbuta (ة) to ه, and alif maksura (ى) to ي -- hamza carries no separate value in this system, which predates hamza as a distinct letter.",
+    juzHizbHeading: "Juz' and Hizb boundaries",
+    juzHizbBody:
+      "The 30-part Juz' and 60-part Hizb divisions are standard structural divisions of the Mushaf, unrelated to the morphology dataset above. Boundaries were cross-checked against two independent community-maintained datasets (see the project's source code for exact references and commit history); that check found and corrected two isolated errors in one source's Hizb boundaries before they shipped.",
     dataSourcesHeading: "Data sources & licenses",
     laneLexiconNote:
       'Root meanings are given as "after Lane\'s Lexicon" -- a summary drawn from that dataset, not a verbatim quotation of the original 19th-century lexicon. This project\'s own source code is licensed GPL-3.0, matching the copyleft terms of the morphology dataset it builds on.',

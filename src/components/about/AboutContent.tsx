@@ -20,6 +20,45 @@ export function AboutContent({ manifest, rootNames }: { manifest: ManifestFile; 
       </div>
 
       <div>
+        <h2 className="text-lg font-semibold">{t.aboutPage.insightsMethodologyHeading}</h2>
+        <p className="mt-2 text-muted">{t.aboutPage.insightsMethodologyIntro}</p>
+        <div className="mt-4 space-y-4">
+          <div>
+            <h3 className="font-medium">{t.aboutPage.coverageRankingHeading}</h3>
+            <p className="mt-1 text-muted">{t.aboutPage.coverageRankingBody}</p>
+          </div>
+          <div>
+            <h3 className="font-medium">{t.aboutPage.hapaxHeading}</h3>
+            <p className="mt-1 text-muted">{t.aboutPage.hapaxBody}</p>
+          </div>
+          <div>
+            <h3 className="font-medium">{t.aboutPage.rootDensityHeading}</h3>
+            <p className="mt-1 text-muted">{t.aboutPage.rootDensityBody}</p>
+          </div>
+          <div>
+            <h3 className="font-medium">{t.aboutPage.distinctiveVocabHeading}</h3>
+            <p className="mt-1 text-muted">{t.aboutPage.distinctiveVocabBody}</p>
+          </div>
+          <div>
+            <h3 className="font-medium">{t.aboutPage.rhymeMethodHeading}</h3>
+            <p className="mt-1 text-muted">{t.aboutPage.rhymeMethodBody}</p>
+          </div>
+          <div>
+            <h3 className="font-medium">{t.aboutPage.collocationsMethodHeading}</h3>
+            <p className="mt-1 text-muted">{t.aboutPage.collocationsMethodBody}</p>
+          </div>
+          <div>
+            <h3 className="font-medium">{t.aboutPage.abjadMethodHeading}</h3>
+            <p className="mt-1 text-muted">{t.aboutPage.abjadMethodBody}</p>
+          </div>
+          <div>
+            <h3 className="font-medium">{t.aboutPage.juzHizbHeading}</h3>
+            <p className="mt-1 text-muted">{t.aboutPage.juzHizbBody}</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
         <h2 className="text-lg font-semibold">{t.aboutPage.dataSourcesHeading}</h2>
         <ul className="mt-2 space-y-3">
           {manifest.sources.map((s) => (
