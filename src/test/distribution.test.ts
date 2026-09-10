@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseMorphologyTSV } from "../../scripts/lib/parse-morphology";
 import { buildRoots } from "../../scripts/lib/build-roots";
-import { buildSurahDistribution } from "@/lib/root/distribution";
+import { buildSurahDistribution, sortByChronologicalOrder } from "@/lib/root/distribution";
 import type { MetaFile } from "@/lib/data/types";
 
 // كتب occurs three times: twice in surah 1 (Meccan), once in surah 2 (Medinan).
@@ -49,5 +49,21 @@ describe("buildSurahDistribution", () => {
     );
     expect(empty.meccanPct).toBe(0);
     expect(empty.bySurah).toEqual([]);
+  });
+});
+
+describe("sortByChronologicalOrder", () => {
+  it("reorders rows by revelation order instead of surah number", () => {
+    // Surah 96 (Al-Alaq) is traditionally first, surah 1 fifth, surah 2 the
+    // first Medinan surah -- reordered from Quran order (2, 96, 1).
+    const rows = [{ surah: 2, count: 1 }, { surah: 96, count: 2 }, { surah: 1, count: 3 }];
+    expect(sortByChronologicalOrder(rows).map((r) => r.surah)).toEqual([96, 1, 2]);
+  });
+
+  it("does not mutate the input array", () => {
+    const rows = [{ surah: 2, count: 1 }, { surah: 1, count: 2 }];
+    const original = [...rows];
+    sortByChronologicalOrder(rows);
+    expect(rows).toEqual(original);
   });
 });

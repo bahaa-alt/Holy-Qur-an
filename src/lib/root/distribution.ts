@@ -1,4 +1,5 @@
 import type { MetaFile, RootFile } from "@/lib/data/types";
+import { CHRONOLOGICAL_ORDER_BY_SURAH } from "@/lib/data/chronologicalOrder";
 
 export interface SurahCount {
   surah: number;
@@ -35,4 +36,11 @@ export function buildSurahDistribution(file: RootFile, meta: MetaFile): SurahDis
   const meccanPct = total > 0 ? Math.round((meccanCount / total) * 100) : 0;
 
   return { meccanCount, medinanCount, meccanPct, bySurah };
+}
+
+/** Reorders rows by the conventional chronological (revelation) order instead of Quran (surah-number) order. */
+export function sortByChronologicalOrder<T extends { surah: number }>(rows: readonly T[]): T[] {
+  return [...rows].sort(
+    (a, b) => CHRONOLOGICAL_ORDER_BY_SURAH[a.surah - 1] - CHRONOLOGICAL_ORDER_BY_SURAH[b.surah - 1],
+  );
 }
