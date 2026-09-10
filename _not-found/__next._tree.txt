@@ -1,2 +1,2 @@
-:HL["/Holy-Qur-an/_next/static/chunks/266vjonyvk3sk.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":4192,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}},"staleTime":300,"buildId":"EyFgx-AL-p2XBLiWNMFWu"}
+:HL["/Holy-Qur-an/_next/static/chunks/3cvrvmjpshkud.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":4192,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}},"staleTime":300,"buildId":"Eb3cWzWbZXw9f--5uNTZO"}
