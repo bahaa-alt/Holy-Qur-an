@@ -16,6 +16,7 @@ import { buildRoots, type RootsGlossMap } from "./lib/build-roots";
 import { buildEnIndex, type IndexableVerse } from "./lib/build-en-index";
 import { buildArIndex, type ArIndexableVerse } from "./lib/build-ar-index";
 import { buildVerseRoots } from "./lib/build-verse-roots";
+import { buildInsights } from "./lib/build-insights";
 import { SizeReport, recordGroup, writeJSON } from "./lib/emit";
 import { ALL_TOPICS } from "../src/lib/topics/topicDefinitions";
 import { topicSourceFileKey } from "../src/lib/topics/buildTopicOccurrences";
@@ -207,6 +208,9 @@ async function main() {
   // --- 5b. Build the global per-verse rooted-word index ---
   const verseRoots: VerseRootsFile = buildVerseRoots(words, rootTextToGlobalIdx, globalIdOf);
 
+  // --- 5c. Build corpus-wide curiosities for /insights/ ---
+  const insights = buildInsights(words, rootFiles, lemmaFiles, indexRoots, indexLemmas, meta.surahs.length);
+
   // --- 6. Validate invariants ---
   const errors: string[] = [];
   assertEqual("words", words.length, EXPECTED.words, errors);
@@ -348,6 +352,7 @@ async function main() {
       verseRoots,
       arIndex,
       occurrenceIndex,
+      insights,
       rootFiles,
       lemmaFiles,
       manifest,
@@ -412,6 +417,9 @@ async function main() {
     );
   }
 
+  const insightsSize = writeJSON(join(OUT_DIR, "insights.json"), insights);
+  report.record("insights.json", insightsSize.rawBytes, insightsSize.gzBytes);
+
   const surahSizes = [...surahFiles.entries()]
     .sort(([a], [b]) => a - b)
     .map(([n, file]) => writeJSON(join(OUT_DIR, "surahs", `${n}.json`), file));
@@ -463,6 +471,7 @@ function printSizeEstimate(data: {
   verseRoots: unknown;
   arIndex: unknown;
   occurrenceIndex: unknown;
+  insights: unknown;
   rootFiles: Map<string, unknown>;
   lemmaFiles: Map<string, unknown>;
   manifest: unknown;
@@ -480,6 +489,7 @@ function printSizeEstimate(data: {
   rec("verse-roots.json", data.verseRoots);
   rec("ar-index.json", data.arIndex);
   rec("occurrences.json", data.occurrenceIndex);
+  rec("insights.json", data.insights);
   rec("roots/*.json (est.)", [...data.rootFiles.values()]);
   rec("lemmas/*.json (est.)", [...data.lemmaFiles.values()]);
   report.print();

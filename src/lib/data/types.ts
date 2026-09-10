@@ -264,3 +264,51 @@ export interface OccurrenceRow {
   verseUthmani: string;
   translation: string;
 }
+
+/** One root ranked by how many distinct surahs it appears in. */
+export interface SurahCoverageRootRow {
+  ar: string;
+  glossShort: string;
+  surahCount: number;
+  count: number;
+}
+
+/** One lemma (rooted or rootless) ranked by how many distinct surahs it appears in. */
+export interface SurahCoverageLemmaRow {
+  lemma: string;
+  key: string;
+  /** the lemma's root, or null when it's a rootless particle/pronoun/clitic */
+  rootAr: string | null;
+  surahCount: number;
+  count: number;
+}
+
+/**
+ * Precomputed corpus-wide curiosities for /insights/ -- each one would
+ * otherwise mean fetching most or all of the per-root/lemma files
+ * client-side just to answer one question, so these are computed once at
+ * build time from data the pipeline already has fully in memory.
+ */
+export interface InsightsFile {
+  /** 114, so the UI never hardcodes it */
+  totalSurahs: number;
+  /** top 15 roots by distinct-surah count, then by occurrence count */
+  rootsBySurahCoverage: SurahCoverageRootRow[];
+  /** top 15 lemmas (rooted + rootless) by distinct-surah count, then by occurrence count */
+  lemmasBySurahCoverage: SurahCoverageLemmaRow[];
+  longestVerse: { s: number; a: number; wordCount: number };
+  shortestVerse: { s: number; a: number; wordCount: number };
+  longestWord: { s: number; a: number; w: number; text: string; letterCount: number };
+  /** whole-Qur'an letter frequency (see src/lib/arabic/letterFrequency.ts), every letter that occurs at least once */
+  letterFrequency: { letter: string; count: number }[];
+  /** roots occurring exactly once anywhere in the Qur'an */
+  hapaxRootCount: number;
+  /** lemmas (rooted + rootless) occurring exactly once anywhere in the Qur'an */
+  hapaxLemmaCount: number;
+  /** the root with the most distinct lemmas derived from it */
+  mostDerivedRoot: { ar: string; lemmaCount: number };
+  /** the root with the most distinct surface forms */
+  mostFormsRoot: { ar: string; formCount: number };
+  /** the verse touching the most distinct roots */
+  mostRootDenseVerse: { s: number; a: number; distinctRootCount: number };
+}

@@ -46,6 +46,17 @@ export function normalize(text: string): string {
 }
 
 /**
+ * Strips diacritics (tashkeel, dagger alif, tatweel) but preserves every
+ * letter distinction {@link normalize} unifies for search matching (alif
+ * variants, teh marbuta vs ha, alif maksura vs ya, hamza carriers). Used
+ * for letter-frequency analysis, where those distinctions are exactly what
+ * is being counted.
+ */
+export function stripDiacritics(text: string): string {
+  return text.replace(TASHKEEL_RANGE, "").replace(DAGGER_ALIF, "").replace(TATWEEL, "");
+}
+
+/**
  * Normalize a root for use as its index/lookup key. Same as {@link normalize}
  * but additionally folds standalone hamza (ء) to alif (ا), so that a root
  * written with a bare hamza segment resolves under a plain-alif query too.

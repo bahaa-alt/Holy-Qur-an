@@ -38,6 +38,7 @@ export interface Dict {
     search: string;
     phrases: string;
     topics: string;
+    insights: string;
     saved: string;
     about: string;
   };
@@ -253,6 +254,48 @@ export interface Dict {
   topicVerseList: {
     noMatches: string;
     copyThisPage: string;
+  };
+  insightsPage: {
+    title: string;
+    subtitle: string;
+    letterFrequencyHeading: string;
+    letterFrequencyDescription: string;
+    scopeAyah: string;
+    scopeSurah: string;
+    scopeJuz: string;
+    scopeQuran: string;
+    surahLabel: string;
+    ayahLabel: string;
+    juzLabel: string;
+    loading: string;
+    letterColumn: string;
+    countColumn: string;
+    shareColumn: string;
+    noLetters: string;
+    factsHeading: string;
+    factsDescription: string;
+    rootsCoverageHeading: string;
+    rootsCoverageDescription: string;
+    lemmasCoverageHeading: string;
+    lemmasCoverageDescription: string;
+    surahCoverage: (surahCount: number, total: number) => string;
+    everySurahBadge: string;
+    longestVerseLabel: string;
+    shortestVerseLabel: string;
+    wordsCount: (n: number) => string;
+    longestWordLabel: string;
+    lettersCount: (n: number) => string;
+    mostFrequentLetterLabel: string;
+    leastFrequentLetterLabel: string;
+    hapaxRootsLabel: string;
+    hapaxLemmasLabel: string;
+    mostDerivedRootLabel: string;
+    lemmasCount: (n: number) => string;
+    mostFormsRootLabel: string;
+    formsCount: (n: number) => string;
+    mostRootDenseVerseLabel: string;
+    rootsInVerseCount: (n: number) => string;
+    viewVerse: string;
   };
   surahPage: {
     previous: string;

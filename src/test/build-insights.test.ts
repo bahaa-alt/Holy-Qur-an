@@ -1,0 +1,98 @@
+import { describe, expect, it } from "vitest";
+import { parseMorphologyTSV } from "../../scripts/lib/parse-morphology";
+import { buildRoots, type RootsGlossMap } from "../../scripts/lib/build-roots";
+import { buildInsights } from "../../scripts/lib/build-insights";
+
+// Same fixture as build-roots.test.ts, reused so the two test files reason
+// about the same known corpus.
+const AYAH_1_1 = [
+  "1:1:1:1\tبِ\tP\tP|PREF|LEM:ب",
+  "1:1:1:2\tسْمِ\tN\tROOT:سمو|LEM:اسْم|M|GEN",
+  "1:1:2:1\tٱللَّهِ\tN\tPN|ROOT:أله|LEM:اللَّه|GEN",
+  "1:1:3:1\tٱل\tP\tDET|PREF|LEM:ال",
+  "1:1:3:2\tرَّحْمَٰنِ\tN\tROOT:رحم|LEM:رَحْمٰن|MS|GEN|ADJ",
+  "1:1:4:1\tٱل\tP\tDET|PREF|LEM:ال",
+  "1:1:4:2\tرَّحِيمِ\tN\tROOT:رحم|LEM:رَحِيم|MS|GEN|ADJ",
+].join("\n");
+
+const KATABA_ROWS = [
+  "2:2:2:1\tٱلْ\tP\tDET|PREF|LEM:ال",
+  "2:2:2:2\tكِتَٰبُ\tN\tROOT:كتب|LEM:كِتاب|M|NOM",
+  "2:79:3:1\tيَكْتُبُ\tV\tIMPF|VF:1|ROOT:كتب|LEM:كَتَبَ|3MP|MOOD:IND",
+  "2:79:3:2\tونَ\tN\tPRON|SUFF|3MP",
+].join("\n");
+
+const DOUBLE_ROOT_WORD = [
+  "20:94:2:1\tيَ\tP\tVOC|PREF|LEM:ي",
+  "20:94:2:2\tبْنَ\tN\tROOT:بني|LEM:ابْن|M|ACC",
+  "20:94:2:3\tؤُمَّ\tN\tROOT:أمم|LEM:أُمّ|FS|GEN",
+  "20:94:2:4\t\tN\tPRON|SUFF|1S",
+].join("\n");
+
+function words() {
+  return [
+    ...parseMorphologyTSV(AYAH_1_1),
+    ...parseMorphologyTSV(KATABA_ROWS),
+    ...parseMorphologyTSV(DOUBLE_ROOT_WORD),
+  ];
+}
+
+const GLOSS: RootsGlossMap = { رحم: { b: "rHm", m: "Mercy, compassion." } };
+
+describe("buildInsights", () => {
+  const built = buildRoots(words(), GLOSS);
+  const insights = buildInsights(words(), built.rootFiles, built.lemmaFiles, built.indexRoots, built.indexLemmas, 114);
+
+  it("carries totalSurahs through unchanged", () => {
+    expect(insights.totalSurahs).toBe(114);
+  });
+
+  it("ranks roots by distinct-surah coverage, then occurrence count, then alphabetically", () => {
+    // رحم and كتب each have 2 occurrences (highest in this fixture); every
+    // root here only spans 1 surah, so count is the deciding factor.
+    expect(insights.rootsBySurahCoverage[0]).toMatchObject({ ar: "رحم", surahCount: 1, count: 2 });
+    expect(insights.rootsBySurahCoverage[1]).toMatchObject({ ar: "كتب", surahCount: 1, count: 2 });
+    expect(insights.rootsBySurahCoverage).toHaveLength(6); // every root in this fixture
+  });
+
+  it("ranks lemmas (rooted + rootless) by distinct-surah coverage", () => {
+    // "ال" (rootless DET) appears before رحمن/رحيم (surah 1) and كتاب (surah 2) -- 2 distinct surahs, 3 occurrences.
+    expect(insights.lemmasBySurahCoverage[0]).toMatchObject({ lemma: "ال", rootAr: null, surahCount: 2, count: 3 });
+  });
+
+  it("finds the longest and shortest verse by word count", () => {
+    expect(insights.longestVerse).toEqual({ s: 1, a: 1, wordCount: 4 });
+    // 2:2, 2:79 and 20:94 are each defined with only 1 word in this fixture; the
+    // first one encountered (Qur'an order) wins the tie.
+    expect(insights.shortestVerse).toEqual({ s: 2, a: 2, wordCount: 1 });
+  });
+
+  it("finds the longest word by letter count, diacritics stripped", () => {
+    // ٱلرَّحْمَٰنِ and ٱلرَّحِيمِ both have 6 letters (ٱ ل ر ح م ن / ٱ ل ر ح ي م);
+    // the first one in Qur'an order wins.
+    expect(insights.longestWord).toEqual({ s: 1, a: 1, w: 3, text: "ٱلرَّحْمَٰنِ", letterCount: 6 });
+  });
+
+  it("computes whole-corpus letter frequency", () => {
+    const byLetter = Object.fromEntries(insights.letterFrequency.map((r) => [r.letter, r.count]));
+    expect(byLetter["ل"]).toBeGreaterThan(0);
+    expect(insights.letterFrequency).toEqual([...insights.letterFrequency].sort((a, b) => b.count - a.count || a.letter.localeCompare(b.letter)));
+  });
+
+  it("counts hapax legomena (roots/lemmas occurring exactly once)", () => {
+    // أله, أمم, بني, سمو occur once each = 4 hapax roots.
+    expect(insights.hapaxRootCount).toBe(4);
+    // every lemma except "ال" (count 3) occurs exactly once = 10 of 11 lemmas.
+    expect(insights.hapaxLemmaCount).toBe(10);
+  });
+
+  it("finds the root with the most distinct lemmas and the most distinct forms", () => {
+    expect(insights.mostDerivedRoot).toEqual({ ar: "رحم", lemmaCount: 2 });
+    expect(insights.mostFormsRoot).toEqual({ ar: "رحم", formCount: 2 });
+  });
+
+  it("finds the verse touching the most distinct roots", () => {
+    // 1:1 touches سمو, أله, رحم (رحم twice, but that's 1 distinct root) = 3 distinct roots.
+    expect(insights.mostRootDenseVerse).toEqual({ s: 1, a: 1, distinctRootCount: 3 });
+  });
+});

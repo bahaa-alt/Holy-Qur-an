@@ -2,6 +2,7 @@ import type {
   ArIndexFile,
   EnIndexFile,
   IndexFile,
+  InsightsFile,
   ManifestFile,
   MetaFile,
   OccurrenceIndexFile,
@@ -78,6 +79,10 @@ export function getArIndex(): Promise<ArIndexFile> {
  */
 export function getOccurrenceIndex(): Promise<OccurrenceIndexFile> {
   return cachedFetch(`${DATA_BASE}/occurrences.json`);
+}
+
+export function getInsights(): Promise<InsightsFile> {
+  return cachedFetch(`${DATA_BASE}/insights.json`);
 }
 
 export function getRoot(root: string): Promise<RootFile> {
