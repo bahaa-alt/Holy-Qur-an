@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { AyahActions } from "@/components/ayah/AyahActions";
+import { HighlightedVerse } from "@/components/ayah/HighlightedVerse";
 import { RelatedVerses } from "@/components/ayah/RelatedVerses";
 import { SaveButton } from "@/components/notes/SaveButton";
 import { useT } from "@/lib/i18n/LanguageContext";
@@ -41,7 +42,9 @@ export function SurahVerseList({ surahMeta, verses }: { surahMeta: SurahMeta; ve
                 {surahMeta.n}:{verse.a}
               </span>
             </div>
-            <p className="uthmani mt-2 text-ink">{verse.w.join(" ")}</p>
+            <div className="mt-2">
+              <HighlightedVerse s={surahMeta.n} a={verse.a} tokens={verse.w} highlightIndices={[]} />
+            </div>
             <p className="mt-2 text-sm text-muted">{verse.t}</p>
             {verse.pickthall && (
               <p className="mt-1 text-sm text-muted/80">

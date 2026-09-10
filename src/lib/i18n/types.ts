@@ -269,6 +269,19 @@ export interface Dict {
   ayahCard: {
     pickthallLabel: string;
   };
+  wordInfoPanel: {
+    loading: string;
+    notRooted: string;
+    root: string;
+    lemma: string;
+    category: string;
+    occurrencesOfRoot: (count: number) => string;
+    occurrencesOfLemma: (count: number) => string;
+    occurrencesOfForm: (count: number) => string;
+    viewRootPage: string;
+    viewWordPage: string;
+    close: string;
+  };
   exportMenu: {
     exportLabel: string;
     csv: string;

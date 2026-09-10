@@ -40,7 +40,13 @@ export function AyahCard({
       </div>
 
       <div className="mt-3">
-        <HighlightedVerse tokens={tokens} highlightIndices={highlightIndices} emphasisIndex={emphasisIndex} />
+        <HighlightedVerse
+          s={surahMeta.n}
+          a={ayah}
+          tokens={tokens}
+          highlightIndices={highlightIndices}
+          emphasisIndex={emphasisIndex}
+        />
       </div>
       <p className="mt-2 text-sm text-muted">{translation}</p>
       {pickthall && (

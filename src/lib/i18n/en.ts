@@ -270,6 +270,19 @@ export const en: Dict = {
   ayahCard: {
     pickthallLabel: "Pickthall: ",
   },
+  wordInfoPanel: {
+    loading: "Looking up this word…",
+    notRooted: "This is a particle, pronoun, or grammatical clitic -- it carries no root in this corpus.",
+    root: "Root",
+    lemma: "Lemma",
+    category: "Category",
+    occurrencesOfRoot: (count) => `${count.toLocaleString()} occurrences of this root`,
+    occurrencesOfLemma: (count) => `${count.toLocaleString()} occurrences of this lemma`,
+    occurrencesOfForm: (count) => `${count.toLocaleString()} occurrences of this exact form`,
+    viewRootPage: "View root page",
+    viewWordPage: "View word page",
+    close: "Close",
+  },
   exportMenu: {
     exportLabel: "Export:",
     csv: "CSV",

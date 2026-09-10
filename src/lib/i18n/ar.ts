@@ -293,6 +293,19 @@ export const ar: Dict = {
   ayahCard: {
     pickthallLabel: "بيكثال: ",
   },
+  wordInfoPanel: {
+    loading: "جارٍ البحث عن هذه الكلمة…",
+    notRooted: "هذه أداة أو ضمير أو لاصقة نحوية -- لا تحمل جذرًا في هذه المدونة.",
+    root: "الجذر",
+    lemma: "الكلمة",
+    category: "الفئة",
+    occurrencesOfRoot: (count) => `${count.toLocaleString()} ورودًا لهذا الجذر`,
+    occurrencesOfLemma: (count) => `${count.toLocaleString()} ورودًا لهذه الكلمة`,
+    occurrencesOfForm: (count) => `${count.toLocaleString()} ورودًا لهذه الصيغة بالضبط`,
+    viewRootPage: "عرض صفحة الجذر",
+    viewWordPage: "عرض صفحة الكلمة",
+    close: "إغلاق",
+  },
   exportMenu: {
     exportLabel: "تصدير:",
     csv: "CSV",
