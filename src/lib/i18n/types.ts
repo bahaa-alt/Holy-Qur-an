@@ -255,6 +255,11 @@ export interface Dict {
     prophets: string;
     people: string;
     species: string;
+    geography: string;
+    geology: string;
+    meteorology: string;
+    cosmology: string;
+    commodities: string;
     compareLink: string;
   };
   topicPage: {
@@ -262,6 +267,11 @@ export interface Dict {
     topicLabel: string;
     personLabel: string;
     speciesLabel: string;
+    geographyLabel: string;
+    geologyLabel: string;
+    meteorologyLabel: string;
+    cosmologyLabel: string;
+    commoditiesLabel: string;
     description: (count: number) => string;
     noteLabel: string;
   };

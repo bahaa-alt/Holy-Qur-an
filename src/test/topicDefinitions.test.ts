@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   ALL_TOPICS,
+  COMMODITIES_TOPICS,
+  COSMOLOGY_TOPICS,
   findTopicBySlug,
+  GEOGRAPHY_TOPICS,
+  GEOLOGY_TOPICS,
+  METEOROLOGY_TOPICS,
   PEOPLE_TOPICS,
   PROPHET_TOPICS,
   SPECIES_TOPICS,
@@ -15,7 +20,7 @@ import {
 // are internally well-formed.
 
 describe("topicDefinitions", () => {
-  it("has no duplicate slugs across themes, prophets, people and species", () => {
+  it("has no duplicate slugs across every topic category", () => {
     const slugs = ALL_TOPICS.map((t) => t.slug);
     expect(new Set(slugs).size).toBe(slugs.length);
   });
@@ -38,10 +43,25 @@ describe("topicDefinitions", () => {
     expect(PROPHET_TOPICS.every((t) => t.category === "prophet")).toBe(true);
     expect(PEOPLE_TOPICS.every((t) => t.category === "person")).toBe(true);
     expect(SPECIES_TOPICS.every((t) => t.category === "species")).toBe(true);
+    expect(GEOGRAPHY_TOPICS.every((t) => t.category === "geography")).toBe(true);
+    expect(GEOLOGY_TOPICS.every((t) => t.category === "geology")).toBe(true);
+    expect(METEOROLOGY_TOPICS.every((t) => t.category === "meteorology")).toBe(true);
+    expect(COSMOLOGY_TOPICS.every((t) => t.category === "cosmology")).toBe(true);
+    expect(COMMODITIES_TOPICS.every((t) => t.category === "commodities")).toBe(true);
   });
 
-  it("ALL_TOPICS is exactly the concatenation of themes, prophets, people and species", () => {
-    expect(ALL_TOPICS).toEqual([...THEME_TOPICS, ...PROPHET_TOPICS, ...PEOPLE_TOPICS, ...SPECIES_TOPICS]);
+  it("ALL_TOPICS is exactly the concatenation of every topic category array", () => {
+    expect(ALL_TOPICS).toEqual([
+      ...THEME_TOPICS,
+      ...PROPHET_TOPICS,
+      ...PEOPLE_TOPICS,
+      ...SPECIES_TOPICS,
+      ...GEOGRAPHY_TOPICS,
+      ...GEOLOGY_TOPICS,
+      ...METEOROLOGY_TOPICS,
+      ...COSMOLOGY_TOPICS,
+      ...COMMODITIES_TOPICS,
+    ]);
   });
 
   it("rootedLemma sources carry both a root and a lemma key", () => {

@@ -2,7 +2,17 @@
 
 import Link from "next/link";
 import { useT } from "@/lib/i18n/LanguageContext";
-import { PEOPLE_TOPICS, PROPHET_TOPICS, SPECIES_TOPICS, THEME_TOPICS } from "@/lib/topics/topicDefinitions";
+import {
+  COMMODITIES_TOPICS,
+  COSMOLOGY_TOPICS,
+  GEOGRAPHY_TOPICS,
+  GEOLOGY_TOPICS,
+  METEOROLOGY_TOPICS,
+  PEOPLE_TOPICS,
+  PROPHET_TOPICS,
+  SPECIES_TOPICS,
+  THEME_TOPICS,
+} from "@/lib/topics/topicDefinitions";
 import type { TopicDefinition } from "@/lib/topics/topicDefinitions";
 
 function TopicSection({ heading, topics }: { heading: string; topics: readonly TopicDefinition[] }) {
@@ -42,6 +52,11 @@ export function TopicsPageContent() {
       <TopicSection heading={t.topicsPage.prophets} topics={PROPHET_TOPICS} />
       <TopicSection heading={t.topicsPage.people} topics={PEOPLE_TOPICS} />
       <TopicSection heading={t.topicsPage.species} topics={SPECIES_TOPICS} />
+      <TopicSection heading={t.topicsPage.geography} topics={GEOGRAPHY_TOPICS} />
+      <TopicSection heading={t.topicsPage.geology} topics={GEOLOGY_TOPICS} />
+      <TopicSection heading={t.topicsPage.meteorology} topics={METEOROLOGY_TOPICS} />
+      <TopicSection heading={t.topicsPage.cosmology} topics={COSMOLOGY_TOPICS} />
+      <TopicSection heading={t.topicsPage.commodities} topics={COMMODITIES_TOPICS} />
     </div>
   );
 }

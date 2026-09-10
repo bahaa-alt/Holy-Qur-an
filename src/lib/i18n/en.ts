@@ -258,6 +258,11 @@ export const en: Dict = {
     prophets: "Prophets",
     people: "People",
     species: "Plants & Animals",
+    geography: "Geography",
+    geology: "Geology",
+    meteorology: "Sky & Weather",
+    cosmology: "Cosmology",
+    commodities: "Commodities",
     compareLink: "Compare topics side by side →",
   },
   topicPage: {
@@ -265,6 +270,11 @@ export const en: Dict = {
     topicLabel: "Topic",
     personLabel: "Person",
     speciesLabel: "Plant / Animal",
+    geographyLabel: "Geography",
+    geologyLabel: "Geology",
+    meteorologyLabel: "Sky & Weather",
+    cosmologyLabel: "Cosmology",
+    commoditiesLabel: "Commodity",
     description: (count) =>
       `A curated root/lemma index, not derived from tafsir (classical commentary) -- a starting point for finding candidate verses, not a claim about what a verse means. ${count.toLocaleString()} verse${count === 1 ? "" : "s"} matched.`,
     noteLabel: "Note: ",

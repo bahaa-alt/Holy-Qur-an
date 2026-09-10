@@ -281,6 +281,11 @@ export const ar: Dict = {
     prophets: "الأنبياء",
     people: "شخصيات",
     species: "نباتات وحيوانات",
+    geography: "الجغرافيا",
+    geology: "الجيولوجيا",
+    meteorology: "السماء والطقس",
+    cosmology: "علم الفلك",
+    commodities: "السلع والموارد",
     compareLink: "قارن المواضيع جنبًا إلى جنب ←",
   },
   topicPage: {
@@ -288,6 +293,11 @@ export const ar: Dict = {
     topicLabel: "موضوع",
     personLabel: "شخصية",
     speciesLabel: "نبات / حيوان",
+    geographyLabel: "جغرافيا",
+    geologyLabel: "جيولوجيا",
+    meteorologyLabel: "السماء والطقس",
+    cosmologyLabel: "علم الفلك",
+    commoditiesLabel: "سلعة",
     description: (count) =>
       `فهرس جذور/كلمات مُنتقى يدويًا، وليس مستخرجًا من تفسير -- نقطة انطلاق لإيجاد الآيات المرشّحة، وليس حكمًا على معنى الآية. عدد الآيات المطابقة: ${count.toLocaleString()}.`,
     noteLabel: "ملاحظة: ",

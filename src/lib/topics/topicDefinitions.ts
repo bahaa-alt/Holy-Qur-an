@@ -32,7 +32,7 @@ export interface TopicDefinition {
   slug: string;
   labelEn: string;
   labelAr: string;
-  category: "theme" | "prophet" | "person" | "species";
+  category: "theme" | "prophet" | "person" | "species" | "geography" | "geology" | "meteorology" | "cosmology" | "commodities";
   /** One-line explanation of scope and any known ambiguity, shown on the topic page. */
   note?: string;
   sources: TopicSource[];
@@ -874,7 +874,329 @@ export const SPECIES_TOPICS: TopicDefinition[] = [
   },
 ];
 
-export const ALL_TOPICS: TopicDefinition[] = [...THEME_TOPICS, ...PROPHET_TOPICS, ...PEOPLE_TOPICS, ...SPECIES_TOPICS];
+export const GEOGRAPHY_TOPICS: TopicDefinition[] = [
+  {
+    slug: "makkah",
+    labelEn: "Makkah",
+    labelAr: "مكة وبكة",
+    category: "geography",
+    sources: [rootlessLemma("مكه"), rootlessLemma("بكه")],
+  },
+  {
+    slug: "madinah",
+    labelEn: "Al-Madīnah",
+    labelAr: "المدينة ويثرب",
+    category: "geography",
+    note: "مدينة is also the ordinary word for \"a city\" in general, not always the Prophet's city specifically.",
+    sources: [rootedLemma("مدن", "مدينه"), rootlessLemma("يثرب")],
+  },
+  {
+    slug: "egypt",
+    labelEn: "Egypt (Miṣr)",
+    labelAr: "مصر",
+    category: "geography",
+    sources: [root("مصر")],
+  },
+  {
+    slug: "sheba",
+    labelEn: "Sheba (Sabaʾ)",
+    labelAr: "سبأ",
+    category: "geography",
+    sources: [root("سبأ")],
+  },
+  {
+    slug: "babylon",
+    labelEn: "Babylon",
+    labelAr: "بابل",
+    category: "geography",
+    sources: [rootlessLemma("بابل")],
+  },
+  {
+    slug: "madyan",
+    labelEn: "Madyan (Midian)",
+    labelAr: "مدين",
+    category: "geography",
+    sources: [rootedLemma("مدن", "مدين")],
+  },
+  {
+    slug: "al-ahqaf",
+    labelEn: "Al-Aḥqāf",
+    labelAr: "الأحقاف",
+    category: "geography",
+    sources: [root("حقف")],
+  },
+  {
+    slug: "rome",
+    labelEn: "Rome (Byzantium)",
+    labelAr: "الروم",
+    category: "geography",
+    sources: [rootlessLemma("روم")],
+  },
+  {
+    slug: "the-thicket",
+    labelEn: "The Thicket (Aykah)",
+    labelAr: "الأيكة",
+    category: "geography",
+    sources: [rootlessLemma("ايكه")],
+  },
+  {
+    slug: "tuwa-valley",
+    labelEn: "Ṭuwā Valley",
+    labelAr: "طوى",
+    category: "geography",
+    sources: [rootedLemma("طوي", "طوي")],
+  },
+  {
+    slug: "safa-and-marwah",
+    labelEn: "Ṣafā & Marwah",
+    labelAr: "الصفا والمروة",
+    category: "geography",
+    sources: [rootlessLemma("صفا"), rootedLemma("مرو", "مروه")],
+  },
+  {
+    slug: "iram",
+    labelEn: "Iram",
+    labelAr: "إرم",
+    category: "geography",
+    sources: [rootlessLemma("ارم")],
+  },
+  {
+    slug: "thamud",
+    labelEn: "Thamūd",
+    labelAr: "ثمود",
+    category: "geography",
+    sources: [rootlessLemma("ثمود")],
+  },
+  {
+    slug: "quraysh",
+    labelEn: "Quraysh",
+    labelAr: "قريش",
+    category: "geography",
+    sources: [rootedLemma("قرش", "قريش")],
+  },
+  {
+    slug: "children-of-israel",
+    labelEn: "Children of Israel",
+    labelAr: "بنو إسرائيل",
+    category: "geography",
+    sources: [rootlessLemma("اسرائيل")],
+  },
+  {
+    slug: "gog-and-magog",
+    labelEn: "Gog & Magog",
+    labelAr: "يأجوج ومأجوج",
+    category: "geography",
+    sources: [rootlessLemma("ياجوج"), rootlessLemma("ماجوج")],
+  },
+];
+
+export const GEOLOGY_TOPICS: TopicDefinition[] = [
+  {
+    slug: "mountains",
+    labelEn: "Mountains",
+    labelAr: "الجبال",
+    category: "geology",
+    sources: [rootedLemma("جبل", "جبل")],
+  },
+  {
+    slug: "the-sea",
+    labelEn: "The Sea",
+    labelAr: "البحر",
+    category: "geology",
+    sources: [rootedLemma("بحر", "بحر")],
+  },
+  {
+    slug: "rivers",
+    labelEn: "Rivers",
+    labelAr: "الأنهار",
+    category: "geology",
+    note: "نهر's root also covers \"daytime\" (نَهار), a much more common sense on the same root; filtered to the lemma نَهَر itself.",
+    sources: [rootedLemma("نهر", "نهر")],
+  },
+  {
+    slug: "mount-sinai",
+    labelEn: "Mount Sinai (Al-Ṭūr)",
+    labelAr: "الطور وسيناء",
+    category: "geology",
+    note: "طور's root also covers \"stages\" (أطوار); filtered to the lemma طُور itself.",
+    sources: [rootedLemma("طور", "طور"), rootlessLemma("سيناء")],
+  },
+  {
+    slug: "mount-judi",
+    labelEn: "Mount Al-Jūdī",
+    labelAr: "الجودي",
+    category: "geology",
+    sources: [rootedLemma("جود", "جودي")],
+  },
+  {
+    slug: "stones-and-rocks",
+    labelEn: "Stones & Rocks",
+    labelAr: "الحجارة",
+    category: "geology",
+    sources: [rootedLemma("حجر", "حجاره")],
+  },
+];
+
+export const METEOROLOGY_TOPICS: TopicDefinition[] = [
+  {
+    slug: "clouds",
+    labelEn: "Clouds",
+    labelAr: "السحاب والغمام",
+    category: "meteorology",
+    note: "Both roots also cover unrelated senses (\"dragged\", \"grief\"); filtered to the cloud-specific lemmas.",
+    sources: [rootedLemma("سحب", "سحاب"), rootedLemma("غمم", "غمام")],
+  },
+  {
+    slug: "rain",
+    labelEn: "Rain",
+    labelAr: "المطر والغيث",
+    category: "meteorology",
+    sources: [root("مطر"), root("غيث")],
+  },
+  {
+    slug: "wind",
+    labelEn: "Wind",
+    labelAr: "الريح",
+    category: "meteorology",
+    note: "ريح's root روح is mostly about \"spirit/soul\" (روح) and other unrelated senses; filtered to the lemma رِيح itself.",
+    sources: [rootedLemma("روح", "ريح")],
+  },
+  {
+    slug: "thunder",
+    labelEn: "Thunder",
+    labelAr: "الرعد",
+    category: "meteorology",
+    sources: [root("رعد")],
+  },
+  {
+    slug: "lightning",
+    labelEn: "Lightning",
+    labelAr: "البرق",
+    category: "meteorology",
+    note: "برق's root also covers \"vessels/goblets\" (أباريق), which is excluded; a small number of matches are the verb \"dazzled\" rather than the noun.",
+    sources: [rootedLemma("برق", "برق")],
+  },
+  {
+    slug: "hail",
+    labelEn: "Hail",
+    labelAr: "البرد",
+    category: "meteorology",
+    sources: [root("برد")],
+  },
+];
+
+export const COSMOLOGY_TOPICS: TopicDefinition[] = [
+  {
+    slug: "the-sun",
+    labelEn: "The Sun",
+    labelAr: "الشمس",
+    category: "cosmology",
+    sources: [root("شمس")],
+  },
+  {
+    slug: "the-moon",
+    labelEn: "The Moon",
+    labelAr: "القمر",
+    category: "cosmology",
+    sources: [root("قمر")],
+  },
+  {
+    slug: "stars",
+    labelEn: "Stars",
+    labelAr: "النجم",
+    category: "cosmology",
+    sources: [root("نجم")],
+  },
+  {
+    slug: "constellations",
+    labelEn: "Constellations",
+    labelAr: "البروج",
+    category: "cosmology",
+    note: "برج's root also covers \"to display one's adornment ostentatiously\" (تبرّج); filtered to the lemma بُرُوج itself.",
+    sources: [rootedLemma("برج", "بروج")],
+  },
+  {
+    slug: "sirius",
+    labelEn: "Sirius (Ash-Shiʿrā)",
+    labelAr: "الشعرى",
+    category: "cosmology",
+    note: "شعرى shares its root شعر with \"poetry\", \"hair\" and \"to perceive\"; the lemma شِعْرَى itself is used only for the star.",
+    sources: [rootedLemma("شعر", "شعري")],
+  },
+  {
+    slug: "the-sky-and-heavens",
+    labelEn: "The Sky & Heavens",
+    labelAr: "السماء",
+    category: "cosmology",
+    note: "سماء's root also covers \"name\" (اسم، سمّى), an unrelated sense; filtered to the lemma سَماء itself.",
+    sources: [rootedLemma("سمو", "سماء")],
+  },
+];
+
+export const COMMODITIES_TOPICS: TopicDefinition[] = [
+  {
+    slug: "iron",
+    labelEn: "Iron",
+    labelAr: "الحديد",
+    category: "commodities",
+    note: "حديد's root also covers \"limits/boundaries\" (حدود), a much more common sense on the same root; filtered to the lemma حَدِيد itself.",
+    sources: [rootedLemma("حدد", "حديد")],
+  },
+  {
+    slug: "silver",
+    labelEn: "Silver",
+    labelAr: "الفضة",
+    category: "commodities",
+    sources: [rootedLemma("فضض", "فضه")],
+  },
+  {
+    slug: "pearls",
+    labelEn: "Pearls",
+    labelAr: "اللؤلؤ",
+    category: "commodities",
+    sources: [root("لؤلؤ")],
+  },
+  {
+    slug: "coral",
+    labelEn: "Coral",
+    labelAr: "المرجان",
+    category: "commodities",
+    sources: [rootedLemma("مرج", "مرجان")],
+  },
+  {
+    slug: "brass",
+    labelEn: "Brass (Molten Copper)",
+    labelAr: "النحاس",
+    category: "commodities",
+    sources: [rootedLemma("نحس", "نحاس")],
+  },
+  {
+    slug: "silk",
+    labelEn: "Silk",
+    labelAr: "الحرير",
+    category: "commodities",
+    sources: [rootedLemma("حرر", "حرير")],
+  },
+  {
+    slug: "musk",
+    labelEn: "Musk",
+    labelAr: "المسك",
+    category: "commodities",
+    sources: [rootedLemma("مسك", "مسك")],
+  },
+];
+
+export const ALL_TOPICS: TopicDefinition[] = [
+  ...THEME_TOPICS,
+  ...PROPHET_TOPICS,
+  ...PEOPLE_TOPICS,
+  ...SPECIES_TOPICS,
+  ...GEOGRAPHY_TOPICS,
+  ...GEOLOGY_TOPICS,
+  ...METEOROLOGY_TOPICS,
+  ...COSMOLOGY_TOPICS,
+  ...COMMODITIES_TOPICS,
+];
 
 export function findTopicBySlug(slug: string): TopicDefinition | undefined {
   return ALL_TOPICS.find((t) => t.slug === slug);
