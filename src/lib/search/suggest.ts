@@ -28,6 +28,10 @@ export function verseHref(s: number, a: number): string {
   return `/surah/${s}/?ayah=${a}`;
 }
 
+export function formulaHref(length: number, phraseKey: string): string {
+  return `/insights/formulas/${length}/${encodeURIComponent(phraseKey)}/`;
+}
+
 /** Link to the dedicated literal phrase/sentence search results page. */
 export function phraseSearchHref(query: string): string {
   return `/search/?q=${encodeURIComponent(query)}`;

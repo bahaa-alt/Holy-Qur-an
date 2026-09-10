@@ -6,18 +6,24 @@ import { Loader2, X } from "lucide-react";
 import { getCollocations, getIndex } from "@/lib/data/loader";
 import { normalize } from "@/lib/arabic/normalize";
 import { rootHref } from "@/lib/search/suggest";
+import { metricBarPct } from "@/lib/insights/metricScale";
 import { useT } from "@/lib/i18n/LanguageContext";
 import type { CollocationsFile, IndexFile, VerbPrepositionRow } from "@/lib/data/types";
 
-function Bar({ row, max }: { row: VerbPrepositionRow; max: number }) {
-  const pct = Math.max((row.count / max) * 100, 2);
+type SortMode = "count" | "pmi";
+const SORT_PILL_CLASS = (active: boolean) => `rounded-md px-3 py-1 text-xs ${active ? "bg-accent text-accent-fg" : "text-muted"}`;
+
+function Bar({ row, values, metric, pmiLabel }: { row: VerbPrepositionRow; values: readonly number[]; metric: SortMode; pmiLabel: string }) {
+  const pct = metricBarPct(metric === "count" ? row.count : row.pmi, values);
   return (
     <div className="flex items-center gap-3 py-1.5">
       <div className="arabic-ui w-20 shrink-0 text-sm text-ink">{row.prepositionLemma}</div>
       <div className="relative h-5 flex-1 overflow-hidden rounded bg-bg">
         <div className="h-full rounded bg-accent/70" style={{ width: `${pct}%` }} />
       </div>
-      <div className="w-16 shrink-0 text-end text-xs text-muted">{row.count.toLocaleString()}</div>
+      <div className="w-32 shrink-0 text-end text-xs text-muted">
+        {row.count.toLocaleString()} · {pmiLabel}
+      </div>
     </div>
   );
 }
@@ -28,6 +34,7 @@ export function CollocationsTab() {
   const [index, setIndex] = useState<IndexFile | null>(null);
   const [query, setQuery] = useState("");
   const [selectedRoot, setSelectedRoot] = useState<string | null>(null);
+  const [sortMode, setSortMode] = useState<SortMode>("count");
 
   useEffect(() => {
     let cancelled = false;
@@ -49,11 +56,12 @@ export function CollocationsTab() {
     return index.roots.filter((r) => r.key.includes(q)).slice(0, 8);
   }, [index, query]);
 
-  const rows = useMemo(
-    () => (collocations && selectedRoot ? collocations.verbPrepositions.filter((r) => r.verbRootAr === selectedRoot) : []),
-    [collocations, selectedRoot],
-  );
-  const max = rows.length > 0 ? Math.max(...rows.map((r) => r.count)) : 1;
+  const rows = useMemo(() => {
+    if (!collocations || !selectedRoot) return [];
+    const base = collocations.verbPrepositions.filter((r) => r.verbRootAr === selectedRoot);
+    return sortMode === "count" ? [...base].sort((a, b) => b.count - a.count) : [...base].sort((a, b) => b.pmi - a.pmi);
+  }, [collocations, selectedRoot, sortMode]);
+  const metricValues = rows.map((r) => (sortMode === "count" ? r.count : r.pmi));
 
   const loading = !collocations || !index;
 
@@ -120,8 +128,25 @@ export function CollocationsTab() {
               <p className="text-sm text-muted">{t.insightsPage.collocationsNoResults}</p>
             ) : (
               <>
+                <div className="mb-2 flex justify-end">
+                  <div className="flex w-fit rounded-lg border border-border p-0.5">
+                    <button type="button" onClick={() => setSortMode("count")} className={SORT_PILL_CLASS(sortMode === "count")}>
+                      {t.insightsPage.sortByFrequency}
+                    </button>
+                    <button type="button" onClick={() => setSortMode("pmi")} className={SORT_PILL_CLASS(sortMode === "pmi")}>
+                      {t.insightsPage.sortByPmi}
+                    </button>
+                  </div>
+                </div>
+                {sortMode === "pmi" && <p className="mb-2 text-xs text-muted">{t.insightsPage.pmiExplanation}</p>}
                 {rows.map((row) => (
-                  <Bar key={row.prepositionKey} row={row} max={max} />
+                  <Bar
+                    key={row.prepositionKey}
+                    row={row}
+                    values={metricValues}
+                    metric={sortMode}
+                    pmiLabel={t.insightsPage.pmiLabel(row.pmi.toFixed(2))}
+                  />
                 ))}
                 <Link href={rootHref(selectedRoot)} className="mt-2 inline-block text-xs text-accent hover:text-accent-strong">
                   {selectedRoot} →

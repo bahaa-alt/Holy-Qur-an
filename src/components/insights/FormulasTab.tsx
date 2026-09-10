@@ -4,29 +4,20 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { getFormulas } from "@/lib/data/loader";
+import { formulaHref } from "@/lib/search/suggest";
 import { useT } from "@/lib/i18n/LanguageContext";
 import type { FormulaRow, FormulasFile } from "@/lib/data/types";
 
 const LENGTHS = [3, 4, 5, 6] as const;
 const LENGTH_PILL_CLASS = (active: boolean) => `rounded-md px-3 py-1.5 ${active ? "bg-accent text-accent-fg" : "text-muted"}`;
 
-function PhraseRow({
-  row,
-  max,
-  selected,
-  onSelect,
-}: {
-  row: FormulaRow;
-  max: number;
-  selected: boolean;
-  onSelect: () => void;
-}) {
+function PhraseRow({ length, row, max, occurrencesLabel }: { length: number; row: FormulaRow; max: number; occurrencesLabel: string }) {
   const pct = Math.max((row.count / max) * 100, 2);
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={`block w-full rounded-lg px-2 py-1.5 text-start transition-colors ${selected ? "bg-accent/10" : "hover:bg-bg"}`}
+    <Link
+      href={formulaHref(length, row.phraseKey)}
+      className="block rounded-lg px-2 py-1.5 transition-colors hover:bg-bg"
+      title={occurrencesLabel}
     >
       <div className="flex items-center gap-3">
         <div className="arabic-ui min-w-0 flex-1 truncate text-sm text-ink">{row.display}</div>
@@ -35,7 +26,7 @@ function PhraseRow({
         </div>
         <div className="w-14 shrink-0 text-end text-xs text-muted">{row.count.toLocaleString()}</div>
       </div>
-    </button>
+    </Link>
   );
 }
 
@@ -43,7 +34,6 @@ export function FormulasTab() {
   const t = useT();
   const [formulas, setFormulas] = useState<FormulasFile | null>(null);
   const [length, setLength] = useState<number>(3);
-  const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -57,7 +47,6 @@ export function FormulasTab() {
 
   const rows = formulas?.lengths.find((g) => g.length === length)?.rows ?? [];
   const max = rows.length > 0 ? Math.max(...rows.map((r) => r.count)) : 1;
-  const selectedRow = rows.find((r) => r.phraseKey === selectedKey) ?? null;
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
@@ -75,10 +64,7 @@ export function FormulasTab() {
               <button
                 key={n}
                 type="button"
-                onClick={() => {
-                  setLength(n);
-                  setSelectedKey(null);
-                }}
+                onClick={() => setLength(n)}
                 className={LENGTH_PILL_CLASS(length === n)}
               >
                 {t.insightsPage.formulasWordsLength(n)}
@@ -93,38 +79,14 @@ export function FormulasTab() {
               rows.map((row) => (
                 <PhraseRow
                   key={row.phraseKey}
+                  length={length}
                   row={row}
                   max={max}
-                  selected={row.phraseKey === selectedKey}
-                  onSelect={() => setSelectedKey((prev) => (prev === row.phraseKey ? null : row.phraseKey))}
+                  occurrencesLabel={t.insightsPage.formulasOccurrencesCount(row.count)}
                 />
               ))
             )}
           </div>
-
-          {selectedRow && (
-            <div className="mt-4 border-t border-border pt-4">
-              <p className="text-sm text-muted">
-                {t.insightsPage.formulasOccurrencesCount(selectedRow.count)}
-                {selectedRow.count > selectedRow.refs.length
-                  ? ` · ${t.insightsPage.formulasShowingFirstRefs(selectedRow.refs.length)}`
-                  : ""}
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {selectedRow.refs.map((ref) => (
-                  <Link
-                    key={`${ref.s}:${ref.a}`}
-                    href={`/surah/${ref.s}/?ayah=${ref.a}`}
-                    className="rounded-full border border-border px-2.5 py-1 text-xs text-accent hover:border-accent"
-                  >
-                    <bdi>
-                      {ref.s}:{ref.a}
-                    </bdi>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
         </>
       )}
     </div>

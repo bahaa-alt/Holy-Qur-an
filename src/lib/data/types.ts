@@ -359,6 +359,14 @@ export interface VerbPrepositionRow {
   /** canonical diacritized display form, e.g. "بِ", "مِن", "إِلَى" */
   prepositionLemma: string;
   count: number;
+  /**
+   * log2 pointwise mutual information over the space of tracked-verb
+   * occurrences that have any following word: log2(P(verb,prep) /
+   * (P(verb)*P(prep))), where P(verb) and P(prep) are each measured within
+   * that same space. Surfaces which preposition is distinctively (not just
+   * frequently) associated with a given verb.
+   */
+  pmi: number;
 }
 
 export interface CollocationsFile {
@@ -388,12 +396,22 @@ export interface RootPairRow {
   rootA: string;
   rootB: string;
   count: number;
+  /**
+   * log2 pointwise mutual information: log2(P(a,b) / (P(a)*P(b))), using
+   * each root's corpus-wide distinct-verse rate as P(root). Positive means
+   * the pair co-occurs more than chance given how common each root is
+   * alone; unlike raw count, it isn't biased toward simply-frequent roots
+   * (e.g. أله/قول co-occur often mostly because both are extremely common
+   * on their own -- a high-count, unremarkable-PMI pair).
+   */
+  pmi: number;
 }
 
-/** One root's co-occurrence partner: the other root and their shared verse count. */
+/** One root's co-occurrence partner: the other root, their shared verse count, and PMI. */
 export interface RootCooccurrencePartner {
   root: string;
   count: number;
+  pmi: number;
 }
 
 /**
@@ -407,7 +425,9 @@ export interface RootCooccurrencePartner {
 export interface CooccurrenceFile {
   /** top 50 pairs globally, sorted by count desc */
   topPairs: RootPairRow[];
-  /** root (Arabic text) -> its top 5 co-occurring partners, sorted by count desc */
+  /** top 50 pairs globally, sorted by pmi desc -- surfaces distinctive-but-rare pairings topPairs' count-only ranking would miss */
+  topPairsByPmi: RootPairRow[];
+  /** root (Arabic text) -> its co-occurring partners: the union of its top 5 by count and top 5 by PMI, so a UI sort toggle has something genuine to show either way */
   byRoot: Record<string, RootCooccurrencePartner[]>;
 }
 
@@ -453,16 +473,24 @@ export interface PatternsFile {
   rootShapes: RootShapeStatRow[];
 }
 
+/** One verse a formula phrase occurs in. */
+export interface FormulaRef {
+  s: number;
+  a: number;
+  /** 1-based index of the phrase's first word within this verse (see src/lib/highlight.ts) */
+  w: number;
+}
+
 /** One recurring multi-word phrase (a candidate Qur'anic "formula"). */
 export interface FormulaRow {
   /** normalize()-d tokens, space-joined -- the grouping key */
   phraseKey: string;
   /** the diacritized surface text of its first attested occurrence, space-joined */
   display: string;
-  /** total occurrences across the whole Qur'an */
+  /** total occurrences across the whole Qur'an -- equal to refs.length */
   count: number;
-  /** verses it occurs in, capped at 12 (see count for the true total when it exceeds that) */
-  refs: { s: number; a: number }[];
+  /** every verse it occurs in, uncapped -- powers both the tab's inline preview and its full detail page */
+  refs: FormulaRef[];
 }
 
 /** Top recurring phrases of one fixed word-length. */

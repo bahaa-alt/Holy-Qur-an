@@ -1,5 +1,5 @@
 import { normalize } from "../../src/lib/arabic/normalize";
-import type { FormulaLengthGroup, FormulaRow, FormulasFile, SurahFile } from "../../src/lib/data/types";
+import type { FormulaLengthGroup, FormulaRef, FormulaRow, FormulasFile, SurahFile } from "../../src/lib/data/types";
 
 const LENGTHS = [3, 4, 5, 6] as const;
 // Higher minimum for shorter phrases, since short word sequences recur far
@@ -8,12 +8,15 @@ const LENGTHS = [3, 4, 5, 6] as const;
 // bar than a 6-word one to be worth surfacing.
 const MIN_COUNT: Record<number, number> = { 3: 6, 4: 4, 5: 3, 6: 3 };
 const TOP_N = 25;
-const MAX_REFS = 12;
 
 interface FormulaAgg {
   display: string;
   count: number;
-  refs: { s: number; a: number }[];
+  // Uncapped: only the top TOP_N phrases per length survive into the final
+  // output, so the full ref list here costs nothing there, and a phrase's
+  // detail page (/insights/formulas/[length]/[key]/) needs every occurrence,
+  // not a preview.
+  refs: FormulaRef[];
 }
 
 /**
@@ -45,7 +48,7 @@ export function buildFormulas(surahFiles: ReadonlyMap<number, SurahFile>): Formu
             map.set(key, agg);
           }
           agg.count++;
-          if (agg.refs.length < MAX_REFS) agg.refs.push({ s: surah.n, a: verse.a });
+          agg.refs.push({ s: surah.n, a: verse.a, w: i + 1 });
         }
       }
     }

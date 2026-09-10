@@ -209,13 +209,13 @@ export const en: Dict = {
   advancedSearchPage: {
     title: "Advanced search",
     subtitle:
-      "Combine facets across the whole corpus -- category, verb Form, a specific root, surah range, and Meccan/Medinan -- to find things no single root's own page can answer, like every Form VIII passive participle in the Medinan surahs.",
+      "Combine facets across the whole corpus -- category, verb Form, one or more roots, surah range, and Meccan/Medinan -- to find things no single root's own page can answer, like every Form VIII passive participle in the Medinan surahs, or every occurrence of either of two roots together.",
     loading: "Loading the corpus index…",
     categoryLabel: "Category",
     verbFormLabel: "Verb form",
     rootLabel: "Root",
     rootPlaceholder: "Type a root to narrow to it…",
-    rootClear: "Clear root",
+    rootClear: (root) => `Remove root ${root}`,
     surahRangeLabel: "Surah range",
     surahFromLabel: "From",
     surahToLabel: "To",
@@ -349,6 +349,8 @@ export const en: Dict = {
     cooccurrenceNoResults: "This root shares fewer than 3 verses with any other root.",
     cooccurrencePickPrompt: "Pick a root above to see which other roots co-occur with it most.",
     cooccurrenceSharedVerses: (n) => `${n.toLocaleString()} shared verses`,
+    cooccurrenceGraphCaption:
+      "The 24 most-connected roots among the top 50 pairs. Node size and line thickness both reflect co-occurrence count; hover a line for its exact count. Click a root to open it.",
     patternsHeading: "Morphological patterns",
     patternsDescription:
       "How productive each verb Form, derivational category, and root shape is across the whole corpus -- a cross-root view of which grammatical patterns are common or rare, distinct from any single root's own forms table.",
@@ -364,6 +366,8 @@ export const en: Dict = {
     patternsLoading: "Loading patterns…",
     patternsRootsCount: (n) => `${n.toLocaleString()} root${n === 1 ? "" : "s"}`,
     patternsLemmasCount: (n) => `${n.toLocaleString()} root-lemma pair${n === 1 ? "" : "s"}`,
+    patternsDrilldownHint: "Click a bar to see its matching occurrences in Advanced Search.",
+    patternsShapeRootsShown: (shown, total) => `Showing ${shown.toLocaleString()} of ${total.toLocaleString()} roots, by occurrence count`,
     formulasHeading: "Recurring phrases (formulas)",
     formulasDescription:
       "Word sequences that recur often enough, in exactly the same words, to be candidate fixed expressions -- classical Qur'anic rhetorical studies call this takrar (repetition). Sliding windows of 3-6 consecutive words within a single verse, never crossing a verse boundary; shorter phrases need a higher repeat count to qualify, since they recur more often by grammatical chance alone.",
@@ -371,7 +375,16 @@ export const en: Dict = {
     formulasLoading: "Loading phrases…",
     formulasNoResults: "No phrase of this length recurs often enough to qualify.",
     formulasOccurrencesCount: (n) => `${n.toLocaleString()} occurrences`,
-    formulasShowingFirstRefs: (n) => `showing the first ${n}`,
+    sortByFrequency: "Frequency",
+    sortByPmi: "Statistical strength (PMI)",
+    pmiExplanation:
+      "PMI measures how much more (or less) than chance two things co-occur, correcting for how common each is by itself -- unlike raw frequency, it isn't biased toward simply-common items.",
+    pmiLabel: (value) => `PMI ${value}`,
+  },
+  formulaDetailPage: {
+    backToInsights: "← Back to Insights",
+    summary: (length, count) =>
+      `A ${length}-word phrase, occurring ${count.toLocaleString()} time${count === 1 ? "" : "s"} across the Qur'an.`,
   },
   surahPage: {
     previous: "Previous",
@@ -499,7 +512,7 @@ export const en: Dict = {
       "Each verse's \"ending\" is the final letter of its last word, diacritics stripped -- the unit classical Qur'anic rhetorical studies (fawāṣil/sajʿ) use to classify verse-endings. Letter variants (ة vs ه, alif forms) are not unified here, matching the letter-frequency table's convention.",
     collocationsMethodHeading: "Verb–preposition collocations",
     collocationsMethodBody:
-      "For every occurrence of a verb root, checks whether the immediately following word -- or, for a one-letter proclitic like بِ/لِ/كَ, that word's attached prefix segment -- is one of ten canonical Arabic prepositions (ب ل ك من إلى على في عن مع حتى). Restricted to this list rather than any following particle, so the result reflects verb government (valency) specifically, not incidental adjacency to a conjunction, negation, or interrogative.",
+      "For every occurrence of a verb root, checks whether the immediately following word -- or, for a one-letter proclitic like بِ/لِ/كَ, that word's attached prefix segment -- is one of ten canonical Arabic prepositions (ب ل ك من إلى على في عن مع حتى). Restricted to this list rather than any following particle, so the result reflects verb government (valency) specifically, not incidental adjacency to a conjunction, negation, or interrogative. Each combination also gets a PMI (pointwise mutual information) score alongside its raw count, measured over all tracked-verb occurrences with a following word: PMI asks whether a preposition follows a given verb more than its own overall frequency in that space would predict, so it isn't dominated by simply-common prepositions the way raw count is.",
     abjadMethodHeading: "Abjad value (ḥisāb al-jummal)",
     abjadMethodBody:
       "Sums each letter's value in the classical 28-letter Arabic numeral system (أبجد هوز حطي...), after stripping diacritics and folding alif variants and hamza carriers (أ إ آ ٱ ء ؤ ئ) to ا, teh marbuta (ة) to ه, and alif maksura (ى) to ي -- hamza carries no separate value in this system, which predates hamza as a distinct letter.",
@@ -508,7 +521,7 @@ export const en: Dict = {
       "The 30-part Juz' and 60-part Hizb divisions are standard structural divisions of the Mushaf, unrelated to the morphology dataset above. Boundaries were cross-checked against two independent community-maintained datasets (see the project's source code for exact references and commit history); that check found and corrected two isolated errors in one source's Hizb boundaries before they shipped.",
     cooccurrenceMethodHeading: "Root co-occurrence network",
     cooccurrenceMethodBody:
-      "For every verse, collects its distinct rooted-word roots, then tallies every unordered pair of roots that share at least one verse, across the whole Qur'an -- unlike the per-root Collocations feature (what else appears in one root's own verses), this ranks pairs corpus-wide. A pair sharing fewer than 3 verses is excluded as noise; the top 50 pairs overall and each root's top 5 partners are shown.",
+      "For every verse, collects its distinct rooted-word roots, then tallies every unordered pair of roots that share at least one verse, across the whole Qur'an -- unlike the per-root Collocations feature (what else appears in one root's own verses), this ranks pairs corpus-wide. A pair sharing fewer than 3 verses is excluded as noise; the top 50 pairs overall and each root's top 5 partners are shown. Raw count is biased toward simply-frequent roots (two very common roots will co-occur often just because each is everywhere), so every pair also gets a PMI (pointwise mutual information) score, using each root's own corpus-wide verse frequency as its baseline -- a positive PMI means the pair co-occurs more than that baseline predicts, surfacing distinctive pairings a count-only ranking would miss, including rare-but-tightly-bound ones.",
     patternsMethodHeading: "Morphological patterns",
     patternsMethodBody:
       "Every rooted segment is classified by verb Form (I-XI; an untagged verb defaults to Form I, matching the per-root Conjugation table's convention), by the same derivational category used everywhere else in this app, and by root shape (sound, hollow, defective, assimilated, geminate, hamzated, quadriliteral -- see the Roots browse page's \"by shape\" grouping). Each is then tallied across every root in the corpus, giving occurrence and distinct-root counts per Form/category/shape -- a cross-root productivity view, not a per-root breakdown.",

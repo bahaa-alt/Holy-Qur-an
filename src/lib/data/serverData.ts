@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { IndexFile, InsightsFile, ManifestFile, MetaFile, RootFile, SurahFile, VerseRootsFile } from "./types";
+import type { FormulasFile, IndexFile, InsightsFile, ManifestFile, MetaFile, RootFile, SurahFile, VerseRootsFile } from "./types";
 
 /**
  * Reads a static data file directly from disk. Only valid at build time
@@ -28,6 +28,10 @@ export function readManifest(): ManifestFile {
 
 export function readInsights(): InsightsFile {
   return readDataFile<InsightsFile>("insights.json");
+}
+
+export function readFormulas(): FormulasFile {
+  return readDataFile<FormulasFile>("formulas.json");
 }
 
 export function readRootFile(root: string): RootFile {

@@ -222,7 +222,8 @@ async function main() {
   const distinctiveVocab = buildDistinctiveVocab(words, rootFiles, indexRoots, meta.surahs.length);
   const collocations = buildCollocations(words);
   const abjad = buildAbjad(words, meta.surahs.length);
-  const cooccurrence = buildCooccurrence(words);
+  const verseCountByRoot = new Map(indexRoots.map((r) => [r.ar, r.verseCount]));
+  const cooccurrence = buildCooccurrence(words, verseCountByRoot, indexableVerses.length);
   const patterns = buildPatterns(words);
   const formulas = buildFormulas(surahFiles);
   const corpusExportCsv = buildCorpusExportCsv(words, surahFiles, meta);

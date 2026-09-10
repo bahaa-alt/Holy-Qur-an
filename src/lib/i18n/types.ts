@@ -215,7 +215,7 @@ export interface Dict {
     verbFormLabel: string;
     rootLabel: string;
     rootPlaceholder: string;
-    rootClear: string;
+    rootClear: (root: string) => string;
     surahRangeLabel: string;
     surahFromLabel: string;
     surahToLabel: string;
@@ -336,6 +336,7 @@ export interface Dict {
     cooccurrenceNoResults: string;
     cooccurrencePickPrompt: string;
     cooccurrenceSharedVerses: (n: number) => string;
+    cooccurrenceGraphCaption: string;
     patternsHeading: string;
     patternsDescription: string;
     patternsVerbFormsHeading: string;
@@ -347,13 +348,22 @@ export interface Dict {
     patternsLoading: string;
     patternsRootsCount: (n: number) => string;
     patternsLemmasCount: (n: number) => string;
+    patternsDrilldownHint: string;
+    patternsShapeRootsShown: (shown: number, total: number) => string;
     formulasHeading: string;
     formulasDescription: string;
     formulasWordsLength: (n: number) => string;
     formulasLoading: string;
     formulasNoResults: string;
     formulasOccurrencesCount: (n: number) => string;
-    formulasShowingFirstRefs: (n: number) => string;
+    sortByFrequency: string;
+    sortByPmi: string;
+    pmiExplanation: string;
+    pmiLabel: (value: string) => string;
+  };
+  formulaDetailPage: {
+    backToInsights: string;
+    summary: (length: number, count: number) => string;
   };
   surahPage: {
     previous: string;

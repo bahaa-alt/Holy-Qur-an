@@ -12,8 +12,8 @@ export interface AdvancedSearchQueryState {
   /** 1-11 (Form I-XI) */
   verbForms: number[];
   revelation: "all" | "meccan" | "medinan";
-  /** the root's Arabic text, or null when no root filter is set */
-  rootAr: string | null;
+  /** roots' Arabic text, matched as OR (any occurrence of any of these roots) -- combines with every other facet as AND */
+  rootArs: string[];
   surahFrom: number;
   surahTo: number;
   page: number;
@@ -25,7 +25,7 @@ export function encodeAdvancedSearchQuery(state: AdvancedSearchQueryState): stri
   if (state.cats.length > 0) params.set("cats", state.cats.join(","));
   if (state.verbForms.length > 0) params.set("forms", state.verbForms.join(","));
   if (state.revelation !== "all") params.set("rev", state.revelation);
-  if (state.rootAr) params.set("root", state.rootAr);
+  if (state.rootArs.length > 0) params.set("roots", state.rootArs.join(","));
   if (state.surahFrom !== 1) params.set("from", String(state.surahFrom));
   if (state.surahTo !== 114) params.set("to", String(state.surahTo));
   if (state.page !== 0) params.set("page", String(state.page));
@@ -50,7 +50,7 @@ export function decodeAdvancedSearchQuery(search: string, validCats: ReadonlySet
   const rev = params.get("rev");
   const revelation: "all" | "meccan" | "medinan" = rev === "meccan" || rev === "medinan" ? rev : "all";
 
-  const rootAr = params.get("root") || null;
+  const rootArs = (params.get("roots")?.split(",") ?? []).filter((r) => r.length > 0);
 
   const fromRaw = Number(params.get("from"));
   const surahFrom = Number.isInteger(fromRaw) && fromRaw >= 1 && fromRaw <= 114 ? fromRaw : 1;
@@ -61,5 +61,5 @@ export function decodeAdvancedSearchQuery(search: string, validCats: ReadonlySet
   const pageRaw = Number(params.get("page"));
   const page = Number.isInteger(pageRaw) && pageRaw >= 0 ? pageRaw : 0;
 
-  return { cats, verbForms, revelation, rootAr, surahFrom, surahTo, page };
+  return { cats, verbForms, revelation, rootArs, surahFrom, surahTo, page };
 }

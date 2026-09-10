@@ -30,6 +30,14 @@ const PREPOSITIONS: Record<string, string> = {
  * often either way. This is verb valency/government, a real question in
  * Arabic grammar (a verb's meaning can shift with the preposition it
  * takes), which no per-root page currently surfaces.
+ *
+ * Also computes each combo's PMI (log2 pointwise mutual information) over
+ * the space of tracked-verb occurrences that have any following word at
+ * all -- raw count alone is biased toward simply-frequent verbs and
+ * prepositions (ب, being the most common preposition, would top nearly
+ * every verb's list by count regardless of any real grammatical affinity);
+ * PMI instead asks whether this specific pairing is more common than each
+ * side's own frequency in that space would predict.
  */
 export function buildCollocations(words: readonly RawWord[]): CollocationsFile {
   const wordByPosition = new Map<string, RawWord>();
@@ -38,13 +46,24 @@ export function buildCollocations(words: readonly RawWord[]): CollocationsFile {
   }
 
   const counts = new Map<string, number>(); // key: `${verbRootAr}|${prepositionKey}`
+  // Per-verb-root and per-preposition totals within the "opportunity" space
+  // (tracked-verb occurrences that have any next word, not just ones
+  // followed by a tracked preposition) -- the denominators PMI needs.
+  const verbTotalWithNext = new Map<string, number>();
+  const prepGlobalTotal = new Map<string, number>();
+  let totalWithNext = 0;
 
   for (const word of words) {
     for (const seg of word.segments) {
       if (seg.pos !== "V" || seg.root === null) continue;
 
       const nextWord = wordByPosition.get(`${word.s}:${word.a}:${word.w + 1}`);
-      const firstSeg = nextWord?.segments[0];
+      if (!nextWord) continue;
+
+      verbTotalWithNext.set(seg.root, (verbTotalWithNext.get(seg.root) ?? 0) + 1);
+      totalWithNext++;
+
+      const firstSeg = nextWord.segments[0];
       if (!firstSeg || firstSeg.pos !== "P" || firstSeg.lemma === null) continue;
 
       const prepKey = normalize(firstSeg.lemma);
@@ -52,12 +71,16 @@ export function buildCollocations(words: readonly RawWord[]): CollocationsFile {
 
       const comboKey = `${seg.root}|${prepKey}`;
       counts.set(comboKey, (counts.get(comboKey) ?? 0) + 1);
+      prepGlobalTotal.set(prepKey, (prepGlobalTotal.get(prepKey) ?? 0) + 1);
     }
   }
 
   const verbPrepositions: VerbPrepositionRow[] = [...counts.entries()].map(([comboKey, count]) => {
     const [verbRootAr, prepositionKey] = comboKey.split("|");
-    return { verbRootAr, prepositionKey, prepositionLemma: PREPOSITIONS[prepositionKey], count };
+    const verbTotal = verbTotalWithNext.get(verbRootAr)!;
+    const prepTotal = prepGlobalTotal.get(prepositionKey)!;
+    const pmi = Math.log2((count * totalWithNext) / (verbTotal * prepTotal));
+    return { verbRootAr, prepositionKey, prepositionLemma: PREPOSITIONS[prepositionKey], count, pmi };
   });
   verbPrepositions.sort((a, b) => a.verbRootAr.localeCompare(b.verbRootAr) || b.count - a.count);
 

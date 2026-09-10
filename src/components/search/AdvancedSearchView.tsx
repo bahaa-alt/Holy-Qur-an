@@ -31,7 +31,7 @@ export function AdvancedSearchView() {
   const [forms, setForms] = useState<Set<number>>(new Set());
   const [revelation, setRevelation] = useState<"all" | "meccan" | "medinan">("all");
   const [rootQuery, setRootQuery] = useState("");
-  const [rootFilterAr, setRootFilterAr] = useState<string | null>(null);
+  const [rootFilters, setRootFilters] = useState<Set<string>>(new Set());
   const [surahFrom, setSurahFrom] = useState(1);
   const [surahTo, setSurahTo] = useState(114);
   const [page, setPage] = useState(0);
@@ -64,8 +64,8 @@ export function AdvancedSearchView() {
     if (decoded.revelation !== "all") {
       setRevelation(decoded.revelation);
     }
-    if (decoded.rootAr) {
-      setRootFilterAr(decoded.rootAr);
+    if (decoded.rootArs.length > 0) {
+      setRootFilters(new Set(decoded.rootArs));
     }
     if (decoded.surahFrom !== 1) {
       setSurahFrom(decoded.surahFrom);
@@ -90,29 +90,32 @@ export function AdvancedSearchView() {
       cats: [...cats],
       verbForms: [...forms],
       revelation,
-      rootAr: rootFilterAr,
+      rootArs: [...rootFilters],
       surahFrom,
       surahTo,
       page,
     });
     const next = query ? `${window.location.pathname}?${query}` : window.location.pathname;
     window.history.replaceState(null, "", next);
-  }, [cats, forms, revelation, rootFilterAr, surahFrom, surahTo, page, hydrated]);
+  }, [cats, forms, revelation, rootFilters, surahFrom, surahTo, page, hydrated]);
 
   const rootMatches = useMemo(() => {
     if (!data) return [];
     const q = normalize(rootQuery.trim());
     if (q === "") return [];
-    return data.index.roots.filter((r) => r.key.includes(q)).slice(0, 8);
-  }, [data, rootQuery]);
+    return data.index.roots.filter((r) => r.key.includes(q) && !rootFilters.has(r.ar)).slice(0, 8);
+  }, [data, rootQuery, rootFilters]);
 
   const allRows: AdvancedSearchRow[] = useMemo(() => {
     if (!data) return [];
-    const rootIdxs = rootFilterAr
-      ? new Set(
-          [data.index.roots.findIndex((r) => r.ar === rootFilterAr)].filter((i): i is number => i >= 0),
-        )
-      : undefined;
+    const rootIdxs =
+      rootFilters.size > 0
+        ? new Set(
+            [...rootFilters]
+              .map((ar) => data.index.roots.findIndex((r) => r.ar === ar))
+              .filter((i): i is number => i >= 0),
+          )
+        : undefined;
     const from = Math.min(surahFrom, surahTo);
     const to = Math.max(surahFrom, surahTo);
     const surahs = new Set(Array.from({ length: to - from + 1 }, (_, i) => from + i));
@@ -124,20 +127,20 @@ export function AdvancedSearchView() {
       revelationType: revelation === "all" ? undefined : revelation,
     };
     return filterOccurrences(data.occ, data.meta, filters);
-  }, [data, cats, forms, revelation, rootFilterAr, surahFrom, surahTo]);
+  }, [data, cats, forms, revelation, rootFilters, surahFrom, surahTo]);
 
   const pageCount = Math.max(1, Math.ceil(allRows.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount - 1);
   const pageRows = allRows.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
   const resultsKey = pageRows.map((r) => `${r.s}.${r.a}.${r.w}`).join("_") || `empty-${currentPage}`;
 
-  const hasFilters = cats.size > 0 || forms.size > 0 || revelation !== "all" || rootFilterAr !== null || surahFrom !== 1 || surahTo !== 114;
+  const hasFilters = cats.size > 0 || forms.size > 0 || revelation !== "all" || rootFilters.size > 0 || surahFrom !== 1 || surahTo !== 114;
 
   function clearFilters() {
     setCats(new Set());
     setForms(new Set());
     setRevelation("all");
-    setRootFilterAr(null);
+    setRootFilters(new Set());
     setRootQuery("");
     setSurahFrom(1);
     setSurahTo(114);
@@ -212,53 +215,57 @@ export function AdvancedSearchView() {
               <h2 className="text-xs font-medium uppercase tracking-wide text-muted">
                 {t.advancedSearchPage.rootLabel}
               </h2>
-              {rootFilterAr ? (
-                <div className="mt-2">
-                  <span className="arabic-ui inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-1.5 text-sm text-ink">
-                    {rootFilterAr}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setRootFilterAr(null);
-                        setPage(0);
-                      }}
-                      aria-label={t.advancedSearchPage.rootClear}
-                      className="text-muted hover:text-ink"
+              {rootFilters.size > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {[...rootFilters].map((root) => (
+                    <span
+                      key={root}
+                      className="arabic-ui inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-1.5 text-sm text-ink"
                     >
-                      <X size={13} />
-                    </button>
-                  </span>
-                </div>
-              ) : (
-                <div className="mt-2">
-                  <input
-                    type="text"
-                    value={rootQuery}
-                    onChange={(e) => setRootQuery(e.target.value)}
-                    placeholder={t.advancedSearchPage.rootPlaceholder}
-                    className="w-full rounded-xl border border-border px-4 py-2.5 text-sm text-ink placeholder:text-muted focus:outline-none"
-                  />
-                  {rootMatches.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {rootMatches.map((r) => (
-                        <button
-                          key={r.ar}
-                          type="button"
-                          onClick={() => {
-                            setRootFilterAr(r.ar);
-                            setRootQuery("");
-                            setPage(0);
-                          }}
-                          className="arabic-ui inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
-                        >
-                          <span>{r.ar}</span>
-                          <span className="text-xs text-muted">{r.count.toLocaleString()}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                      {root}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRootFilters((prev) => toggle(prev, root));
+                          setPage(0);
+                        }}
+                        aria-label={t.advancedSearchPage.rootClear(root)}
+                        className="text-muted hover:text-ink"
+                      >
+                        <X size={13} />
+                      </button>
+                    </span>
+                  ))}
                 </div>
               )}
+              <div className="mt-2">
+                <input
+                  type="text"
+                  value={rootQuery}
+                  onChange={(e) => setRootQuery(e.target.value)}
+                  placeholder={t.advancedSearchPage.rootPlaceholder}
+                  className="w-full rounded-xl border border-border px-4 py-2.5 text-sm text-ink placeholder:text-muted focus:outline-none"
+                />
+                {rootMatches.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {rootMatches.map((r) => (
+                      <button
+                        key={r.ar}
+                        type="button"
+                        onClick={() => {
+                          setRootFilters((prev) => toggle(prev, r.ar));
+                          setRootQuery("");
+                          setPage(0);
+                        }}
+                        className="arabic-ui inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
+                      >
+                        <span>{r.ar}</span>
+                        <span className="text-xs text-muted">{r.count.toLocaleString()}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div>

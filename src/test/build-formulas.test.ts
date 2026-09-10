@@ -73,6 +73,23 @@ const SURAH_FILES = new Map<number, SurahFile>([
       ],
     },
   ],
+  [
+    // Six more verses embedding "A B C" starting at word 2 (not word 1,
+    // unlike surah 1's verses) -- checks that the stored starting index is
+    // the phrase's actual position within each verse, not always 1.
+    4,
+    {
+      n: 4,
+      verses: [
+        verse(1, ["Z", "A", "B", "C", "Y"]),
+        verse(2, ["Z", "A", "B", "C", "Y"]),
+        verse(3, ["Z", "A", "B", "C", "Y"]),
+        verse(4, ["Z", "A", "B", "C", "Y"]),
+        verse(5, ["Z", "A", "B", "C", "Y"]),
+        verse(6, ["Z", "A", "B", "C", "Y"]),
+      ],
+    },
+  ],
 ]);
 
 describe("buildFormulas", () => {
@@ -84,12 +101,20 @@ describe("buildFormulas", () => {
   });
 
   it("counts a phrase meeting the length-3 minimum and reports its verse refs", () => {
+    // 6 occurrences from surah 1 (starting at word 1) + 6 more from surah 4
+    // (embedded starting at word 2) = 12 total.
     const row = byLength.get(3)!.find((r) => r.phraseKey === "A B C");
     expect(row).toBeDefined();
-    expect(row!.count).toBe(6);
+    expect(row!.count).toBe(12);
     expect(row!.display).toBe("A B C");
-    expect(row!.refs).toHaveLength(6);
-    expect(row!.refs[0]).toEqual({ s: 1, a: 1 });
+    expect(row!.refs).toHaveLength(12);
+    expect(row!.refs[0]).toEqual({ s: 1, a: 1, w: 1 });
+  });
+
+  it("records the phrase's actual starting word index, not always 1", () => {
+    const row = byLength.get(3)!.find((r) => r.phraseKey === "A B C");
+    const surah4Ref = row!.refs.find((r) => r.s === 4);
+    expect(surah4Ref).toEqual({ s: 4, a: 1, w: 2 });
   });
 
   it("excludes a length-3 phrase below the length-3 minimum", () => {

@@ -11,7 +11,7 @@ describe("encodeAdvancedSearchQuery", () => {
         cats: [],
         verbForms: [],
         revelation: "all",
-        rootAr: null,
+        rootArs: [],
         surahFrom: 1,
         surahTo: 114,
         page: 0,
@@ -24,7 +24,7 @@ describe("encodeAdvancedSearchQuery", () => {
       cats: ["noun", "verb.perf"],
       verbForms: [1, 4],
       revelation: "meccan",
-      rootAr: "كتب",
+      rootArs: ["كتب", "رحم"],
       surahFrom: 2,
       surahTo: 10,
       page: 3,
@@ -33,7 +33,7 @@ describe("encodeAdvancedSearchQuery", () => {
     expect(params.get("cats")).toBe("noun,verb.perf");
     expect(params.get("forms")).toBe("1,4");
     expect(params.get("rev")).toBe("meccan");
-    expect(params.get("root")).toBe("كتب");
+    expect(params.get("roots")).toBe("كتب,رحم");
     expect(params.get("from")).toBe("2");
     expect(params.get("to")).toBe("10");
     expect(params.get("page")).toBe("3");
@@ -46,19 +46,19 @@ describe("decodeAdvancedSearchQuery", () => {
       cats: [],
       verbForms: [],
       revelation: "all",
-      rootAr: null,
+      rootArs: [],
       surahFrom: 1,
       surahTo: 114,
       page: 0,
     });
   });
 
-  it("round-trips a full filter state, including a root with no comma/encoding hazards", () => {
+  it("round-trips a full filter state, including multiple roots with no comma/encoding hazards", () => {
     const original = {
       cats: ["noun", "verb.perf"] as Cat[],
       verbForms: [1, 4],
       revelation: "medinan" as const,
-      rootAr: "أمن",
+      rootArs: ["أمن", "كتب"],
       surahFrom: 5,
       surahTo: 20,
       page: 2,
