@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { useSearch } from "./useSearch";
 import { SuggestionList } from "./SuggestionList";
+import { useT } from "@/lib/i18n/LanguageContext";
 import type { Suggestion } from "@/lib/search/suggest";
 
 const PLACEHOLDERS = ["كتب", "رحم", "knowledge", "يعلمون", "قول", "mercy"];
 
 export function SearchBox({ autoFocus = false }: { autoFocus?: boolean }) {
+  const t = useT();
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -94,8 +96,8 @@ export function SearchBox({ autoFocus = false }: { autoFocus?: boolean }) {
           onChange={(e) => handleQueryChange(e.target.value)}
           onFocus={() => query.trim() !== "" && setOpen(true)}
           onKeyDown={onKeyDown}
-          placeholder={`Search a root, word, or translation… e.g. ${placeholder}`}
-          aria-label="Search a root, word, or translation"
+          placeholder={t.searchBox.placeholder(placeholder)}
+          aria-label={t.searchBox.ariaLabel}
           role="combobox"
           aria-expanded={open}
           aria-controls="search-suggestions"

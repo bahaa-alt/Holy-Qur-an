@@ -1,0 +1,73 @@
+{
+  "purpose": "Classical Arabic grammar and lexicon reference works requested for future use in this project -- like references/tafsir, not read by the shipped app today.",
+  "checkedOn": "2026-09-10",
+  "notes": [
+    "Unlike the tafsir works (see references/tafsir/manifest.json), none of these were found in a cleanly structured, directly downloadable form (a simple per-surah/per-entry JSON API) at any source reachable from this environment. Two leads were identified but not resolved to exact download paths within a reasonable research budget this session -- see each entry's `note`.",
+    "This sandbox's network policy blocks most non-GitHub domains outright (kitab-project.org, archive.org, shamela.ws, and others all returned connection-blocked errors), which ruled out several otherwise-promising leads before their content could even be checked."
+  ],
+  "requested": [
+    {
+      "titleAr": "الكتاب",
+      "titleEn": "Al-Kitab",
+      "author": "Sibawayh (d. 180 AH)",
+      "status": "lead-identified-not-resolved",
+      "note": "Has a known identifier (0180Sibawayh.KitabSibawayh) in the OpenITI corpus (github.com/OpenITI), a large multi-repo collection of classical Arabic/Islamicate texts split into ~25-lunar-year-period repositories (e.g. OpenITI/0225AH). Locating the exact repo and file path requires either a metadata index file this session couldn't locate, or manually paging through OpenITI's repository list -- not completed here. kitab-project.org (the corpus's own browse/download UI) is blocked by this environment's network policy."
+    },
+    {
+      "titleAr": "المفصل في صنعة الإعراب",
+      "titleEn": "Al-Mufassal fi San'at al-I'rab",
+      "author": "Al-Zamakhshari (d. 538 AH)",
+      "status": "unavailable",
+      "note": "Not found in structured form at any reachable source. May also be in the OpenITI corpus under al-Zamakhshari's entry (same caveat as al-Kitab above), but this wasn't confirmed."
+    },
+    {
+      "titleAr": "أوضح المسالك إلى ألفية ابن مالك (و قطر الندى وبل الصدى)",
+      "titleEn": "Awdah al-Masalik ila Alfiyyat Ibn Malik (and Qatr al-Nada wa Ball al-Sada)",
+      "author": "Ibn Hisham al-Ansari (d. 761 AH)",
+      "status": "unavailable",
+      "note": "Not found in structured form at any reachable source."
+    },
+    {
+      "titleAr": "مغني اللبيب عن كتب الأعاريب",
+      "titleEn": "Mughni al-Labib 'an Kutub al-A'arib",
+      "author": "Ibn Hisham al-Ansari",
+      "status": "unavailable",
+      "note": "Not found in structured form at any reachable source."
+    },
+    {
+      "titleAr": "تلخيص المفتاح",
+      "titleEn": "Talkhis al-Miftah",
+      "author": "Al-Qazwini (d. 739 AH)",
+      "status": "unavailable",
+      "note": "Not found in structured form at any reachable source."
+    },
+    {
+      "titleAr": "لسان العرب",
+      "titleEn": "Lisan al-Arab",
+      "author": "Ibn Manzur (d. 711 AH)",
+      "status": "lead-identified-not-resolved",
+      "note": "Bundled (alongside al-Qamus al-Muhit and several other classical lexicons) inside a compressed SQLite database in the wizsk/arabic_lexicons GitHub repo, built for an offline dictionary reader app. The database is distributed only via GitHub Releases (app build assets), not as a plain file in the repository tree, so it isn't fetchable via raw.githubusercontent.com the way this project's other data sources are -- and its license/redistribution terms for the underlying dictionary text weren't confirmed. Not pursued further this session."
+    },
+    {
+      "titleAr": "القاموس المحيط (و تاج العروس)",
+      "titleEn": "Al-Qamus al-Muhit (and its expanded commentary, Taj al-'Arus)",
+      "author": "Al-Fayruzabadi (d. 817 AH) / Al-Zabidi (Taj al-'Arus)",
+      "status": "lead-identified-not-resolved",
+      "note": "Same lead as Lisan al-Arab above (wizsk/arabic_lexicons' bundled SQLite database) -- not separately confirmed. Taj al-'Arus (the larger commentary) wasn't found anywhere."
+    },
+    {
+      "titleAr": "المعجم الوسيط",
+      "titleEn": "Al-Mu'jam al-Wasit",
+      "author": "Majma' al-Lughah al-'Arabiyyah, Cairo",
+      "status": "unavailable",
+      "note": "Not found in structured form at any reachable source."
+    },
+    {
+      "titleAr": "الفروق اللغوية",
+      "titleEn": "Al-Furuq al-Lughawiyyah",
+      "author": "Abu Hilal al-Askari (d. c. 395 AH)",
+      "status": "unavailable",
+      "note": "Not found in structured form at any reachable source."
+    }
+  ]
+}

@@ -6,6 +6,7 @@ import { Link2, Loader2 } from "lucide-react";
 import { getIndex, getMeta, getRoot, getVerseRoots } from "@/lib/data/loader";
 import { globalIdToRef, refToGlobalId } from "@/lib/data/verseId";
 import { findRelatedVerses, type RelatedVerse } from "@/lib/related/findRelatedVerses";
+import { useT } from "@/lib/i18n/LanguageContext";
 
 interface RelatedRow {
   s: number;
@@ -20,6 +21,7 @@ interface RelatedRow {
  * click but too much to do eagerly for every card in a 25-per-page list.
  */
 export function RelatedVerses({ s, a }: { s: number; a: number }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -77,13 +79,13 @@ export function RelatedVerses({ s, a }: { s: number; a: number }) {
         className="inline-flex items-center gap-1 text-xs text-muted hover:text-ink"
       >
         {loading ? <Loader2 size={13} className="animate-spin" /> : <Link2 size={13} />}
-        Related verses
+        {t.relatedVerses.heading}
       </button>
 
       {open && !loading && (
         <div className="mt-2 flex flex-wrap gap-2">
           {rows.length === 0 ? (
-            <p className="text-xs text-muted">No closely related verses found.</p>
+            <p className="text-xs text-muted">{t.relatedVerses.none}</p>
           ) : (
             rows.map((r) => (
               <Link
@@ -94,7 +96,7 @@ export function RelatedVerses({ s, a }: { s: number; a: number }) {
                 <bdi>
                   {r.s}:{r.a}
                 </bdi>
-                <span className="text-muted">· {r.sharedRoots} shared</span>
+                <span className="text-muted">{t.relatedVerses.sharedCount(r.sharedRoots)}</span>
               </Link>
             ))
           )}

@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { CheckCircle2, Download, Loader2 } from "lucide-react";
 import { prefetchAll } from "@/lib/data/loader";
+import { useT } from "@/lib/i18n/LanguageContext";
 
 export function OfflineDownload({ roots }: { roots: string[] }) {
+  const t = useT();
   const [state, setState] = useState<"idle" | "downloading" | "done">("idle");
   const [progress, setProgress] = useState(0);
 
@@ -17,7 +19,7 @@ export function OfflineDownload({ roots }: { roots: string[] }) {
   if (state === "done") {
     return (
       <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-accent">
-        <CheckCircle2 size={16} /> Downloaded for offline use.
+        <CheckCircle2 size={16} /> {t.aboutPage.downloaded}
       </p>
     );
   }
@@ -31,11 +33,11 @@ export function OfflineDownload({ roots }: { roots: string[] }) {
     >
       {state === "downloading" ? (
         <>
-          <Loader2 size={15} className="animate-spin" /> Downloading… {progress}%
+          <Loader2 size={15} className="animate-spin" /> {t.aboutPage.downloading(progress)}
         </>
       ) : (
         <>
-          <Download size={15} /> Download everything for offline use
+          <Download size={15} /> {t.aboutPage.downloadEverything}
         </>
       )}
     </button>

@@ -1,4 +1,6 @@
-import { CATEGORY_LABELS } from "@/lib/data/types";
+"use client";
+
+import { useT } from "@/lib/i18n/LanguageContext";
 import type { ComparisonCategoryRow } from "@/lib/compare/buildComparisonRows";
 
 const BAR_OPACITY = ["bg-accent/70", "bg-accent/45", "bg-accent/25"];
@@ -10,11 +12,12 @@ export function CompareCategoryBars({
   rows: ComparisonCategoryRow[];
   labels: string[];
 }) {
+  const t = useT();
   const max = Math.max(...rows.flatMap((r) => r.counts), 1);
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
-      <h2 className="text-sm font-medium text-ink">Category breakdown</h2>
+      <h2 className="text-sm font-medium text-ink">{t.compareCategoryBars.heading}</h2>
 
       <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted">
         {labels.map((label, i) => (
@@ -28,7 +31,7 @@ export function CompareCategoryBars({
       <div className="mt-4 space-y-3">
         {rows.map((row) => (
           <div key={row.cat}>
-            <div className="text-xs text-muted">{CATEGORY_LABELS[row.cat]}</div>
+            <div className="text-xs text-muted">{t.categories[row.cat]}</div>
             <div className="mt-1 space-y-1">
               {row.counts.map((count, i) => {
                 const pct = Math.max((count / max) * 100, count > 0 ? 2 : 0);

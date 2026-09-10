@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Check, Copy, ExternalLink } from "lucide-react";
 import { copyToClipboard } from "@/lib/clipboard";
+import { useT } from "@/lib/i18n/LanguageContext";
 
 export function AyahActions({
   arabic,
@@ -19,6 +20,7 @@ export function AyahActions({
   surah: number;
   ayah: number;
 }) {
+  const t = useT();
   const [copied, setCopied] = useState<"ar" | "both" | null>(null);
 
   async function handleCopy(kind: "ar" | "both") {
@@ -35,7 +37,7 @@ export function AyahActions({
     <div className="flex flex-wrap items-center gap-3 text-xs text-muted">
       <button type="button" onClick={() => handleCopy("ar")} className="inline-flex items-center gap-1 hover:text-ink">
         {copied === "ar" ? <Check size={13} className="text-accent" /> : <Copy size={13} />}
-        Copy Arabic
+        {t.ayahActions.copyArabic}
       </button>
       <button
         type="button"
@@ -43,10 +45,10 @@ export function AyahActions({
         className="inline-flex items-center gap-1 hover:text-ink"
       >
         {copied === "both" ? <Check size={13} className="text-accent" /> : <Copy size={13} />}
-        Copy with translation
+        {t.ayahActions.copyWithTranslation}
       </button>
       <Link href={`/surah/${surah}/?ayah=${ayah}`} className="inline-flex items-center gap-1 hover:text-ink">
-        <ExternalLink size={13} /> Open in surah
+        <ExternalLink size={13} /> {t.ayahActions.openInSurah}
       </Link>
     </div>
   );

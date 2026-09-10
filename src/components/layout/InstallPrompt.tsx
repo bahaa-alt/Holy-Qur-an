@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Download, X } from "lucide-react";
+import { useT } from "@/lib/i18n/LanguageContext";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -23,6 +24,7 @@ function readEligibility(): boolean {
 }
 
 export function InstallPrompt() {
+  const t = useT();
   const [deferredEvent, setDeferredEvent] = useState<BeforeInstallPromptEvent | null>(null);
   const [dismissed, setDismissed] = useState(false);
   const [eligible] = useState(readEligibility);
@@ -73,26 +75,26 @@ export function InstallPrompt() {
           <Download size={18} />
         </div>
         <div className="flex-1 text-sm">
-          <p className="font-medium text-ink">Install for offline use</p>
-          <p className="mt-0.5 text-muted">Add to your home screen to use it like a native app, offline.</p>
+          <p className="font-medium text-ink">{t.installPrompt.heading}</p>
+          <p className="mt-0.5 text-muted">{t.installPrompt.body}</p>
           <div className="mt-2 flex gap-2">
             <button
               type="button"
               onClick={install}
               className="rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-accent-fg"
             >
-              Install
+              {t.installPrompt.install}
             </button>
             <button
               type="button"
               onClick={dismiss}
               className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted hover:text-ink"
             >
-              Not now
+              {t.installPrompt.notNow}
             </button>
           </div>
         </div>
-        <button type="button" onClick={dismiss} aria-label="Dismiss" className="text-muted hover:text-ink">
+        <button type="button" onClick={dismiss} aria-label={t.installPrompt.dismissAria} className="text-muted hover:text-ink">
           <X size={16} />
         </button>
       </div>

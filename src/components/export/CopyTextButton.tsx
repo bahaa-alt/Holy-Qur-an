@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { copyToClipboard } from "@/lib/clipboard";
+import { useT } from "@/lib/i18n/LanguageContext";
 
 /**
  * A generic "copy as text" button, reused across views that don't warrant
@@ -13,7 +14,8 @@ import { copyToClipboard } from "@/lib/clipboard";
  * callers here are cheap to compute and some are server components, which
  * can't pass a function prop across to this client component anyway.
  */
-export function CopyTextButton({ text, label = "Copy as Markdown" }: { text: string; label?: string }) {
+export function CopyTextButton({ text, label }: { text: string; label?: string }) {
+  const t = useT();
   const [copied, setCopied] = useState(false);
 
   async function handleClick() {
@@ -31,7 +33,7 @@ export function CopyTextButton({ text, label = "Copy as Markdown" }: { text: str
       className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs text-muted transition-colors hover:border-accent hover:text-accent"
     >
       {copied ? <Check size={13} className="text-accent" /> : <Copy size={13} />}
-      {copied ? "Copied" : label}
+      {copied ? t.copyTextButton.copied : (label ?? t.copyTextButton.defaultLabel)}
     </button>
   );
 }

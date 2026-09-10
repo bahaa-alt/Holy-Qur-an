@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CATEGORY_LABELS } from "@/lib/data/types";
+import { useT } from "@/lib/i18n/LanguageContext";
 import type { CategoryCount, LemmaCount } from "@/lib/root/summary";
 
 function Bar({
@@ -41,6 +41,7 @@ export function FrequencyChart({
   byCategory: CategoryCount[];
   byLemma: LemmaCount[];
 }) {
+  const t = useT();
   const [view, setView] = useState<"category" | "lemma">("category");
   const maxCategory = Math.max(...byCategory.map((c) => c.count), 1);
   const maxLemma = Math.max(...byLemma.map((l) => l.count), 1);
@@ -48,21 +49,21 @@ export function FrequencyChart({
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium text-ink">Frequency distribution</h2>
+        <h2 className="text-sm font-medium text-ink">{t.frequencyChart.heading}</h2>
         <div className="flex rounded-lg border border-border p-0.5 text-xs">
           <button
             type="button"
             onClick={() => setView("category")}
             className={`rounded-md px-2.5 py-1 ${view === "category" ? "bg-accent text-accent-fg" : "text-muted"}`}
           >
-            By category
+            {t.frequencyChart.byCategory}
           </button>
           <button
             type="button"
             onClick={() => setView("lemma")}
             className={`rounded-md px-2.5 py-1 ${view === "lemma" ? "bg-accent text-accent-fg" : "text-muted"}`}
           >
-            By lemma
+            {t.frequencyChart.byLemma}
           </button>
         </div>
       </div>
@@ -70,7 +71,7 @@ export function FrequencyChart({
       <div className="mt-4">
         {view === "category"
           ? byCategory.map((c) => (
-              <Bar key={c.cat} label={CATEGORY_LABELS[c.cat]} count={c.count} max={maxCategory} />
+              <Bar key={c.cat} label={t.categories[c.cat]} count={c.count} max={maxCategory} />
             ))
           : byLemma
               .slice(0, 12)
@@ -80,7 +81,7 @@ export function FrequencyChart({
                   label={l.lemma}
                   count={l.count}
                   max={maxLemma}
-                  sublabel={CATEGORY_LABELS[l.cat]}
+                  sublabel={t.categories[l.cat]}
                   arabic
                 />
               ))}

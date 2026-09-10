@@ -10,8 +10,10 @@ import { RootPicker, type CompareRootRow } from "./RootPicker";
 import { CompareStatsTable } from "./CompareStatsTable";
 import { CompareCategoryBars } from "./CompareCategoryBars";
 import { CopyTextButton } from "@/components/export/CopyTextButton";
+import { useT } from "@/lib/i18n/LanguageContext";
 
 export function CompareView({ roots }: { roots: CompareRootRow[] }) {
+  const t = useT();
   // Starts empty to match the prerendered static HTML (a static-export page
   // has no server to answer differing query strings, so the prerendered
   // markup never has a selection). The real initial selection is read from
@@ -78,7 +80,7 @@ export function CompareView({ roots }: { roots: CompareRootRow[] }) {
 
       {stillLoading && (
         <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted">
-          <Loader2 size={16} className="animate-spin" /> Loading roots…
+          <Loader2 size={16} className="animate-spin" /> {t.compareView.loadingRoots}
         </div>
       )}
 
@@ -96,7 +98,7 @@ export function CompareView({ roots }: { roots: CompareRootRow[] }) {
       )}
 
       {!stillLoading && selected.length === 1 && (
-        <p className="text-center text-sm text-muted">Pick at least one more root to compare.</p>
+        <p className="text-center text-sm text-muted">{t.compareView.pickAtLeastOneMore}</p>
       )}
     </div>
   );

@@ -5,7 +5,8 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import { normalize } from "@/lib/arabic/normalize";
 import { ARABIC_ALPHABET } from "@/lib/arabic/letters";
-import { classifyRootShape, ROOT_SHAPE_LABELS, ROOT_SHAPE_ORDER, type RootShape } from "@/lib/morphology/rootShape";
+import { classifyRootShape, ROOT_SHAPE_ORDER, type RootShape } from "@/lib/morphology/rootShape";
+import { useT } from "@/lib/i18n/LanguageContext";
 
 interface RootRow {
   ar: string;
@@ -16,6 +17,7 @@ interface RootRow {
 type GroupMode = "letter" | "shape";
 
 export function RootsBrowser({ roots }: { roots: RootRow[] }) {
+  const t = useT();
   const [query, setQuery] = useState("");
   const [groupMode, setGroupMode] = useState<GroupMode>("letter");
 
@@ -47,7 +49,7 @@ export function RootsBrowser({ roots }: { roots: RootRow[] }) {
   }, [query, roots]);
 
   const groups = groupMode === "letter" ? letterGroups : shapeGroups;
-  const groupLabel = (key: string) => (groupMode === "letter" ? key : ROOT_SHAPE_LABELS[key as RootShape]);
+  const groupLabel = (key: string) => (groupMode === "letter" ? key : t.rootShapes[key as RootShape]);
 
   return (
     <div>
@@ -58,7 +60,7 @@ export function RootsBrowser({ roots }: { roots: RootRow[] }) {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Filter roots…"
+            placeholder={t.rootsBrowser.filterPlaceholder}
             className="w-full bg-transparent text-sm text-ink placeholder:text-muted focus:outline-none"
           />
         </div>
@@ -68,21 +70,21 @@ export function RootsBrowser({ roots }: { roots: RootRow[] }) {
             onClick={() => setGroupMode("letter")}
             className={`rounded-md px-2.5 py-1 ${groupMode === "letter" ? "bg-accent text-accent-fg" : "text-muted"}`}
           >
-            By letter
+            {t.rootsBrowser.byLetter}
           </button>
           <button
             type="button"
             onClick={() => setGroupMode("shape")}
             className={`rounded-md px-2.5 py-1 ${groupMode === "shape" ? "bg-accent text-accent-fg" : "text-muted"}`}
           >
-            By shape
+            {t.rootsBrowser.byShape}
           </button>
         </div>
       </div>
 
       {filtered ? (
         <div className="mt-6 flex flex-wrap gap-2">
-          {filtered.length === 0 && <p className="text-sm text-muted">No roots match &quot;{query}&quot;.</p>}
+          {filtered.length === 0 && <p className="text-sm text-muted">{t.rootsBrowser.noMatch(query)}</p>}
           {filtered.map((r) => (
             <RootChip key={r.ar} root={r} />
           ))}
@@ -103,7 +105,7 @@ export function RootsBrowser({ roots }: { roots: RootRow[] }) {
                   >
                     {groupLabel(key)}
                   </span>
-                  <span className="text-xs font-normal text-muted">{list.length.toLocaleString()} roots</span>
+                  <span className="text-xs font-normal text-muted">{t.rootsBrowser.rootsCount(list.length)}</span>
                 </h2>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {list

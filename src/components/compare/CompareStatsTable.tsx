@@ -1,17 +1,25 @@
-import type { RootSummary } from "@/lib/root/summary";
+"use client";
 
-const ROWS: { label: string; key: keyof RootSummary }[] = [
-  { label: "Total occurrences", key: "total" },
-  { label: "Derived lemmas", key: "lemmaCount" },
-  { label: "Distinct forms", key: "formCount" },
-  { label: "Verses", key: "verseCount" },
-  { label: "Surahs", key: "surahCount" },
-];
+import { useT } from "@/lib/i18n/LanguageContext";
+import type { RootSummary } from "@/lib/root/summary";
+import type { Dict } from "@/lib/i18n/types";
+
+function rows(t: Dict): { label: string; key: keyof RootSummary }[] {
+  return [
+    { label: t.compareStatsTable.totalOccurrences, key: "total" },
+    { label: t.compareStatsTable.derivedLemmas, key: "lemmaCount" },
+    { label: t.compareStatsTable.distinctForms, key: "formCount" },
+    { label: t.compareStatsTable.verses, key: "verseCount" },
+    { label: t.compareStatsTable.surahs, key: "surahCount" },
+  ];
+}
 
 export function CompareStatsTable({ summaries }: { summaries: RootSummary[] }) {
+  const t = useT();
+
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
-      <h2 className="text-sm font-medium text-ink">Stats</h2>
+      <h2 className="text-sm font-medium text-ink">{t.compareStatsTable.heading}</h2>
       <div className="mt-4 overflow-x-auto">
         <table className="w-full min-w-[420px] text-sm">
           <thead>
@@ -25,7 +33,7 @@ export function CompareStatsTable({ summaries }: { summaries: RootSummary[] }) {
             </tr>
           </thead>
           <tbody>
-            {ROWS.map(({ label, key }) => (
+            {rows(t).map(({ label, key }) => (
               <tr key={key} className="border-b border-border/60 last:border-0">
                 <td className="py-2 pe-3 text-xs text-muted">{label}</td>
                 {summaries.map((s) => (

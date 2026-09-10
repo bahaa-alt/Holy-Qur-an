@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
 import { normalize } from "@/lib/arabic/normalize";
+import { useT } from "@/lib/i18n/LanguageContext";
 
 const MAX_SELECTED = 3;
 
@@ -22,6 +23,7 @@ export function RootPicker({
   selected: string[];
   onChange: (roots: string[]) => void;
 }) {
+  const t = useT();
   const [query, setQuery] = useState("");
   const atLimit = selected.length >= MAX_SELECTED;
 
@@ -46,8 +48,8 @@ export function RootPicker({
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
-      <h2 className="text-sm font-medium text-ink">Roots to compare</h2>
-      <p className="mt-1 text-xs text-muted">Pick up to {MAX_SELECTED} roots to compare side by side.</p>
+      <h2 className="text-sm font-medium text-ink">{t.rootPicker.heading}</h2>
+      <p className="mt-1 text-xs text-muted">{t.rootPicker.subtitle(MAX_SELECTED)}</p>
 
       {selected.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-2">
@@ -60,7 +62,7 @@ export function RootPicker({
               <button
                 type="button"
                 onClick={() => remove(root)}
-                aria-label={`Remove ${root}`}
+                aria-label={t.rootPicker.removeAria(root)}
                 className="text-muted hover:text-ink"
               >
                 <X size={13} />
@@ -78,7 +80,7 @@ export function RootPicker({
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search for a root to add…"
+              placeholder={t.rootPicker.searchPlaceholder}
               className="w-full bg-transparent text-sm text-ink placeholder:text-muted focus:outline-none"
             />
           </div>

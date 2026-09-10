@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { WifiOff } from "lucide-react";
+import { useT } from "@/lib/i18n/LanguageContext";
 
 export function OfflineBadge() {
+  const t = useT();
   // Check `window`, not `navigator`: recent Node.js versions expose a
   // global `navigator` during SSR (for API parity with browsers), but it
   // has no `onLine` property, so `navigator.onLine` there is `undefined`
@@ -28,7 +30,7 @@ export function OfflineBadge() {
   return (
     <div className="flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-xs text-muted">
       <WifiOff size={13} />
-      Offline mode
+      {t.offlineBadge.offlineMode}
     </div>
   );
 }

@@ -5,9 +5,11 @@ import { useSearchParams } from "next/navigation";
 import { AyahActions } from "@/components/ayah/AyahActions";
 import { RelatedVerses } from "@/components/ayah/RelatedVerses";
 import { SaveButton } from "@/components/notes/SaveButton";
+import { useT } from "@/lib/i18n/LanguageContext";
 import type { SurahMeta, SurahVerse } from "@/lib/data/types";
 
 export function SurahVerseList({ surahMeta, verses }: { surahMeta: SurahMeta; verses: SurahVerse[] }) {
+  const t = useT();
   const searchParams = useSearchParams();
   const focusedAyah = Number(searchParams.get("ayah") ?? "");
   const refs = useRef<Map<number, HTMLDivElement>>(new Map());
@@ -43,7 +45,7 @@ export function SurahVerseList({ surahMeta, verses }: { surahMeta: SurahMeta; ve
             <p className="mt-2 text-sm text-muted">{verse.t}</p>
             {verse.pickthall && (
               <p className="mt-1 text-sm text-muted/80">
-                <span className="text-xs uppercase tracking-wide text-muted/60">Pickthall: </span>
+                <span className="text-xs uppercase tracking-wide text-muted/60">{t.ayahCard.pickthallLabel}</span>
                 {verse.pickthall}
               </p>
             )}

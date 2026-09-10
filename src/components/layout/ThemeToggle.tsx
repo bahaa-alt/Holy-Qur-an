@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Moon, Sun } from "lucide-react";
+import { useT } from "@/lib/i18n/LanguageContext";
 
 type Theme = "light" | "dark";
 
@@ -14,6 +15,7 @@ export function ThemeToggle() {
   // Reads the class the no-flash inline script already applied before hydration,
   // so this never has to "flip" on mount.
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
+  const t = useT();
 
   function toggle() {
     const next: Theme = theme === "dark" ? "light" : "dark";
@@ -31,7 +33,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+      aria-label={theme === "dark" ? t.themeToggle.switchToLight : t.themeToggle.switchToDark}
       className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-accent hover:text-accent"
     >
       {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}

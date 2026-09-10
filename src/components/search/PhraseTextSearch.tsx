@@ -8,6 +8,7 @@ import { searchArabicPhrase, type PhraseMatch } from "@/lib/search/arabicPhrase"
 import { AyahCard } from "@/components/ayah/AyahCard";
 import { Pagination } from "@/components/ayah/Pagination";
 import { CopyTextButton } from "@/components/export/CopyTextButton";
+import { useT } from "@/lib/i18n/LanguageContext";
 import type { ArIndexFile, MetaFile, SurahVerse } from "@/lib/data/types";
 
 const PAGE_SIZE = 25;
@@ -33,6 +34,7 @@ function buildMarkdown(results: readonly { s: number; a: number; translation: st
 }
 
 export function PhraseTextSearch() {
+  const t = useT();
   // Starts empty to match the prerendered static HTML -- a static-export
   // page has no server to answer differing query strings, so the real
   // initial query is read from the URL in the mount effect below, strictly
@@ -143,7 +145,7 @@ export function PhraseTextSearch() {
     <div className="space-y-6">
       <form onSubmit={handleSubmit} className="rounded-2xl border border-border bg-surface p-6">
         <label htmlFor="phrase-query" className="mb-2 block text-sm font-medium text-ink">
-          Phrase or sentence
+          {t.phraseTextSearch.label}
         </label>
         <div className="flex flex-col gap-3 sm:flex-row">
           <input
@@ -162,32 +164,27 @@ export function PhraseTextSearch() {
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-accent-fg transition-opacity disabled:opacity-50"
           >
             {!ready ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
-            Search
+            {t.phraseTextSearch.search}
           </button>
         </div>
-        <p className="mt-2 text-xs text-muted">
-          Matches the exact words in order (diacritics optional) — e.g. &quot;يا أيها الذين آمنوا&quot; finds every
-          verse containing that literal phrase, not just verses that happen to share individual words with it.
-        </p>
+        <p className="mt-2 text-xs text-muted">{t.phraseTextSearch.helperText}</p>
       </form>
 
       {searchedQuery !== null && searchedQuery !== "" && matches !== null && (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted">
             {matches.length === 0
-              ? `No verses found containing "${searchedQuery}".`
-              : `${matches.length.toLocaleString()} match${matches.length === 1 ? "" : "es"}${
-                  matches.length > RESULT_CAP ? ` (showing the first ${RESULT_CAP})` : ""
-                }.`}
+              ? t.phraseTextSearch.noResults(searchedQuery)
+              : t.phraseTextSearch.matchCount(matches.length, RESULT_CAP)}
           </p>
-          {pageRows.length > 0 && <CopyTextButton text={buildMarkdown(pageRows)} label="Copy this page" />}
+          {pageRows.length > 0 && <CopyTextButton text={buildMarkdown(pageRows)} label={t.phraseTextSearch.copyThisPage} />}
         </div>
       )}
 
       <div className="space-y-3">
         {isLoadingVerses ? (
           <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted">
-            <Loader2 size={16} className="animate-spin" /> Loading verses…
+            <Loader2 size={16} className="animate-spin" /> {t.common.loadingVerses}
           </div>
         ) : (
           pageRows.map((row) => {

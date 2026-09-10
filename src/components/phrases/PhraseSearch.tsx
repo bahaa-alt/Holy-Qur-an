@@ -8,6 +8,7 @@ import { findAdjacentRootPairs } from "@/lib/phrases/findAdjacentPairs";
 import { AyahCard } from "@/components/ayah/AyahCard";
 import { CopyTextButton } from "@/components/export/CopyTextButton";
 import { RootSlotPicker, type RootSlotOption } from "./RootSlotPicker";
+import { useT } from "@/lib/i18n/LanguageContext";
 import type { MetaFile, VerseRootsFile } from "@/lib/data/types";
 
 function buildMarkdown(results: readonly { s: number; a: number; translation: string }[]): string {
@@ -27,6 +28,7 @@ interface ResultRow {
 }
 
 export function PhraseSearch({ roots }: { roots: RootSlotOption[] }) {
+  const t = useT();
   const [leadRoot, setLeadRoot] = useState<string | null>(null);
   const [followRoot, setFollowRoot] = useState<string | null>(null);
   const [verseRoots, setVerseRoots] = useState<VerseRootsFile | null>(null);
@@ -91,8 +93,8 @@ export function PhraseSearch({ roots }: { roots: RootSlotOption[] }) {
     <div className="space-y-6">
       <div className="rounded-2xl border border-border bg-surface p-6">
         <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-end">
-          <RootSlotPicker label="Leading root" roots={roots} selected={leadRoot} onChange={setLeadRoot} />
-          <RootSlotPicker label="Followed by" roots={roots} selected={followRoot} onChange={setFollowRoot} />
+          <RootSlotPicker label={t.phraseSearch.leadingRoot} roots={roots} selected={leadRoot} onChange={setLeadRoot} />
+          <RootSlotPicker label={t.phraseSearch.followedBy} roots={roots} selected={followRoot} onChange={setFollowRoot} />
           <button
             type="button"
             disabled={!ready || loading}
@@ -100,7 +102,7 @@ export function PhraseSearch({ roots }: { roots: RootSlotOption[] }) {
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-accent-fg transition-opacity disabled:opacity-50"
           >
             {loading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
-            Search
+            {t.phraseSearch.search}
           </button>
         </div>
       </div>
@@ -108,11 +110,7 @@ export function PhraseSearch({ roots }: { roots: RootSlotOption[] }) {
       {searched && !loading && (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted">
-            {totalMatches === 0
-              ? "No verses found where the leading root is immediately followed by the second root."
-              : `${totalMatches.toLocaleString()} match${totalMatches === 1 ? "" : "es"}${
-                  totalMatches > RESULT_CAP ? ` (showing the first ${RESULT_CAP})` : ""
-                }.`}
+            {totalMatches === 0 ? t.phraseSearch.noResults : t.phraseSearch.matchCount(totalMatches, RESULT_CAP)}
           </p>
           {results.length > 0 && <CopyTextButton text={buildMarkdown(results)} />}
         </div>

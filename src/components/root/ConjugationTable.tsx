@@ -1,4 +1,4 @@
-import { CATEGORY_LABELS } from "@/lib/data/types";
+import { useT } from "@/lib/i18n/LanguageContext";
 import type { ConjugationTableData } from "@/lib/root/conjugation";
 import type { RowFilters } from "@/lib/root/occurrences";
 
@@ -9,24 +9,26 @@ export function ConjugationTable({
   tables: ConjugationTableData[];
   onSelectForm: (filters: RowFilters) => void;
 }) {
+  const t = useT();
+
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
-      <h2 className="text-sm font-medium text-ink">Verb conjugation</h2>
-      <p className="mt-1 text-xs text-muted">
-        Attested forms by verb Form, aspect, and person/gender/number. Click a form to filter the explorer below.
-      </p>
+      <h2 className="text-sm font-medium text-ink">{t.conjugationTable.heading}</h2>
+      <p className="mt-1 text-xs text-muted">{t.conjugationTable.subtitle}</p>
 
       <div className="mt-4 space-y-6">
         {tables.map((table) => (
           <div key={table.verbForm}>
             <h3 className="arabic-ui text-left text-sm font-semibold text-accent">
-              Form {table.verbForm}
-              <span className="ms-2 text-xs font-normal text-muted">{table.total.toLocaleString()} occurrences</span>
+              {t.conjugationTable.form(table.verbForm)}
+              <span className="ms-2 text-xs font-normal text-muted">
+                {t.conjugationTable.occurrencesCount(table.total)}
+              </span>
             </h3>
             <div className="mt-2 space-y-3">
               {table.rows.map((row) => (
                 <div key={row.aspect}>
-                  <div className="text-xs font-medium text-muted">{CATEGORY_LABELS[row.aspect]}</div>
+                  <div className="text-xs font-medium text-muted">{t.categories[row.aspect]}</div>
                   <div className="mt-1 flex flex-wrap gap-x-6 gap-y-2">
                     {row.cells.map((cell) => (
                       <div key={cell.pgn ?? "none"} className="min-w-0">

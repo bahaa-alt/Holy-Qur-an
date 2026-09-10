@@ -6,6 +6,7 @@ import { getMeta, getVerses } from "@/lib/data/loader";
 import { AyahCard } from "@/components/ayah/AyahCard";
 import { Pagination } from "@/components/ayah/Pagination";
 import { CopyTextButton } from "@/components/export/CopyTextButton";
+import { useT } from "@/lib/i18n/LanguageContext";
 import type { MetaFile, SurahVerse } from "@/lib/data/types";
 import type { TopicVerseMatch } from "@/lib/topics/buildTopicOccurrences";
 
@@ -34,6 +35,7 @@ function buildMarkdown(results: readonly { s: number; a: number; translation: st
  * and the /search/ page do.
  */
 export function TopicVerseList({ matches }: { matches: readonly TopicVerseMatch[] }) {
+  const t = useT();
   const [meta, setMeta] = useState<MetaFile | null>(null);
   const [page, setPage] = useState(1);
   const [pageVerses, setPageVerses] = useState<Map<string, SurahVerse>>(EMPTY_VERSE_MAP);
@@ -81,17 +83,17 @@ export function TopicVerseList({ matches }: { matches: readonly TopicVerseMatch[
   const isLoadingVerses = currentPageMatches.length > 0 && pageRows.length < currentPageMatches.length;
 
   if (matches.length === 0) {
-    return <p className="text-sm text-muted">No verses matched this topic&apos;s roots/lemmas.</p>;
+    return <p className="text-sm text-muted">{t.topicVerseList.noMatches}</p>;
   }
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-end gap-3">
-        {pageRows.length > 0 && <CopyTextButton text={buildMarkdown(pageRows)} label="Copy this page" />}
+        {pageRows.length > 0 && <CopyTextButton text={buildMarkdown(pageRows)} label={t.topicVerseList.copyThisPage} />}
       </div>
       {isLoadingVerses ? (
         <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted">
-          <Loader2 size={16} className="animate-spin" /> Loading verses…
+          <Loader2 size={16} className="animate-spin" /> {t.common.loadingVerses}
         </div>
       ) : (
         pageRows.map((row) => {

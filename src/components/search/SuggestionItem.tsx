@@ -1,11 +1,7 @@
-import type { Suggestion } from "@/lib/search/suggest";
+"use client";
 
-const KIND_LABEL: Record<Suggestion["kind"], string> = {
-  root: "جذر",
-  lemma: "كلمة",
-  verse: "آية",
-  search: "بحث",
-};
+import { useT } from "@/lib/i18n/LanguageContext";
+import type { Suggestion } from "@/lib/search/suggest";
 
 export function SuggestionItem({
   suggestion,
@@ -16,6 +12,7 @@ export function SuggestionItem({
   active: boolean;
   onSelect: () => void;
 }) {
+  const t = useT();
   const isArabicPrimary = suggestion.kind !== "verse" && suggestion.kind !== "search";
 
   return (
@@ -29,7 +26,7 @@ export function SuggestionItem({
         }`}
       >
         <span className="mt-0.5 shrink-0 rounded-full border border-border px-2 py-0.5 text-[11px] text-muted">
-          {KIND_LABEL[suggestion.kind]}
+          {t.suggestionKind[suggestion.kind]}
         </span>
         <span className="min-w-0 flex-1">
           <span

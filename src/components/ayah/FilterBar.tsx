@@ -1,4 +1,6 @@
-import { CATEGORY_LABELS } from "@/lib/data/types";
+"use client";
+
+import { useT } from "@/lib/i18n/LanguageContext";
 import type { Cat } from "@/lib/data/types";
 import type { RowFilters } from "@/lib/root/occurrences";
 
@@ -19,6 +21,7 @@ export function FilterBar({
   onChange: (filters: RowFilters) => void;
   resultCount: number;
 }) {
+  const t = useT();
   const hasFilters = Boolean(filters.cat || filters.lemmaKey || filters.formKey || filters.surah);
 
   return (
@@ -28,10 +31,10 @@ export function FilterBar({
         onChange={(e) => onChange({ ...filters, cat: (e.target.value || undefined) as Cat | undefined })}
         className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink"
       >
-        <option value="">All categories</option>
+        <option value="">{t.filterBar.allCategories}</option>
         {options.categories.map((c) => (
           <option key={c} value={c}>
-            {CATEGORY_LABELS[c]}
+            {t.categories[c]}
           </option>
         ))}
       </select>
@@ -41,7 +44,7 @@ export function FilterBar({
         onChange={(e) => onChange({ ...filters, lemmaKey: e.target.value || undefined })}
         className="arabic-ui rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink"
       >
-        <option value="">All lemmas</option>
+        <option value="">{t.filterBar.allLemmas}</option>
         {options.lemmas.map((l) => (
           <option key={l.key} value={l.key}>
             {l.lemma}
@@ -54,7 +57,7 @@ export function FilterBar({
         onChange={(e) => onChange({ ...filters, surah: e.target.value ? Number(e.target.value) : undefined })}
         className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink"
       >
-        <option value="">All surahs</option>
+        <option value="">{t.filterBar.allSurahs}</option>
         {options.surahs.map((s) => (
           <option key={s.n} value={s.n}>
             {s.n}. {s.label}
@@ -64,11 +67,11 @@ export function FilterBar({
 
       {hasFilters && (
         <button type="button" onClick={() => onChange({})} className="text-xs text-accent hover:text-accent-strong">
-          Clear filters
+          {t.filterBar.clearFilters}
         </button>
       )}
 
-      <span className="ms-auto text-xs text-muted">{resultCount.toLocaleString()} occurrences</span>
+      <span className="ms-auto text-xs text-muted">{t.filterBar.occurrencesCount(resultCount)}</span>
     </div>
   );
 }

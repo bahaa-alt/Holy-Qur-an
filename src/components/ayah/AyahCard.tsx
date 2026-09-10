@@ -3,6 +3,7 @@ import { HighlightedVerse } from "./HighlightedVerse";
 import { AyahActions } from "./AyahActions";
 import { RelatedVerses } from "./RelatedVerses";
 import { SaveButton } from "@/components/notes/SaveButton";
+import { useT } from "@/lib/i18n/LanguageContext";
 import type { SurahMeta } from "@/lib/data/types";
 
 export function AyahCard({
@@ -22,6 +23,8 @@ export function AyahCard({
   highlightIndices: number[];
   emphasisIndex?: number;
 }) {
+  const t = useT();
+
   return (
     <div className="rounded-xl border border-border bg-surface p-5">
       <div className="flex items-baseline justify-between gap-3">
@@ -42,7 +45,7 @@ export function AyahCard({
       <p className="mt-2 text-sm text-muted">{translation}</p>
       {pickthall && (
         <p className="mt-1 text-sm text-muted/80">
-          <span className="text-xs uppercase tracking-wide text-muted/60">Pickthall: </span>
+          <span className="text-xs uppercase tracking-wide text-muted/60">{t.ayahCard.pickthallLabel}</span>
           {pickthall}
         </p>
       )}

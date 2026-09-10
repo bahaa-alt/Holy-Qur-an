@@ -5,9 +5,9 @@ import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { getSavedItems, removeItem, updateNote } from "@/lib/notes/store";
 import { CopyTextButton } from "@/components/export/CopyTextButton";
+import { useT } from "@/lib/i18n/LanguageContext";
 import type { SavedItem, SavedKind } from "@/lib/notes/types";
 
-const KIND_LABELS: Record<SavedKind, string> = { root: "Roots", word: "Words", verse: "Verses" };
 const KIND_ORDER: SavedKind[] = ["root", "word", "verse"];
 
 function buildMarkdown(items: readonly SavedItem[]): string {
@@ -15,6 +15,12 @@ function buildMarkdown(items: readonly SavedItem[]): string {
 }
 
 export function SavedList() {
+  const t = useT();
+  const kindLabels: Record<SavedKind, string> = {
+    root: t.savedList.rootsHeading,
+    word: t.savedList.wordsHeading,
+    verse: t.savedList.versesHeading,
+  };
   const [items, setItems] = useState<SavedItem[]>([]);
   const [loaded, setLoaded] = useState(false);
 
@@ -39,11 +45,7 @@ export function SavedList() {
   if (!loaded) return null;
 
   if (items.length === 0) {
-    return (
-      <p className="text-sm text-muted">
-        Nothing saved yet. Use the &quot;Save&quot; button on a root, word, or verse page to bookmark it here.
-      </p>
-    );
+    return <p className="text-sm text-muted">{t.savedList.empty}</p>;
   }
 
   return (
@@ -54,7 +56,7 @@ export function SavedList() {
 
       {KIND_ORDER.filter((kind) => items.some((i) => i.kind === kind)).map((kind) => (
         <div key={kind}>
-          <h2 className="text-sm font-medium text-ink">{KIND_LABELS[kind]}</h2>
+          <h2 className="text-sm font-medium text-ink">{kindLabels[kind]}</h2>
           <div className="mt-3 space-y-3">
             {items
               .filter((i) => i.kind === kind)
@@ -70,7 +72,7 @@ export function SavedList() {
                     <button
                       type="button"
                       onClick={() => handleRemove(item.id)}
-                      aria-label={`Remove ${item.label}`}
+                      aria-label={t.savedList.removeAria(item.label)}
                       className="text-muted hover:text-ink"
                     >
                       <Trash2 size={14} />
@@ -79,7 +81,7 @@ export function SavedList() {
                   <textarea
                     value={item.note}
                     onChange={(e) => handleNoteChange(item.id, e.target.value)}
-                    placeholder="Add a note…"
+                    placeholder={t.savedList.notePlaceholder}
                     rows={2}
                     className="mt-2 w-full resize-y rounded-lg border border-border bg-bg px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
                   />

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
 import { normalize } from "@/lib/arabic/normalize";
+import { useT } from "@/lib/i18n/LanguageContext";
 
 export interface RootSlotOption {
   ar: string;
@@ -21,6 +22,7 @@ export function RootSlotPicker({
   selected: string | null;
   onChange: (root: string | null) => void;
 }) {
+  const t = useT();
   const [query, setQuery] = useState("");
 
   const matches = useMemo(() => {
@@ -43,7 +45,7 @@ export function RootSlotPicker({
           <button
             type="button"
             onClick={() => onChange(null)}
-            aria-label={`Clear ${label}`}
+            aria-label={t.rootSlotPicker.clearAria(label)}
             className="text-muted hover:text-ink"
           >
             <X size={14} />
@@ -57,7 +59,7 @@ export function RootSlotPicker({
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search for a root…"
+              placeholder={t.rootSlotPicker.searchPlaceholder}
               className="w-full bg-transparent text-sm text-ink placeholder:text-muted focus:outline-none"
             />
           </div>

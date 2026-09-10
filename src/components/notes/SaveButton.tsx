@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import { isSaved, removeItem, saveItem } from "@/lib/notes/store";
+import { useT } from "@/lib/i18n/LanguageContext";
 import type { SavedKind } from "@/lib/notes/types";
 
 export function SaveButton({
@@ -19,6 +20,7 @@ export function SaveButton({
   /** Icon-only, no "Save"/"Saved" text -- for dense lists (e.g. collocation chips). */
   compact?: boolean;
 }) {
+  const t = useT();
   // Starts false to match the prerendered static HTML (localStorage doesn't
   // exist during SSR/static export, so the initial markup is always
   // "unsaved"). Reading the real value in useState's lazy initializer
@@ -49,7 +51,7 @@ export function SaveButton({
       type="button"
       onClick={toggle}
       aria-pressed={saved}
-      aria-label={compact ? (saved ? `Remove ${label} from saved` : `Save ${label}`) : undefined}
+      aria-label={compact ? (saved ? t.saveButton.removeAria(label) : t.saveButton.saveAria(label)) : undefined}
       className={
         compact
           ? "shrink-0 text-muted transition-colors hover:text-accent"
@@ -57,7 +59,7 @@ export function SaveButton({
       }
     >
       {saved ? <BookmarkCheck size={13} className="text-accent" /> : <Bookmark size={13} />}
-      {!compact && (saved ? "Saved" : "Save")}
+      {!compact && (saved ? t.saveButton.saved : t.saveButton.save)}
     </button>
   );
 }

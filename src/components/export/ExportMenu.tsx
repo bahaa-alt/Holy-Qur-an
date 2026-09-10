@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { Download, FileJson, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
 import { fileExtensionFor, formatRows, mimeTypeFor, type ExportFormat } from "@/lib/export/formatters";
+import { useT } from "@/lib/i18n/LanguageContext";
 import type { OccurrenceRow } from "@/lib/data/types";
 
-const FORMATS: { format: ExportFormat; label: string; icon: typeof FileJson }[] = [
-  { format: "csv", label: "CSV", icon: FileSpreadsheet },
-  { format: "json", label: "JSON", icon: FileJson },
-  { format: "markdown", label: "Markdown", icon: FileText },
-  { format: "txt", label: "Text", icon: FileText },
+const FORMAT_ICONS: { format: ExportFormat; icon: typeof FileJson }[] = [
+  { format: "csv", icon: FileSpreadsheet },
+  { format: "json", icon: FileJson },
+  { format: "markdown", icon: FileText },
+  { format: "txt", icon: FileText },
 ];
 
 export function ExportMenu({
@@ -19,7 +20,14 @@ export function ExportMenu({
   filenameBase: string;
   resolveRows: () => Promise<OccurrenceRow[]>;
 }) {
+  const t = useT();
   const [loading, setLoading] = useState<ExportFormat | null>(null);
+  const formatLabels: Record<ExportFormat, string> = {
+    csv: t.exportMenu.csv,
+    json: t.exportMenu.json,
+    markdown: t.exportMenu.markdown,
+    txt: t.exportMenu.text,
+  };
 
   async function handleExport(format: ExportFormat) {
     setLoading(format);
@@ -44,9 +52,9 @@ export function ExportMenu({
   return (
     <div className="flex flex-wrap items-center gap-2">
       <span className="inline-flex items-center gap-1 text-xs text-muted">
-        <Download size={13} /> Export:
+        <Download size={13} /> {t.exportMenu.exportLabel}
       </span>
-      {FORMATS.map(({ format, label, icon: Icon }) => (
+      {FORMAT_ICONS.map(({ format, icon: Icon }) => (
         <button
           key={format}
           type="button"
@@ -55,7 +63,7 @@ export function ExportMenu({
           className="inline-flex items-center gap-1 rounded-lg border border-border px-2.5 py-1 text-xs text-muted transition-colors hover:border-accent hover:text-accent disabled:opacity-50"
         >
           {loading === format ? <Loader2 size={13} className="animate-spin" /> : <Icon size={13} />}
-          {label}
+          {formatLabels[format]}
         </button>
       ))}
     </div>

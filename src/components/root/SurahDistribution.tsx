@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { sortByChronologicalOrder } from "@/lib/root/distribution";
 import { CHRONOLOGICAL_ORDER_BY_SURAH } from "@/lib/data/chronologicalOrder";
+import { useT } from "@/lib/i18n/LanguageContext";
 
 export interface SurahDistributionRow {
   surah: number;
@@ -14,6 +15,7 @@ export interface SurahDistributionRow {
 type OrderMode = "surah" | "chronological";
 
 export function SurahDistribution({ rows }: { rows: SurahDistributionRow[] }) {
+  const t = useT();
   const [order, setOrder] = useState<OrderMode>("surah");
   const max = Math.max(...rows.map((r) => r.count), 1);
   const displayRows = order === "surah" ? rows : sortByChronologicalOrder(rows);
@@ -21,28 +23,26 @@ export function SurahDistribution({ rows }: { rows: SurahDistributionRow[] }) {
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-sm font-medium text-ink">Distribution across surahs</h2>
+        <h2 className="text-sm font-medium text-ink">{t.surahDistribution.heading}</h2>
         <div className="flex rounded-lg border border-border p-0.5 text-xs">
           <button
             type="button"
             onClick={() => setOrder("surah")}
             className={`rounded-md px-2.5 py-1 ${order === "surah" ? "bg-accent text-accent-fg" : "text-muted"}`}
           >
-            Surah order
+            {t.surahDistribution.surahOrder}
           </button>
           <button
             type="button"
             onClick={() => setOrder("chronological")}
             className={`rounded-md px-2.5 py-1 ${order === "chronological" ? "bg-accent text-accent-fg" : "text-muted"}`}
           >
-            Revelation order
+            {t.surahDistribution.revelationOrder}
           </button>
         </div>
       </div>
       <p className="mt-1 text-xs text-muted">
-        {order === "surah"
-          ? "Where this root's occurrences fall across the 114 surahs."
-          : "The same occurrences, ordered by the conventional chronological (revelation) sequence instead."}
+        {order === "surah" ? t.surahDistribution.bySurahDescription : t.surahDistribution.byRevelationDescription}
       </p>
 
       <div className="mt-4">

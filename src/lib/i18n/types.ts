@@ -1,0 +1,323 @@
+import type { Cat } from "@/lib/data/types";
+import type { RootShape } from "@/lib/morphology/rootShape";
+
+/**
+ * The full shape of a UI translation dictionary. `en.ts` is the canonical
+ * definition (authored first, matches the strings the app shipped with
+ * before this toggle existed); `ar.ts` is typed against this same shape so
+ * a missing or misspelled key fails at compile time instead of silently
+ * falling back to English at runtime.
+ *
+ * Parameterized entries are functions, not template strings, so the
+ * calling component supplies already-formatted (toLocaleString()'d, etc.)
+ * values and each language can order/pluralize its interpolation however
+ * its grammar needs -- Arabic's dual/plural rules don't map onto the
+ * English `n === 1 ? "" : "s"` pattern used for these before.
+ */
+export interface Dict {
+  common: {
+    search: string;
+    copy: string;
+    copied: string;
+    save: string;
+    saved: string;
+    loading: string;
+    loadingVerses: string;
+    clearFilters: string;
+    prev: string;
+    next: string;
+  };
+  categories: Record<Cat, string>;
+  rootShapes: Record<RootShape, string>;
+  nav: {
+    logoFull: string;
+    logoShort: string;
+    quran: string;
+    roots: string;
+    compare: string;
+    search: string;
+    phrases: string;
+    topics: string;
+    saved: string;
+    about: string;
+  };
+  footer: {
+    tagline: string;
+    dataAndLicenses: string;
+    source: string;
+  };
+  notFound: {
+    title: string;
+    message: string;
+    backToSearch: string;
+  };
+  themeToggle: {
+    switchToLight: string;
+    switchToDark: string;
+  };
+  languageToggle: {
+    switchToArabic: string;
+    switchToEnglish: string;
+  };
+  offlineBadge: {
+    offlineMode: string;
+  };
+  serviceWorker: {
+    updateAvailable: string;
+  };
+  installPrompt: {
+    heading: string;
+    body: string;
+    install: string;
+    notNow: string;
+    dismissAria: string;
+  };
+  searchBox: {
+    ariaLabel: string;
+    placeholder: (example: string) => string;
+  };
+  suggestionList: {
+    ariaLabel: string;
+  };
+  suggestionKind: {
+    root: string;
+    lemma: string;
+    verse: string;
+    search: string;
+  };
+  home: {
+    title: string;
+    subtitle: string;
+    mostFrequentRoots: string;
+    browseAllRoots: (count: number) => string;
+  };
+  quran: {
+    title: string;
+    subtitle: string;
+    filterPlaceholder: string;
+    noMatch: (query: string) => string;
+    meccan: string;
+    medinan: string;
+    versesCount: (count: number) => string;
+  };
+  roots: {
+    title: string;
+    subtitle: (count: number) => string;
+  };
+  rootsBrowser: {
+    filterPlaceholder: string;
+    byLetter: string;
+    byShape: string;
+    noMatch: (query: string) => string;
+    rootsCount: (count: number) => string;
+  };
+  randomRootLink: {
+    label: string;
+  };
+  rootHeader: {
+    rootLabel: string;
+    fullyMeccan: string;
+    fullyMedinan: string;
+    meccanPct: (pct: number) => string;
+    meaningLabel: string;
+    totalOccurrences: string;
+    derivedLemmas: string;
+    distinctForms: string;
+    verses: string;
+  };
+  frequencyChart: {
+    heading: string;
+    byCategory: string;
+    byLemma: string;
+  };
+  formsTable: {
+    heading: string;
+    subtitle: string;
+    colForm: string;
+    colLemma: string;
+    colCategory: string;
+    colCount: string;
+  };
+  conjugationTable: {
+    heading: string;
+    subtitle: string;
+    form: (verbForm: string) => string;
+    occurrencesCount: (count: number) => string;
+  };
+  surahDistribution: {
+    heading: string;
+    surahOrder: string;
+    revelationOrder: string;
+    bySurahDescription: string;
+    byRevelationDescription: string;
+  };
+  collocations: {
+    heading: string;
+    description: string;
+  };
+  citeButton: {
+    cite: string;
+    copied: string;
+  };
+  compare: {
+    title: string;
+    subtitle: string;
+  };
+  compareView: {
+    loadingRoots: string;
+    pickAtLeastOneMore: string;
+  };
+  rootPicker: {
+    heading: string;
+    subtitle: (max: number) => string;
+    removeAria: (root: string) => string;
+    searchPlaceholder: string;
+  };
+  compareStatsTable: {
+    heading: string;
+    totalOccurrences: string;
+    derivedLemmas: string;
+    distinctForms: string;
+    verses: string;
+    surahs: string;
+  };
+  compareCategoryBars: {
+    heading: string;
+  };
+  phrasesPage: {
+    title: string;
+    subtitle: string;
+  };
+  phraseSearch: {
+    leadingRoot: string;
+    followedBy: string;
+    search: string;
+    noResults: string;
+    matchCount: (count: number, cap: number) => string;
+  };
+  rootSlotPicker: {
+    clearAria: (label: string) => string;
+    searchPlaceholder: string;
+  };
+  searchPage: {
+    title: string;
+    subtitle: string;
+    phrasesLinkLabel: string;
+    subtitleAfterLink: string;
+  };
+  phraseTextSearch: {
+    label: string;
+    search: string;
+    helperText: string;
+    noResults: (query: string) => string;
+    matchCount: (count: number, cap: number) => string;
+    copyThisPage: string;
+  };
+  topicsPage: {
+    title: string;
+    subtitle: string;
+    themes: string;
+    prophets: string;
+  };
+  topicPage: {
+    prophetLabel: string;
+    topicLabel: string;
+    description: (count: number) => string;
+    noteLabel: string;
+  };
+  topicVerseList: {
+    noMatches: string;
+    copyThisPage: string;
+  };
+  surahPage: {
+    previous: string;
+    next: string;
+    meccan: string;
+    medinan: string;
+    summary: (n: number, typeLabel: string, verses: number) => string;
+  };
+  // (surahPage.summary combines the surah number, Meccan/Medinan label, and
+  // verse count into one line: "Surah 2 · Medinan · 286 verses".)
+  ayahExplorer: {
+    loadingOccurrences: string;
+    heading: string;
+    cardsView: string;
+    kwicView: string;
+  };
+  filterBar: {
+    allCategories: string;
+    allLemmas: string;
+    allSurahs: string;
+    clearFilters: string;
+    occurrencesCount: (count: number) => string;
+  };
+  pagination: {
+    prev: string;
+    next: string;
+    pageOf: (page: number, count: number) => string;
+  };
+  relatedVerses: {
+    heading: string;
+    none: string;
+    sharedCount: (count: number) => string;
+  };
+  ayahActions: {
+    copyArabic: string;
+    copyWithTranslation: string;
+    openInSurah: string;
+  };
+  ayahCard: {
+    pickthallLabel: string;
+  };
+  exportMenu: {
+    exportLabel: string;
+    csv: string;
+    json: string;
+    markdown: string;
+    text: string;
+  };
+  copyTextButton: {
+    defaultLabel: string;
+    copied: string;
+  };
+  saveButton: {
+    save: string;
+    saved: string;
+    removeAria: (label: string) => string;
+    saveAria: (label: string) => string;
+  };
+  savedPage: {
+    title: string;
+    subtitle: string;
+  };
+  savedList: {
+    rootsHeading: string;
+    wordsHeading: string;
+    versesHeading: string;
+    empty: string;
+    removeAria: (label: string) => string;
+    notePlaceholder: string;
+  };
+  wordHeader: {
+    lemmaLabel: string;
+    rootPrefix: (root: string) => string;
+    occurrences: string;
+    surfaceForms: string;
+  };
+  aboutPage: {
+    title: string;
+    heading: string;
+    intro: string;
+    howCountsComputedHeading: string;
+    howCountsComputedBody: string;
+    dataSourcesHeading: string;
+    laneLexiconNote: string;
+    offlineHeading: string;
+    offlineBody: string;
+    downloaded: string;
+    downloading: (pct: number) => string;
+    downloadEverything: string;
+    dataBuildHeading: string;
+    dataBuildSummary: (date: string, words: number, roots: number, occurrences: number, verses: number) => string;
+  };
+}

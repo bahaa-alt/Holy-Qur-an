@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { getLemma, getMeta, getRoot, getVerses } from "@/lib/data/loader";
+import { useT } from "@/lib/i18n/LanguageContext";
 import { buildOccurrenceRows, buildVerseWordIndex, filterRows, type OccRow, type RowFilters } from "@/lib/root/occurrences";
 import { buildExportRow } from "@/lib/export/buildRow";
 import { CATEGORY_ORDER } from "@/lib/data/types";
@@ -34,6 +35,7 @@ export function AyahExplorer({
   filters?: RowFilters;
   onFiltersChange?: (next: RowFilters) => void;
 }) {
+  const t = useT();
   const root = source.kind === "root" ? source.root : null;
   const [file, setFile] = useState<RootFile | null>(null);
   const [meta, setMeta] = useState<MetaFile | null>(null);
@@ -127,7 +129,7 @@ export function AyahExplorer({
   if (!file || !meta) {
     return (
       <div className="flex items-center justify-center gap-2 py-16 text-sm text-muted">
-        <Loader2 size={16} className="animate-spin" /> Loading occurrences…
+        <Loader2 size={16} className="animate-spin" /> {t.ayahExplorer.loadingOccurrences}
       </div>
     );
   }
@@ -136,7 +138,7 @@ export function AyahExplorer({
     <div id="ayah-explorer" className="rounded-2xl border border-border bg-surface p-6">
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-sm font-medium text-ink">Contextual Ayah Explorer</h2>
+          <h2 className="text-sm font-medium text-ink">{t.ayahExplorer.heading}</h2>
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex rounded-lg border border-border p-0.5 text-xs">
               <button
@@ -144,14 +146,14 @@ export function AyahExplorer({
                 onClick={() => setViewMode("cards")}
                 className={`rounded-md px-2.5 py-1 ${viewMode === "cards" ? "bg-accent text-accent-fg" : "text-muted"}`}
               >
-                Cards
+                {t.ayahExplorer.cardsView}
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode("kwic")}
                 className={`rounded-md px-2.5 py-1 ${viewMode === "kwic" ? "bg-accent text-accent-fg" : "text-muted"}`}
               >
-                KWIC
+                {t.ayahExplorer.kwicView}
               </button>
             </div>
             <ExportMenu filenameBase={filenameBase} resolveRows={resolveExportRows} />
@@ -169,7 +171,7 @@ export function AyahExplorer({
       <div className={viewMode === "cards" ? "mt-4 space-y-3" : "mt-4"}>
         {isLoadingVerses ? (
           <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted">
-            <Loader2 size={16} className="animate-spin" /> Loading verses…
+            <Loader2 size={16} className="animate-spin" /> {t.common.loadingVerses}
           </div>
         ) : (
           pageRows.map((row, i) => {

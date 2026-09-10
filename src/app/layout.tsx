@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { InstallPrompt } from "@/components/layout/InstallPrompt";
 import { ServiceWorkerRegister } from "@/components/layout/ServiceWorkerRegister";
+import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -55,6 +56,10 @@ export const viewport: Viewport = {
 
 // Runs before paint to avoid a light/dark flash: applies the user's stored
 // preference, falling back to the system preference when nothing is stored.
+// (The Arabic UI toggle deliberately does *not* get the same treatment here
+// -- see LanguageContext.tsx's comment on why a pre-hydration language
+// switch is a page-wide hydration-mismatch risk that a one-class theme
+// switch isn't, and why a brief flash is accepted instead.)
 const NO_FLASH_SCRIPT = `
 (function () {
   try {
@@ -76,11 +81,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: NO_FLASH_SCRIPT }} />
       </head>
       <body className="flex min-h-full flex-col bg-bg font-sans text-ink">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <InstallPrompt />
-        <ServiceWorkerRegister />
+        <LanguageProvider>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <InstallPrompt />
+          <ServiceWorkerRegister />
+        </LanguageProvider>
       </body>
     </html>
   );
