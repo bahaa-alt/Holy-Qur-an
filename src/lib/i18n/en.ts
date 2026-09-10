@@ -87,6 +87,12 @@ export const en: Dict = {
     mostFrequentRoots: "Most frequent roots",
     browseAllRoots: (count) => `Browse all ${count.toLocaleString()} roots →`,
   },
+  dailyWidget: {
+    rootHeading: "Root of the day",
+    verseHeading: "Verse of the day",
+    viewRoot: "Explore this root →",
+    viewVerse: "Open in surah →",
+  },
   quran: {
     title: "The Qur'an",
     subtitle: "All 114 surahs, in mus'haf order. Open any surah to read the full Uthmani text with translation, word by word.",

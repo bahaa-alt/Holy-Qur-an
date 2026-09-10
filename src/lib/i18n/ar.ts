@@ -110,6 +110,12 @@ export const ar: Dict = {
     mostFrequentRoots: "الجذور الأكثر ورودًا",
     browseAllRoots: (count) => `تصفح كل الجذور (${count.toLocaleString()}) ←`,
   },
+  dailyWidget: {
+    rootHeading: "جذر اليوم",
+    verseHeading: "آية اليوم",
+    viewRoot: "استكشف هذا الجذر ←",
+    viewVerse: "افتح في السورة ←",
+  },
   quran: {
     title: "القرآن الكريم",
     subtitle: "كل السور الـ114 بترتيب المصحف. افتح أي سورة لقراءة النص العثماني كاملاً مع الترجمة، كلمة كلمة.",

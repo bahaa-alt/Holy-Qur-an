@@ -92,6 +92,12 @@ export interface Dict {
     mostFrequentRoots: string;
     browseAllRoots: (count: number) => string;
   };
+  dailyWidget: {
+    rootHeading: string;
+    verseHeading: string;
+    viewRoot: string;
+    viewVerse: string;
+  };
   quran: {
     title: string;
     subtitle: string;

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useT } from "@/lib/i18n/LanguageContext";
 import { SearchBox } from "@/components/search/SearchBox";
 import { RandomRootLink } from "@/components/root/RandomRootLink";
+import { DailyWidget } from "@/components/home/DailyWidget";
 
 interface TopRoot {
   ar: string;
@@ -31,6 +32,8 @@ export function HomeContent({
       <div className="mt-8">
         <SearchBox autoFocus />
       </div>
+
+      <DailyWidget />
 
       <div className="mt-12">
         <div className="flex items-center justify-between">
