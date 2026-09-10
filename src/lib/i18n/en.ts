@@ -504,6 +504,10 @@ export const en: Dict = {
     medinan: "Medinan",
     summary: (n, typeLabel, verses) => `Surah ${n} · ${typeLabel} · ${verses.toLocaleString()} verses`,
   },
+  interlinearToggle: {
+    show: "Show interlinear gloss",
+    hide: "Hide interlinear gloss",
+  },
   ayahExplorer: {
     loadingOccurrences: "Loading occurrences…",
     heading: "Contextual Ayah Explorer",

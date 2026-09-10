@@ -6,6 +6,7 @@ import { SurahVerseList } from "@/components/surah/SurahVerseList";
 import { SurahPageChrome } from "@/components/surah/SurahPageChrome";
 import { SurahInsightsPanel } from "@/components/surah/SurahInsightsPanel";
 import { LoadingVersesFallback } from "@/components/surah/LoadingVersesFallback";
+import { ReadingModeProvider } from "@/lib/surah/ReadingModeContext";
 
 const DISTINCTIVE_ROOTS_SHOWN = 5;
 
@@ -34,18 +35,20 @@ export default async function SurahPage({ params }: { params: Promise<{ n: strin
   const abjadTotal = readAbjad().bySurah[n - 1] ?? 0;
 
   return (
-    <SurahPageChrome n={n} surahMeta={surahMeta}>
-      <SurahInsightsPanel
-        distinctiveRoots={distinctiveRoots}
-        rhymeDominant={rhyme.dominant}
-        rhymeTotalVerses={rhyme.totalVerses}
-        abjadTotal={abjadTotal}
-      />
-      <div className="mt-6">
-        <Suspense fallback={<LoadingVersesFallback />}>
-          <SurahVerseList surahMeta={surahMeta} verses={surahFile.verses} />
-        </Suspense>
-      </div>
-    </SurahPageChrome>
+    <ReadingModeProvider>
+      <SurahPageChrome n={n} surahMeta={surahMeta}>
+        <SurahInsightsPanel
+          distinctiveRoots={distinctiveRoots}
+          rhymeDominant={rhyme.dominant}
+          rhymeTotalVerses={rhyme.totalVerses}
+          abjadTotal={abjadTotal}
+        />
+        <div className="mt-6">
+          <Suspense fallback={<LoadingVersesFallback />}>
+            <SurahVerseList surahMeta={surahMeta} verses={surahFile.verses} />
+          </Suspense>
+        </div>
+      </SurahPageChrome>
+    </ReadingModeProvider>
   );
 }

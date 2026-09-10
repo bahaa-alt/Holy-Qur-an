@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLanguage, useT } from "@/lib/i18n/LanguageContext";
+import { InterlinearToggle } from "./InterlinearToggle";
 import type { SurahMeta } from "@/lib/data/types";
 
 export function SurahPageChrome({
@@ -60,6 +61,9 @@ export function SurahPageChrome({
         <p className="text-sm text-muted">
           {surahMeta.translit} — {surahMeta.nameEn}
         </p>
+        <div className="mt-2">
+          <InterlinearToggle />
+        </div>
       </div>
 
       <div className="mt-8">{children}</div>

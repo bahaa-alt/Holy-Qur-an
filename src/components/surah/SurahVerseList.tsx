@@ -4,13 +4,16 @@ import { useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { AyahActions } from "@/components/ayah/AyahActions";
 import { HighlightedVerse } from "@/components/ayah/HighlightedVerse";
+import { InterlinearVerse } from "@/components/ayah/InterlinearVerse";
 import { RelatedVerses } from "@/components/ayah/RelatedVerses";
 import { SaveButton } from "@/components/notes/SaveButton";
 import { useT } from "@/lib/i18n/LanguageContext";
+import { useInterlinearMode } from "@/lib/surah/ReadingModeContext";
 import type { SurahMeta, SurahVerse } from "@/lib/data/types";
 
 export function SurahVerseList({ surahMeta, verses }: { surahMeta: SurahMeta; verses: SurahVerse[] }) {
   const t = useT();
+  const [interlinear] = useInterlinearMode();
   const searchParams = useSearchParams();
   const focusedAyah = Number(searchParams.get("ayah") ?? "");
   const refs = useRef<Map<number, HTMLDivElement>>(new Map());
@@ -43,7 +46,11 @@ export function SurahVerseList({ surahMeta, verses }: { surahMeta: SurahMeta; ve
               </span>
             </div>
             <div className="mt-2">
-              <HighlightedVerse s={surahMeta.n} a={verse.a} tokens={verse.w} highlightIndices={[]} />
+              {interlinear ? (
+                <InterlinearVerse s={surahMeta.n} a={verse.a} tokens={verse.w} />
+              ) : (
+                <HighlightedVerse s={surahMeta.n} a={verse.a} tokens={verse.w} highlightIndices={[]} />
+              )}
             </div>
             <p className="mt-2 text-sm text-muted">{verse.t}</p>
             {verse.pickthall && (

@@ -523,6 +523,10 @@ export const ar: Dict = {
     medinan: "مدنية",
     summary: (n, typeLabel, verses) => `سورة ${n} · ${typeLabel} · ${verses.toLocaleString()} آية`,
   },
+  interlinearToggle: {
+    show: "إظهار التحليل السطري",
+    hide: "إخفاء التحليل السطري",
+  },
   ayahExplorer: {
     loadingOccurrences: "جارٍ تحميل مواضع الورود…",
     heading: "مستكشف الآيات السياقي",

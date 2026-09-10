@@ -483,6 +483,10 @@ export interface Dict {
   };
   // (surahPage.summary combines the surah number, Meccan/Medinan label, and
   // verse count into one line: "Surah 2 · Medinan · 286 verses".)
+  interlinearToggle: {
+    show: string;
+    hide: string;
+  };
   ayahExplorer: {
     loadingOccurrences: string;
     heading: string;
