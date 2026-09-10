@@ -55,6 +55,10 @@ export function AboutContent({ manifest, rootNames }: { manifest: ManifestFile; 
             <h3 className="font-medium">{t.aboutPage.juzHizbHeading}</h3>
             <p className="mt-1 text-muted">{t.aboutPage.juzHizbBody}</p>
           </div>
+          <div>
+            <h3 className="font-medium">{t.aboutPage.cooccurrenceMethodHeading}</h3>
+            <p className="mt-1 text-muted">{t.aboutPage.cooccurrenceMethodBody}</p>
+          </div>
         </div>
       </div>
 

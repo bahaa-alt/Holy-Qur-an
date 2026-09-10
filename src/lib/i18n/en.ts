@@ -270,6 +270,7 @@ export const en: Dict = {
     tabVocabulary: "Distinctive vocabulary",
     tabCollocations: "Verb collocations",
     tabAbjad: "Abjad value",
+    tabCooccurrence: "Root network",
     letterFrequencyHeading: "Letter frequency",
     letterFrequencyDescription:
       "How often each Arabic letter appears, diacritics stripped but letter variants (ة vs ه, ا vs أ/إ/آ/ٱ) kept distinct. Pick a scope below.",
@@ -337,6 +338,15 @@ export const en: Dict = {
     hizbLabel: "Hizb",
     abjadTotalLabel: "Total value",
     abjadWordBreakdownHeading: "Per word",
+    cooccurrenceHeading: "Root co-occurrence network",
+    cooccurrenceDescription:
+      "Which pairs of roots occur together in the same verse most often, across the whole Qur'an -- unlike Collocations (what else appears in one root's own verses), this surfaces the most formulaic/idiomatic pairings corpus-wide. Pairs sharing fewer than 3 verses are excluded as noise.",
+    cooccurrenceTopPairsHeading: "Most frequent pairs, corpus-wide",
+    cooccurrenceRootPlaceholder: "Type a root to see its top co-occurring partners…",
+    cooccurrenceLoading: "Loading…",
+    cooccurrenceNoResults: "This root shares fewer than 3 verses with any other root.",
+    cooccurrencePickPrompt: "Pick a root above to see which other roots co-occur with it most.",
+    cooccurrenceSharedVerses: (n) => `${n.toLocaleString()} shared verses`,
   },
   surahPage: {
     previous: "Previous",
@@ -471,6 +481,9 @@ export const en: Dict = {
     juzHizbHeading: "Juz' and Hizb boundaries",
     juzHizbBody:
       "The 30-part Juz' and 60-part Hizb divisions are standard structural divisions of the Mushaf, unrelated to the morphology dataset above. Boundaries were cross-checked against two independent community-maintained datasets (see the project's source code for exact references and commit history); that check found and corrected two isolated errors in one source's Hizb boundaries before they shipped.",
+    cooccurrenceMethodHeading: "Root co-occurrence network",
+    cooccurrenceMethodBody:
+      "For every verse, collects its distinct rooted-word roots, then tallies every unordered pair of roots that share at least one verse, across the whole Qur'an -- unlike the per-root Collocations feature (what else appears in one root's own verses), this ranks pairs corpus-wide. A pair sharing fewer than 3 verses is excluded as noise; the top 50 pairs overall and each root's top 5 partners are shown.",
     dataSourcesHeading: "Data sources & licenses",
     laneLexiconNote:
       'Root meanings are given as "after Lane\'s Lexicon" -- a summary drawn from that dataset, not a verbatim quotation of the original 19th-century lexicon. This project\'s own source code is licensed GPL-3.0, matching the copyleft terms of the morphology dataset it builds on.',

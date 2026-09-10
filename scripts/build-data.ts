@@ -21,6 +21,7 @@ import { buildRhyme } from "./lib/build-rhyme";
 import { buildDistinctiveVocab } from "./lib/build-distinctive-vocab";
 import { buildCollocations } from "./lib/build-collocations";
 import { buildAbjad } from "./lib/build-abjad";
+import { buildCooccurrence } from "./lib/build-cooccurrence";
 import { SizeReport, recordGroup, writeJSON } from "./lib/emit";
 import { ALL_TOPICS } from "../src/lib/topics/topicDefinitions";
 import { topicSourceFileKey } from "../src/lib/topics/buildTopicOccurrences";
@@ -218,6 +219,7 @@ async function main() {
   const distinctiveVocab = buildDistinctiveVocab(words, rootFiles, indexRoots, meta.surahs.length);
   const collocations = buildCollocations(words);
   const abjad = buildAbjad(words, meta.surahs.length);
+  const cooccurrence = buildCooccurrence(words);
 
   // --- 6. Validate invariants ---
   const errors: string[] = [];
@@ -365,6 +367,7 @@ async function main() {
       distinctiveVocab,
       collocations,
       abjad,
+      cooccurrence,
       rootFiles,
       lemmaFiles,
       manifest,
@@ -444,6 +447,9 @@ async function main() {
   const abjadSize = writeJSON(join(OUT_DIR, "abjad.json"), abjad);
   report.record("abjad.json", abjadSize.rawBytes, abjadSize.gzBytes);
 
+  const cooccurrenceSize = writeJSON(join(OUT_DIR, "cooccurrence.json"), cooccurrence);
+  report.record("cooccurrence.json", cooccurrenceSize.rawBytes, cooccurrenceSize.gzBytes);
+
   const surahSizes = [...surahFiles.entries()]
     .sort(([a], [b]) => a - b)
     .map(([n, file]) => writeJSON(join(OUT_DIR, "surahs", `${n}.json`), file));
@@ -500,6 +506,7 @@ function printSizeEstimate(data: {
   distinctiveVocab: unknown;
   collocations: unknown;
   abjad: unknown;
+  cooccurrence: unknown;
   rootFiles: Map<string, unknown>;
   lemmaFiles: Map<string, unknown>;
   manifest: unknown;
@@ -522,6 +529,7 @@ function printSizeEstimate(data: {
   rec("distinctive-vocab.json", data.distinctiveVocab);
   rec("collocations.json", data.collocations);
   rec("abjad.json", data.abjad);
+  rec("cooccurrence.json", data.cooccurrence);
   rec("roots/*.json (est.)", [...data.rootFiles.values()]);
   rec("lemmas/*.json (est.)", [...data.lemmaFiles.values()]);
   report.print();

@@ -2,6 +2,7 @@ import type {
   AbjadTotalsFile,
   ArIndexFile,
   CollocationsFile,
+  CooccurrenceFile,
   DistinctiveVocabFile,
   EnIndexFile,
   IndexFile,
@@ -103,6 +104,10 @@ export function getCollocations(): Promise<CollocationsFile> {
 
 export function getAbjad(): Promise<AbjadTotalsFile> {
   return cachedFetch(`${DATA_BASE}/abjad.json`);
+}
+
+export function getCooccurrence(): Promise<CooccurrenceFile> {
+  return cachedFetch(`${DATA_BASE}/cooccurrence.json`);
 }
 
 export function getRoot(root: string): Promise<RootFile> {

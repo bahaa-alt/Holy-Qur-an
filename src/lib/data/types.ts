@@ -379,3 +379,31 @@ export interface AbjadTotalsFile {
   /** index n-1 -> Juz' n's total (30 entries) */
   byJuz: number[];
 }
+
+/** One pair of roots and how many distinct verses both occur in together. */
+export interface RootPairRow {
+  rootA: string;
+  rootB: string;
+  count: number;
+}
+
+/** One root's co-occurrence partner: the other root and their shared verse count. */
+export interface RootCooccurrencePartner {
+  root: string;
+  count: number;
+}
+
+/**
+ * Global root co-occurrence: which pairs of roots occur together in the
+ * same verse most often across the whole corpus -- unlike the per-root
+ * Collocations feature (what else occurs in THIS root's own verses), this
+ * answers "which root pairs co-occur most anywhere", surfacing
+ * formulaic/idiomatic pairings no single root page can show. Pairs
+ * co-occurring fewer than 3 times are excluded as noise.
+ */
+export interface CooccurrenceFile {
+  /** top 50 pairs globally, sorted by count desc */
+  topPairs: RootPairRow[];
+  /** root (Arabic text) -> its top 5 co-occurring partners, sorted by count desc */
+  byRoot: Record<string, RootCooccurrencePartner[]>;
+}

@@ -265,6 +265,7 @@ export interface Dict {
     tabVocabulary: string;
     tabCollocations: string;
     tabAbjad: string;
+    tabCooccurrence: string;
     letterFrequencyHeading: string;
     letterFrequencyDescription: string;
     scopeAyah: string;
@@ -325,6 +326,14 @@ export interface Dict {
     hizbLabel: string;
     abjadTotalLabel: string;
     abjadWordBreakdownHeading: string;
+    cooccurrenceHeading: string;
+    cooccurrenceDescription: string;
+    cooccurrenceTopPairsHeading: string;
+    cooccurrenceRootPlaceholder: string;
+    cooccurrenceLoading: string;
+    cooccurrenceNoResults: string;
+    cooccurrencePickPrompt: string;
+    cooccurrenceSharedVerses: (n: number) => string;
   };
   surahPage: {
     previous: string;
@@ -450,6 +459,8 @@ export interface Dict {
     abjadMethodBody: string;
     juzHizbHeading: string;
     juzHizbBody: string;
+    cooccurrenceMethodHeading: string;
+    cooccurrenceMethodBody: string;
     dataSourcesHeading: string;
     laneLexiconNote: string;
     offlineHeading: string;
