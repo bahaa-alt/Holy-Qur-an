@@ -223,6 +223,10 @@ export function buildRoots(words: readonly RawWord[], gloss: RootsGlossMap): Bui
         count: l.count,
         cats: Object.fromEntries(l.cats) as Partial<Record<Cat, number>>,
         ...(l.vf && l.vf.size > 0 ? { vf: Object.fromEntries(l.vf) } : {}),
+        // Placeholder, resolved to the real global lemma index once
+        // globalLemmaLookup exists below (it needs every root's lemmas
+        // array already built, so this can't be filled in on construction).
+        wordIdx: -1,
       }));
     const lemmaTextToLocalIdx = new Map(lemmasArr.map((l, i) => [l.lemma, i]));
 
@@ -333,6 +337,15 @@ export function buildRoots(words: readonly RawWord[], gloss: RootsGlossMap): Bui
     globalLemmaLookup.set(compositeKey, i);
   });
 
+  // Now that the lookup exists, resolve every rooted lemma's placeholder
+  // wordIdx (see above) to its real global index -- powers a lemma-name
+  // link (e.g. FormsTable's "Lemma" column) straight to /word/{idx}/.
+  for (const [root, file] of rootFiles) {
+    for (const lemma of file.lemmas) {
+      lemma.wordIdx = globalLemmaLookup.get(`${root} ${lemma.lemma}`)!;
+    }
+  }
+
   const indexLemmas: IndexLemmaRow[] = allLemmaRows.map(({ lemma, key, rootIdx, count, cat }) => ({
     lemma,
     key,
@@ -429,6 +442,7 @@ export function buildRoots(words: readonly RawWord[], gloss: RootsGlossMap): Bui
           pos: l.pos,
           count: l.count,
           cats: Object.fromEntries(l.cats) as Partial<Record<Cat, number>>,
+          wordIdx: globalLemmaLookup.get(` ${l.lemma}`)!,
         },
       ],
       forms: formsArr,

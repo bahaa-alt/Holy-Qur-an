@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useT } from "@/lib/i18n/LanguageContext";
+import { wordHref } from "@/lib/search/suggest";
 import type { RootFormEntry, RootLemmaEntry } from "@/lib/data/types";
 
 export function FormsTable({ forms, lemmas }: { forms: RootFormEntry[]; lemmas: RootLemmaEntry[] }) {
@@ -22,14 +24,25 @@ export function FormsTable({ forms, lemmas }: { forms: RootFormEntry[]; lemmas: 
             </tr>
           </thead>
           <tbody>
-            {forms.map((f) => (
-              <tr key={f.key + f.form} className="border-b border-border/60 last:border-0">
-                <td className="arabic-ui py-2 pe-3 text-base text-ink">{f.form}</td>
-                <td className="arabic-ui py-2 pe-3 text-muted">{lemmas[f.lemmaIdx]?.lemma ?? "—"}</td>
-                <td className="py-2 pe-3 text-xs text-muted">{t.categories[f.cat]}</td>
-                <td className="py-2 text-right text-ink">{f.count.toLocaleString()}</td>
-              </tr>
-            ))}
+            {forms.map((f) => {
+              const lemma = lemmas[f.lemmaIdx];
+              return (
+                <tr key={f.key + f.form} className="border-b border-border/60 last:border-0">
+                  <td className="arabic-ui py-2 pe-3 text-base text-ink">{f.form}</td>
+                  <td className="arabic-ui py-2 pe-3 text-muted">
+                    {lemma ? (
+                      <Link href={wordHref(lemma.wordIdx)} className="hover:text-accent">
+                        {lemma.lemma}
+                      </Link>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                  <td className="py-2 pe-3 text-xs text-muted">{t.categories[f.cat]}</td>
+                  <td className="py-2 text-right text-ink">{f.count.toLocaleString()}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

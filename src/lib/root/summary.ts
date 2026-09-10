@@ -11,6 +11,8 @@ export interface LemmaCount {
   key: string;
   cat: Cat;
   count: number;
+  /** index into IndexFile.lemmas (i.e. wordHref(wordIdx)'s /word/{idx}/ page) */
+  wordIdx: number;
 }
 
 export interface RootSummary {
@@ -52,6 +54,7 @@ export function buildRootSummary(file: RootFile): RootSummary {
       key: l.key,
       cat: dominantLemmaCategory(l.cats),
       count: l.count,
+      wordIdx: l.wordIdx,
     }))
     .sort((a, b) => b.count - a.count);
 

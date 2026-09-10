@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useT } from "@/lib/i18n/LanguageContext";
+import { rootHref } from "@/lib/search/suggest";
 import type { ComparisonCategoryRow } from "@/lib/compare/buildComparisonRows";
 
 const BAR_OPACITY = ["bg-accent/70", "bg-accent/45", "bg-accent/25"];
@@ -23,7 +25,13 @@ export function CompareCategoryBars({
         {labels.map((label, i) => (
           <span key={label} className="inline-flex items-center gap-1.5">
             <span className={`inline-block h-2.5 w-2.5 rounded-full ${BAR_OPACITY[i]}`} />
-            <span className="arabic-ui">{label}</span>
+            {label ? (
+              <Link href={rootHref(label)} className="arabic-ui hover:text-accent">
+                {label}
+              </Link>
+            ) : (
+              <span className="arabic-ui">{label}</span>
+            )}
           </span>
         ))}
       </div>

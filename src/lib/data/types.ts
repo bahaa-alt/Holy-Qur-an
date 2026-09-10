@@ -221,6 +221,8 @@ export interface RootLemmaEntry {
   cats: Partial<Record<Cat, number>>;
   /** Form I-XI counts, only present for verbs */
   vf?: Record<string, number>;
+  /** index into IndexFile.lemmas (i.e. wordHref(wordIdx)'s /word/{idx}/ page) */
+  wordIdx: number;
 }
 
 export interface RootFormEntry {

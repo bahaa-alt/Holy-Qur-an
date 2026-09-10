@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useT } from "@/lib/i18n/LanguageContext";
+import { rootHref } from "@/lib/search/suggest";
 import type { RootSummary } from "@/lib/root/summary";
 import type { Dict } from "@/lib/i18n/types";
 
@@ -27,7 +29,13 @@ export function CompareStatsTable({ summaries }: { summaries: RootSummary[] }) {
               <th className="py-2 pe-3 font-medium"></th>
               {summaries.map((s) => (
                 <th key={s.root} className="arabic-ui py-2 pe-3 text-right text-base font-medium text-ink">
-                  {s.root}
+                  {s.root ? (
+                    <Link href={rootHref(s.root)} className="hover:text-accent">
+                      {s.root}
+                    </Link>
+                  ) : (
+                    s.root
+                  )}
                 </th>
               ))}
             </tr>

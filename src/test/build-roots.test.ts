@@ -84,6 +84,29 @@ describe("buildRoots", () => {
     expect(byLemma["كَتَبَ"]).toMatchObject({ pos: "V", count: 1, cats: { "verb.impf": 1 }, vf: { I: 1 } });
   });
 
+  it("resolves every rooted lemma's wordIdx to the matching indexLemmas row (same lemma text, same root)", () => {
+    for (const [root, file] of result.rootFiles) {
+      const rootIdx = result.indexRoots.findIndex((r) => r.ar === root);
+      for (const lemma of file.lemmas) {
+        expect(lemma.wordIdx).toBeGreaterThanOrEqual(0);
+        const globalRow = result.indexLemmas[lemma.wordIdx];
+        expect(globalRow).toBeDefined();
+        expect(globalRow.lemma).toBe(lemma.lemma);
+        expect(globalRow.rootIdx).toBe(rootIdx);
+      }
+    }
+  });
+
+  it("resolves a rootless lemma's wordIdx to its own indexLemmas row (rootIdx -1)", () => {
+    for (const file of result.lemmaFiles.values()) {
+      const lemma = file.lemmas[0];
+      const globalRow = result.indexLemmas[lemma.wordIdx];
+      expect(globalRow).toBeDefined();
+      expect(globalRow.lemma).toBe(lemma.lemma);
+      expect(globalRow.rootIdx).toBe(-1);
+    }
+  });
+
   it("builds per-root form entries pointing at the correct local lemma index", () => {
     const katabaFile = result.rootFiles.get("كتب")!;
     expect(katabaFile.forms).toHaveLength(2);

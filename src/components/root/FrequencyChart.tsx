@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useT } from "@/lib/i18n/LanguageContext";
+import { wordHref } from "@/lib/search/suggest";
 import type { CategoryCount, LemmaCount } from "@/lib/root/summary";
 
 function Bar({
@@ -10,19 +12,26 @@ function Bar({
   max,
   sublabel,
   arabic,
+  href,
 }: {
   label: string;
   count: number;
   max: number;
   sublabel?: string;
   arabic?: boolean;
+  href?: string;
 }) {
   const pct = max > 0 ? Math.max((count / max) * 100, 2) : 0;
+  const labelClass = `w-28 shrink-0 truncate text-xs text-muted sm:w-40 ${arabic ? "arabic-ui text-sm" : ""}`;
   return (
     <div className="flex items-center gap-3 py-1">
-      <div className={`w-28 shrink-0 truncate text-xs text-muted sm:w-40 ${arabic ? "arabic-ui text-sm" : ""}`}>
-        {label}
-      </div>
+      {href ? (
+        <Link href={href} className={`${labelClass} hover:text-accent`}>
+          {label}
+        </Link>
+      ) : (
+        <div className={labelClass}>{label}</div>
+      )}
       <div className="relative h-5 flex-1 overflow-hidden rounded bg-bg">
         <div className="h-full rounded bg-accent/70" style={{ width: `${pct}%` }} />
       </div>
@@ -83,6 +92,7 @@ export function FrequencyChart({
                   max={maxLemma}
                   sublabel={t.categories[l.cat]}
                   arabic
+                  href={wordHref(l.wordIdx)}
                 />
               ))}
       </div>
