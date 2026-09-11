@@ -3,11 +3,16 @@
 import Link from "next/link";
 import { useT } from "@/lib/i18n/LanguageContext";
 import {
+  ANGEL_TOPICS,
+  BOOK_TOPICS,
   COMMODITIES_TOPICS,
   COSMOLOGY_TOPICS,
+  DIVINE_NAME_TOPICS,
   GEOGRAPHY_TOPICS,
   GEOLOGY_TOPICS,
   METEOROLOGY_TOPICS,
+  NUMBER_TOPICS,
+  OBJECT_TOPICS,
   PEOPLE_TOPICS,
   PROPHET_TOPICS,
   SPECIES_TOPICS,
@@ -57,6 +62,11 @@ export function TopicsPageContent() {
       <TopicSection heading={t.topicsPage.meteorology} topics={METEOROLOGY_TOPICS} />
       <TopicSection heading={t.topicsPage.cosmology} topics={COSMOLOGY_TOPICS} />
       <TopicSection heading={t.topicsPage.commodities} topics={COMMODITIES_TOPICS} />
+      <TopicSection heading={t.topicsPage.objects} topics={OBJECT_TOPICS} />
+      <TopicSection heading={t.topicsPage.books} topics={BOOK_TOPICS} />
+      <TopicSection heading={t.topicsPage.angels} topics={ANGEL_TOPICS} />
+      <TopicSection heading={t.topicsPage.numbers} topics={NUMBER_TOPICS} />
+      <TopicSection heading={t.topicsPage.divineNames} topics={DIVINE_NAME_TOPICS} />
     </div>
   );
 }

@@ -32,7 +32,21 @@ export interface TopicDefinition {
   slug: string;
   labelEn: string;
   labelAr: string;
-  category: "theme" | "prophet" | "person" | "species" | "geography" | "geology" | "meteorology" | "cosmology" | "commodities";
+  category:
+    | "theme"
+    | "prophet"
+    | "person"
+    | "species"
+    | "geography"
+    | "geology"
+    | "meteorology"
+    | "cosmology"
+    | "commodities"
+    | "object"
+    | "book"
+    | "angel"
+    | "number"
+    | "divineName";
   /** One-line explanation of scope and any known ambiguity, shown on the topic page. */
   note?: string;
   sources: TopicSource[];
@@ -1186,6 +1200,267 @@ export const COMMODITIES_TOPICS: TopicDefinition[] = [
   },
 ];
 
+export const OBJECT_TOPICS: TopicDefinition[] = [
+  {
+    slug: "ships-and-the-ark",
+    labelEn: "Ships & the Ark",
+    labelAr: "الفلك والسفينة",
+    category: "object",
+    note: "فلك's root also covers \"orbit\" (فَلَك, a distinct celestial sense sharing the same diacritic-stripped key); the vast majority of matches are the ship/ark sense.",
+    sources: [root("فلك"), root("سفن")],
+  },
+  {
+    slug: "the-kaaba",
+    labelEn: "The Kaʿbah",
+    labelAr: "الكعبة",
+    category: "object",
+    sources: [rootedLemma("كعب", "كعبه")],
+  },
+  {
+    slug: "the-balance",
+    labelEn: "The Balance (Mīzān)",
+    labelAr: "الميزان",
+    category: "object",
+    sources: [rootedLemma("وزن", "ميزان")],
+  },
+  {
+    slug: "the-pen",
+    labelEn: "The Pen",
+    labelAr: "القلم",
+    category: "object",
+    sources: [root("قلم")],
+  },
+  {
+    slug: "the-tablet",
+    labelEn: "The Tablet",
+    labelAr: "اللوح",
+    category: "object",
+    note: "لوح's root also covers \"scorching\" (لوّاحة, describing Hellfire); filtered to the lemma لَوْح itself.",
+    sources: [rootedLemma("لوح", "لوح")],
+  },
+  {
+    slug: "the-trumpet",
+    labelEn: "The Trumpet",
+    labelAr: "الصور",
+    category: "object",
+    note: "صور's root also covers \"formed/shaped\" (صَوَّرَ), which shares the same diacritic-stripped key; most matches are the trumpet.",
+    sources: [rootedLemma("صور", "صور")],
+  },
+  {
+    slug: "the-staff",
+    labelEn: "The Staff (of Moses)",
+    labelAr: "العصا",
+    category: "object",
+    note: "The same word عصا is tagged under two different root spellings (عصو and عصي) in this corpus; both are included here, filtered away from عصي's unrelated \"disobedience\" senses.",
+    sources: [rootedLemma("عصو", "عصا"), rootedLemma("عصي", "عصا")],
+  },
+  {
+    slug: "the-throne",
+    labelEn: "The Throne",
+    labelAr: "العرش",
+    category: "object",
+    sources: [rootedLemma("عرش", "عرش")],
+  },
+  {
+    slug: "the-footstool",
+    labelEn: "The Footstool (Kursī)",
+    labelAr: "الكرسي",
+    category: "object",
+    sources: [root("كرس")],
+  },
+  {
+    slug: "the-cave",
+    labelEn: "The Cave",
+    labelAr: "الكهف",
+    category: "object",
+    sources: [root("كهف")],
+  },
+];
+
+export const BOOK_TOPICS: TopicDefinition[] = [
+  {
+    slug: "the-torah",
+    labelEn: "The Torah (Tawrāh)",
+    labelAr: "التوراة",
+    category: "book",
+    sources: [rootlessLemma("توراه")],
+  },
+  {
+    slug: "the-gospel",
+    labelEn: "The Gospel (Injīl)",
+    labelAr: "الإنجيل",
+    category: "book",
+    sources: [rootlessLemma("انجيل")],
+  },
+  {
+    slug: "the-zabur",
+    labelEn: "The Zabūr (Psalms)",
+    labelAr: "الزبور",
+    category: "book",
+    sources: [rootedLemma("زبر", "زبور")],
+  },
+  {
+    slug: "the-scrolls",
+    labelEn: "The Scrolls (Ṣuḥuf)",
+    labelAr: "الصحف",
+    category: "book",
+    sources: [rootedLemma("صحف", "صحف")],
+  },
+  {
+    slug: "the-quran",
+    labelEn: "The Qurʾān",
+    labelAr: "القرآن",
+    category: "book",
+    sources: [rootedLemma("قرأ", "قرءان")],
+  },
+  {
+    slug: "al-furqan",
+    labelEn: "Al-Furqān",
+    labelAr: "الفرقان",
+    category: "book",
+    sources: [rootedLemma("فرق", "فرقان")],
+  },
+];
+
+export const ANGEL_TOPICS: TopicDefinition[] = [
+  {
+    slug: "jibril",
+    labelEn: "Jibrīl (Gabriel)",
+    labelAr: "جبريل",
+    category: "angel",
+    sources: [rootlessLemma("جبريل")],
+  },
+  {
+    slug: "mikal",
+    labelEn: "Mīkāl (Michael)",
+    labelAr: "ميكال",
+    category: "angel",
+    sources: [rootlessLemma("ميكال")],
+  },
+  {
+    slug: "harut-and-marut",
+    labelEn: "Hārūt & Mārūt",
+    labelAr: "هاروت وماروت",
+    category: "angel",
+    sources: [rootlessLemma("هاروت"), rootlessLemma("ماروت")],
+  },
+];
+
+export const NUMBER_TOPICS: TopicDefinition[] = [
+  {
+    slug: "seven",
+    labelEn: "Seven",
+    labelAr: "السبع",
+    category: "number",
+    note: "سبع's root also covers \"beast of prey\" (سَبُع), a small unrelated sense sharing the same diacritic-stripped key.",
+    sources: [rootedLemma("سبع", "سبع"), rootedLemma("سبع", "سبعه")],
+  },
+  {
+    slug: "four",
+    labelEn: "Four",
+    labelAr: "الأربعة",
+    category: "number",
+    sources: [root("ربع")],
+  },
+  {
+    slug: "eight",
+    labelEn: "Eight",
+    labelAr: "الثمانية",
+    category: "number",
+    note: "ثمن's root also covers \"price\" (ثَمَن), its dominant sense; filtered to the eight-specific lemmas.",
+    sources: [
+      rootedLemma("ثمن", "ثمانيه"),
+      rootedLemma("ثمن", "ثامن"),
+      rootedLemma("ثمن", "ثماني"),
+      rootedLemma("ثمن", "ثمانين"),
+    ],
+  },
+  {
+    slug: "ten-and-twenty",
+    labelEn: "Ten & Twenty",
+    labelAr: "العشرة والعشرون",
+    category: "number",
+    note: "عشر's root also covers \"a company of people\" (مَعْشَر), which is excluded.",
+    sources: [rootedLemma("عشر", "عشر"), rootedLemma("عشر", "عشره"), rootedLemma("عشر", "عشرون")],
+  },
+  {
+    slug: "a-thousand",
+    labelEn: "A Thousand",
+    labelAr: "الألف",
+    category: "number",
+    note: "ألف's root also covers \"joined/united [hearts]\" (أَلَّفَ), which shares the same diacritic-stripped key as \"thousand\" and can't be filtered out separately.",
+    sources: [rootedLemma("ألف", "الف")],
+  },
+  {
+    slug: "a-hundred",
+    labelEn: "A Hundred",
+    labelAr: "المائة",
+    category: "number",
+    sources: [root("مأي")],
+  },
+];
+
+export const DIVINE_NAME_TOPICS: TopicDefinition[] = [
+  {
+    slug: "allah",
+    labelEn: "Allah",
+    labelAr: "الله",
+    category: "divineName",
+    note: "By far the most frequent word in the Qur'an -- this list is necessarily a representative sample of pages, not something to read end to end.",
+    sources: [rootedLemma("أله", "الله")],
+  },
+  {
+    slug: "ar-rahman",
+    labelEn: "Ar-Raḥmān (The Most Merciful)",
+    labelAr: "الرحمن",
+    category: "divineName",
+    sources: [rootedLemma("رحم", "رحمن")],
+  },
+  {
+    slug: "ar-raheem",
+    labelEn: "Ar-Raḥīm (The Especially Merciful)",
+    labelAr: "الرحيم",
+    category: "divineName",
+    sources: [rootedLemma("رحم", "رحيم")],
+  },
+  {
+    slug: "al-quddus",
+    labelEn: "Al-Quddūs (The Most Holy)",
+    labelAr: "القدوس",
+    category: "divineName",
+    sources: [rootedLemma("قدس", "قدوس")],
+  },
+  {
+    slug: "as-samad",
+    labelEn: "Aṣ-Ṣamad (The Eternal Refuge)",
+    labelAr: "الصمد",
+    category: "divineName",
+    sources: [root("صمد")],
+  },
+  {
+    slug: "al-wahid",
+    labelEn: "Al-Wāḥid (The One)",
+    labelAr: "الواحد",
+    category: "divineName",
+    note: "واحد is also the ordinary word \"one\", not always used as a name for Allah specifically; this corpus doesn't distinguish the two senses.",
+    sources: [rootedLemma("وحد", "واحد")],
+  },
+  {
+    slug: "al-qahhar",
+    labelEn: "Al-Qahhār (The Subduer)",
+    labelAr: "القهار",
+    category: "divineName",
+    sources: [rootedLemma("قهر", "قهار"), rootedLemma("قهر", "قاهر")],
+  },
+  {
+    slug: "al-hamid",
+    labelEn: "Al-Ḥamīd (The Praiseworthy)",
+    labelAr: "الحميد",
+    category: "divineName",
+    sources: [rootedLemma("حمد", "حميد")],
+  },
+];
+
 export const ALL_TOPICS: TopicDefinition[] = [
   ...THEME_TOPICS,
   ...PROPHET_TOPICS,
@@ -1196,6 +1471,11 @@ export const ALL_TOPICS: TopicDefinition[] = [
   ...METEOROLOGY_TOPICS,
   ...COSMOLOGY_TOPICS,
   ...COMMODITIES_TOPICS,
+  ...OBJECT_TOPICS,
+  ...BOOK_TOPICS,
+  ...ANGEL_TOPICS,
+  ...NUMBER_TOPICS,
+  ...DIVINE_NAME_TOPICS,
 ];
 
 export function findTopicBySlug(slug: string): TopicDefinition | undefined {

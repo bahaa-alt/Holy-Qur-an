@@ -21,6 +21,11 @@ export function TopicPageContent({ topic, matches }: { topic: TopicDefinition; m
     meteorology: t.topicPage.meteorologyLabel,
     cosmology: t.topicPage.cosmologyLabel,
     commodities: t.topicPage.commoditiesLabel,
+    object: t.topicPage.objectLabel,
+    book: t.topicPage.bookLabel,
+    angel: t.topicPage.angelLabel,
+    number: t.topicPage.numberLabel,
+    divineName: t.topicPage.divineNameLabel,
   };
 
   return (

@@ -286,6 +286,11 @@ export const ar: Dict = {
     meteorology: "السماء والطقس",
     cosmology: "علم الفلك",
     commodities: "السلع والموارد",
+    objects: "أشياء مسمّاة",
+    books: "الكتب المنزّلة",
+    angels: "الملائكة",
+    numbers: "الأعداد",
+    divineNames: "أسماء الله",
     compareLink: "قارن المواضيع جنبًا إلى جنب ←",
   },
   topicPage: {
@@ -298,6 +303,11 @@ export const ar: Dict = {
     meteorologyLabel: "السماء والطقس",
     cosmologyLabel: "علم الفلك",
     commoditiesLabel: "سلعة",
+    objectLabel: "شيء",
+    bookLabel: "كتاب منزّل",
+    angelLabel: "ملَك",
+    numberLabel: "عدد",
+    divineNameLabel: "اسم من أسماء الله",
     description: (count) =>
       `فهرس جذور/كلمات مُنتقى يدويًا، وليس مستخرجًا من تفسير -- نقطة انطلاق لإيجاد الآيات المرشّحة، وليس حكمًا على معنى الآية. عدد الآيات المطابقة: ${count.toLocaleString()}.`,
     noteLabel: "ملاحظة: ",

@@ -260,6 +260,11 @@ export interface Dict {
     meteorology: string;
     cosmology: string;
     commodities: string;
+    objects: string;
+    books: string;
+    angels: string;
+    numbers: string;
+    divineNames: string;
     compareLink: string;
   };
   topicPage: {
@@ -272,6 +277,11 @@ export interface Dict {
     meteorologyLabel: string;
     cosmologyLabel: string;
     commoditiesLabel: string;
+    objectLabel: string;
+    bookLabel: string;
+    angelLabel: string;
+    numberLabel: string;
+    divineNameLabel: string;
     description: (count: number) => string;
     noteLabel: string;
   };

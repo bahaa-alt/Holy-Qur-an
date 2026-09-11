@@ -1,17 +1,43 @@
 import { describe, expect, it } from "vitest";
 import {
   ALL_TOPICS,
+  ANGEL_TOPICS,
+  BOOK_TOPICS,
   COMMODITIES_TOPICS,
   COSMOLOGY_TOPICS,
+  DIVINE_NAME_TOPICS,
   findTopicBySlug,
   GEOGRAPHY_TOPICS,
   GEOLOGY_TOPICS,
   METEOROLOGY_TOPICS,
+  NUMBER_TOPICS,
+  OBJECT_TOPICS,
   PEOPLE_TOPICS,
   PROPHET_TOPICS,
   SPECIES_TOPICS,
   THEME_TOPICS,
+  type TopicDefinition,
 } from "@/lib/topics/topicDefinitions";
+
+// Every topic-category array, paired with the category value its topics
+// must carry -- iterated over so this stays a one-line addition per new
+// category instead of a hand-maintained list of near-duplicate assertions.
+const CATEGORY_ARRAYS: readonly [TopicDefinition["category"], TopicDefinition[]][] = [
+  ["theme", THEME_TOPICS],
+  ["prophet", PROPHET_TOPICS],
+  ["person", PEOPLE_TOPICS],
+  ["species", SPECIES_TOPICS],
+  ["geography", GEOGRAPHY_TOPICS],
+  ["geology", GEOLOGY_TOPICS],
+  ["meteorology", METEOROLOGY_TOPICS],
+  ["cosmology", COSMOLOGY_TOPICS],
+  ["commodities", COMMODITIES_TOPICS],
+  ["object", OBJECT_TOPICS],
+  ["book", BOOK_TOPICS],
+  ["angel", ANGEL_TOPICS],
+  ["number", NUMBER_TOPICS],
+  ["divineName", DIVINE_NAME_TOPICS],
+];
 
 // Corpus-existence (does root/lemma "X" actually exist in this build?) is
 // checked by scripts/build-data.ts itself, against the real built corpus --
@@ -39,29 +65,13 @@ describe("topicDefinitions", () => {
   });
 
   it("categorizes every topic array with its own matching category", () => {
-    expect(THEME_TOPICS.every((t) => t.category === "theme")).toBe(true);
-    expect(PROPHET_TOPICS.every((t) => t.category === "prophet")).toBe(true);
-    expect(PEOPLE_TOPICS.every((t) => t.category === "person")).toBe(true);
-    expect(SPECIES_TOPICS.every((t) => t.category === "species")).toBe(true);
-    expect(GEOGRAPHY_TOPICS.every((t) => t.category === "geography")).toBe(true);
-    expect(GEOLOGY_TOPICS.every((t) => t.category === "geology")).toBe(true);
-    expect(METEOROLOGY_TOPICS.every((t) => t.category === "meteorology")).toBe(true);
-    expect(COSMOLOGY_TOPICS.every((t) => t.category === "cosmology")).toBe(true);
-    expect(COMMODITIES_TOPICS.every((t) => t.category === "commodities")).toBe(true);
+    for (const [category, topics] of CATEGORY_ARRAYS) {
+      expect(topics.every((t) => t.category === category), `category "${category}"`).toBe(true);
+    }
   });
 
   it("ALL_TOPICS is exactly the concatenation of every topic category array", () => {
-    expect(ALL_TOPICS).toEqual([
-      ...THEME_TOPICS,
-      ...PROPHET_TOPICS,
-      ...PEOPLE_TOPICS,
-      ...SPECIES_TOPICS,
-      ...GEOGRAPHY_TOPICS,
-      ...GEOLOGY_TOPICS,
-      ...METEOROLOGY_TOPICS,
-      ...COSMOLOGY_TOPICS,
-      ...COMMODITIES_TOPICS,
-    ]);
+    expect(ALL_TOPICS).toEqual(CATEGORY_ARRAYS.flatMap(([, topics]) => topics));
   });
 
   it("rootedLemma sources carry both a root and a lemma key", () => {

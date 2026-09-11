@@ -263,6 +263,11 @@ export const en: Dict = {
     meteorology: "Sky & Weather",
     cosmology: "Cosmology",
     commodities: "Commodities",
+    objects: "Named Objects",
+    books: "Revealed Books",
+    angels: "Angels",
+    numbers: "Numbers",
+    divineNames: "Names of Allah",
     compareLink: "Compare topics side by side →",
   },
   topicPage: {
@@ -275,6 +280,11 @@ export const en: Dict = {
     meteorologyLabel: "Sky & Weather",
     cosmologyLabel: "Cosmology",
     commoditiesLabel: "Commodity",
+    objectLabel: "Object",
+    bookLabel: "Revealed Book",
+    angelLabel: "Angel",
+    numberLabel: "Number",
+    divineNameLabel: "Name of Allah",
     description: (count) =>
       `A curated root/lemma index, not derived from tafsir (classical commentary) -- a starting point for finding candidate verses, not a claim about what a verse means. ${count.toLocaleString()} verse${count === 1 ? "" : "s"} matched.`,
     noteLabel: "Note: ",
