@@ -142,7 +142,17 @@ async function networkFirstNavigation(request) {
 async function cacheFirst(request, cacheName) {
   const cached = await caches.match(request);
   if (cached) return cached;
-  const response = await fetch(request);
+  // One retry on a transient network failure -- unlike the other two
+  // strategies below, a first-time cache miss here has no cached fallback
+  // at all, so a single dropped request would otherwise permanently break
+  // that asset (e.g. a stylesheet chunk right after an app update) for the
+  // page with no recovery short of a full reload.
+  let response;
+  try {
+    response = await fetch(request);
+  } catch {
+    response = await fetch(request);
+  }
   if (response.ok) {
     const cache = await caches.open(cacheName);
     cache.put(request, response.clone());

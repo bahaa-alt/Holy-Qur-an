@@ -13,6 +13,19 @@ export function ServiceWorkerRegister() {
     registerServiceWorker(() => setUpdateAvailable(true));
   }, []);
 
+  // Apply the update on its own after a short grace period rather than
+  // waiting indefinitely for someone to notice this small floating button
+  // -- a build gets deployed often, and a visitor who never clicks it (or
+  // is using this as an installed app with no obvious "reload" affordance)
+  // would otherwise stay stuck on an old cached version, potentially
+  // missing assets an even-older service worker never learned to fetch.
+  // The button still lets anyone update immediately instead of waiting.
+  useEffect(() => {
+    if (!updateAvailable) return;
+    const timer = setTimeout(() => activateNewServiceWorker(), 4000);
+    return () => clearTimeout(timer);
+  }, [updateAvailable]);
+
   if (!updateAvailable) return null;
 
   return (
