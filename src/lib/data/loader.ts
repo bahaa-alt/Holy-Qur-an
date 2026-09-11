@@ -4,6 +4,7 @@ import type {
   CollocationsFile,
   CooccurrenceFile,
   DistinctiveVocabFile,
+  DivineNamePairsFile,
   EnIndexFile,
   FormulasFile,
   IndexFile,
@@ -123,6 +124,10 @@ export function getFormulas(): Promise<FormulasFile> {
 
 export function getVerseSimilarity(): Promise<VerseSimilarityFile> {
   return cachedFetch(`${DATA_BASE}/verse-similarity.json`);
+}
+
+export function getDivineNamePairs(): Promise<DivineNamePairsFile> {
+  return cachedFetch(`${DATA_BASE}/divine-name-pairs.json`);
 }
 
 export function getRoot(root: string): Promise<RootFile> {

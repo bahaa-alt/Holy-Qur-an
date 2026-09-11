@@ -7,7 +7,6 @@ import {
   BOOK_TOPICS,
   COMMODITIES_TOPICS,
   COSMOLOGY_TOPICS,
-  DIVINE_NAME_TOPICS,
   GEOGRAPHY_TOPICS,
   GEOLOGY_TOPICS,
   METEOROLOGY_TOPICS,
@@ -18,27 +17,7 @@ import {
   SPECIES_TOPICS,
   THEME_TOPICS,
 } from "@/lib/topics/topicDefinitions";
-import type { TopicDefinition } from "@/lib/topics/topicDefinitions";
-
-function TopicSection({ heading, topics }: { heading: string; topics: readonly TopicDefinition[] }) {
-  return (
-    <section>
-      <h2 className="text-sm font-medium uppercase tracking-wide text-muted">{heading}</h2>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {topics.map((topic) => (
-          <Link
-            key={topic.slug}
-            href={`/topics/${topic.slug}/`}
-            className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
-          >
-            <span className="arabic-ui">{topic.labelAr}</span>
-            <span className="ms-2 text-xs text-muted">{topic.labelEn}</span>
-          </Link>
-        ))}
-      </div>
-    </section>
-  );
-}
+import { TopicSection } from "./TopicSection";
 
 export function TopicsPageContent() {
   const t = useT();
@@ -48,12 +27,16 @@ export function TopicsPageContent() {
       <div>
         <h1 className="text-2xl font-semibold text-ink">{t.topicsPage.title}</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted">{t.topicsPage.subtitle}</p>
-        <Link href="/topics/compare/" className="mt-3 inline-block text-sm text-accent hover:underline">
-          {t.topicsPage.compareLink}
-        </Link>
+        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+          <Link href="/names/" className="text-accent hover:underline">
+            {t.topicsPage.namesLink}
+          </Link>
+          <Link href="/topics/compare/" className="text-accent hover:underline">
+            {t.topicsPage.compareLink}
+          </Link>
+        </div>
       </div>
 
-      <TopicSection heading={t.topicsPage.divineNames} topics={DIVINE_NAME_TOPICS} />
       <TopicSection heading={t.topicsPage.themes} topics={THEME_TOPICS} />
       <TopicSection heading={t.topicsPage.prophets} topics={PROPHET_TOPICS} />
       <TopicSection heading={t.topicsPage.people} topics={PEOPLE_TOPICS} />

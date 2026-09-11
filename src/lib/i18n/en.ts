@@ -30,6 +30,7 @@ export const en: Dict = {
     roots: "Roots",
     search: "Search",
     topics: "Topics",
+    names: "Names",
     insights: "Insights",
     saved: "Saved",
     about: "About",
@@ -263,7 +264,7 @@ export const en: Dict = {
     books: "Revealed Books",
     angels: "Angels",
     numbers: "Numbers",
-    divineNames: "Names of Allah",
+    namesLink: "Names of Allah →",
     compareLink: "Compare topics side by side →",
   },
   topicPage: {
@@ -308,6 +309,29 @@ export const en: Dict = {
     subtitle: (max) => `Pick up to ${max} topics to compare side by side.`,
     removeAria: (label) => `Remove ${label}`,
     searchPlaceholder: "Search for a topic to add…",
+  },
+  namesPage: {
+    title: "Names of Allah",
+    subtitle:
+      "The Qur'an's ninety-nine traditional names and attributes of Allah, as far as this corpus lets them be cleanly isolated -- plus how they pair up and how verses invoking Allah tend to open.",
+    tabNames: "Names",
+    tabPairs: "Paired names",
+    tabOpenings: "Opening verses",
+  },
+  namePairsTab: {
+    description:
+      "Pairs of these names that occur as immediately adjacent words somewhere in the Qur'an -- e.g. \"العليم الحكيم\" or \"الرحمن الرحيم\" -- found by matching each word's resolved root and lemma against the Names list itself, never by coincidental text. Recited Basmala headers preceding each surah aren't separate verses in this corpus, so they aren't counted here; only the six times \"الرحمن الرحيم\" occurs within a numbered verse are.",
+    loading: "Loading pairs…",
+    occurrencesCount: (n) => `${n.toLocaleString()} verse${n === 1 ? "" : "s"}`,
+    noResults: "No pairs found.",
+  },
+  openingPhrasesTab: {
+    description:
+      "Every verse whose Arabic text literally opens with one of these phrases -- direct addresses to Allah, first/second-person references to Him as \"Lord,\" and a few recurring opening constructions. A curated list, not an automatic frequency scan.",
+    loading: "Loading verses…",
+    versesCount: (n) => `${n.toLocaleString()} verse${n === 1 ? "" : "s"}`,
+    noResults: "No verse opens with this phrase.",
+    pickPrompt: "Pick a phrase above to see every verse that opens with it.",
   },
   insightsPage: {
     title: "Insights",

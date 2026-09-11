@@ -542,3 +542,40 @@ export interface FormulasFile {
   /** one group per phrase length 3-6, ordered by length ascending */
   lengths: FormulaLengthGroup[];
 }
+
+/** One verse where two of this app's curated Divine Names (see
+ *  DIVINE_NAME_TOPICS) occur as immediately adjacent words. */
+export interface DivineNamePairRef {
+  s: number;
+  a: number;
+  /** 1-based index of the first name's word within this verse */
+  w: number;
+}
+
+/**
+ * One ordered pair of Divine Names that occur back-to-back somewhere in the
+ * Qur'an (e.g. "العليم الحكيم", the Basmala's "الله" immediately followed by
+ * "الرحمن"). `aSlug`/`bSlug` are DIVINE_NAME_TOPICS slugs, in the order the
+ * names actually appear -- Qur'anic doxological pairs have a fixed order,
+ * so "الرحمن الرحيم" and a hypothetical reverse are tracked separately
+ * rather than folded together.
+ */
+export interface DivineNamePairRow {
+  aSlug: string;
+  bSlug: string;
+  count: number;
+  /** every verse this pair occurs in, uncapped */
+  refs: DivineNamePairRef[];
+}
+
+/**
+ * Every adjacent pair of curated Divine Names found anywhere in the
+ * Qur'an, sorted by count desc. Unlike Formulas (exact recurring text),
+ * this is scored purely off each word's resolved root+lemma against
+ * DIVINE_NAME_TOPICS's own source definitions, so it only ever surfaces
+ * genuine name-to-name adjacency, never text coincidences. Powers the
+ * "Paired Names" tab on /names/.
+ */
+export interface DivineNamePairsFile {
+  pairs: DivineNamePairRow[];
+}

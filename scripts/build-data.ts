@@ -25,9 +25,10 @@ import { buildCooccurrence } from "./lib/build-cooccurrence";
 import { buildPatterns } from "./lib/build-patterns";
 import { buildFormulas } from "./lib/build-formulas";
 import { buildVerseSimilarity } from "./lib/build-verse-similarity";
+import { buildDivineNamePairs } from "./lib/build-divine-name-pairs";
 import { buildCorpusExportCsv } from "./lib/build-corpus-export";
 import { SizeReport, recordGroup, writeJSON, writeText } from "./lib/emit";
-import { ALL_TOPICS } from "../src/lib/topics/topicDefinitions";
+import { ALL_TOPICS, DIVINE_NAME_TOPICS } from "../src/lib/topics/topicDefinitions";
 import { topicSourceFileKey } from "../src/lib/topics/buildTopicOccurrences";
 import type { ArIndexFile, ManifestFile, ManifestSource, VerseRootsFile } from "../src/lib/data/types";
 
@@ -228,6 +229,7 @@ async function main() {
   const patterns = buildPatterns(words);
   const formulas = buildFormulas(surahFiles);
   const verseSimilarity = buildVerseSimilarity(words, globalIdOf);
+  const divineNamePairs = buildDivineNamePairs(occurrenceIndex, indexRoots, indexLemmas, DIVINE_NAME_TOPICS);
   const corpusExportCsv = buildCorpusExportCsv(words, surahFiles, meta);
   const corpusExportBytes = Buffer.byteLength(corpusExportCsv, "utf8");
 
@@ -382,6 +384,7 @@ async function main() {
       patterns,
       formulas,
       verseSimilarity,
+      divineNamePairs,
       corpusExportBytes,
       rootFiles,
       lemmaFiles,
@@ -474,6 +477,9 @@ async function main() {
   const verseSimilaritySize = writeJSON(join(OUT_DIR, "verse-similarity.json"), verseSimilarity);
   report.record("verse-similarity.json", verseSimilaritySize.rawBytes, verseSimilaritySize.gzBytes);
 
+  const divineNamePairsSize = writeJSON(join(OUT_DIR, "divine-name-pairs.json"), divineNamePairs);
+  report.record("divine-name-pairs.json", divineNamePairsSize.rawBytes, divineNamePairsSize.gzBytes);
+
   // Not recorded in `report`/counted against TOTAL_RAW_BUDGET or
   // TOTAL_GZ_BUDGET on purpose: unlike every file above, this is a
   // one-time bulk download a researcher opts into, never fetched by the
@@ -545,6 +551,7 @@ function printSizeEstimate(data: {
   patterns: unknown;
   formulas: unknown;
   verseSimilarity: unknown;
+  divineNamePairs: unknown;
   corpusExportBytes: number;
   rootFiles: Map<string, unknown>;
   lemmaFiles: Map<string, unknown>;
@@ -572,6 +579,7 @@ function printSizeEstimate(data: {
   rec("patterns.json", data.patterns);
   rec("formulas.json", data.formulas);
   rec("verse-similarity.json", data.verseSimilarity);
+  rec("divine-name-pairs.json", data.divineNamePairs);
   report.record("export/corpus.csv (est., not budget-counted)", data.corpusExportBytes, 0);
   rec("roots/*.json (est.)", [...data.rootFiles.values()]);
   rec("lemmas/*.json (est.)", [...data.lemmaFiles.values()]);

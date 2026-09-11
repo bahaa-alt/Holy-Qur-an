@@ -36,6 +36,7 @@ export interface Dict {
     roots: string;
     search: string;
     topics: string;
+    names: string;
     insights: string;
     saved: string;
     about: string;
@@ -261,7 +262,7 @@ export interface Dict {
     books: string;
     angels: string;
     numbers: string;
-    divineNames: string;
+    namesLink: string;
     compareLink: string;
   };
   topicPage: {
@@ -305,6 +306,26 @@ export interface Dict {
     subtitle: (max: number) => string;
     removeAria: (label: string) => string;
     searchPlaceholder: string;
+  };
+  namesPage: {
+    title: string;
+    subtitle: string;
+    tabNames: string;
+    tabPairs: string;
+    tabOpenings: string;
+  };
+  namePairsTab: {
+    description: string;
+    loading: string;
+    occurrencesCount: (n: number) => string;
+    noResults: string;
+  };
+  openingPhrasesTab: {
+    description: string;
+    loading: string;
+    versesCount: (n: number) => string;
+    noResults: string;
+    pickPrompt: string;
   };
   insightsPage: {
     title: string;
