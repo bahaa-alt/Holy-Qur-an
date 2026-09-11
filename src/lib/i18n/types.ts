@@ -21,6 +21,7 @@ export interface Dict {
     copied: string;
     save: string;
     saved: string;
+    cancel: string;
     loading: string;
     loadingVerses: string;
     clearFilters: string;
@@ -326,6 +327,16 @@ export interface Dict {
     versesCount: (n: number) => string;
     noResults: string;
     pickPrompt: string;
+    addPhrase: string;
+    editAria: (phrase: string) => string;
+    removeAria: (phrase: string) => string;
+    resetToDefaults: string;
+  };
+  phraseForm: {
+    phraseLabel: string;
+    phrasePlaceholder: string;
+    labelLabel: string;
+    labelPlaceholder: string;
   };
   insightsPage: {
     title: string;

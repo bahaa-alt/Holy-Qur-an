@@ -15,6 +15,7 @@ export const en: Dict = {
     copied: "Copied",
     save: "Save",
     saved: "Saved",
+    cancel: "Cancel",
     loading: "Loading…",
     loadingVerses: "Loading verses…",
     clearFilters: "Clear filters",
@@ -327,11 +328,21 @@ export const en: Dict = {
   },
   namePhrasesTab: {
     description:
-      "Every verse containing one of these phrases anywhere in its text -- direct addresses to Allah, first/second-person references to Him as \"Lord,\" and a run of preposition + Allah/\"your Lord\" combinations. A curated list, not an automatic frequency scan.",
+      "Every verse containing one of these phrases anywhere in its text -- direct addresses to Allah, first/second-person references to Him as \"Lord,\" and a run of preposition + Allah/\"your Lord\" combinations. A curated starting point you can add to, edit, or remove from -- changes are saved on this device only.",
     loading: "Loading verses…",
     versesCount: (n) => `${n.toLocaleString()} verse${n === 1 ? "" : "s"}`,
     noResults: "No verse contains this phrase.",
     pickPrompt: "Pick a phrase above to see every verse that contains it.",
+    addPhrase: "+ Add phrase",
+    editAria: (phrase) => `Edit ${phrase}`,
+    removeAria: (phrase) => `Remove ${phrase}`,
+    resetToDefaults: "Reset to defaults",
+  },
+  phraseForm: {
+    phraseLabel: "Arabic phrase",
+    phrasePlaceholder: "e.g. من ربكم",
+    labelLabel: "English label",
+    labelPlaceholder: "e.g. Min rabbikum (From your Lord)",
   },
   insightsPage: {
     title: "Insights",

@@ -61,6 +61,7 @@ export const NAME_PHRASES: NamePhraseDef[] = [
   { slug: "inda-rabbik", phraseAr: "عند ربك", labelEn: "'Inda rabbik (With/near your Lord)" },
   { slug: "wa-allah", phraseAr: "والله", labelEn: "Wa Allah (And/by Allah)" },
   { slug: "wa-rabbikum", phraseAr: "وربكم", labelEn: "Wa rabbikum (And your Lord)" },
+  { slug: "wa-rabbik", phraseAr: "وربك", labelEn: "Wa rabbik (And your Lord)" },
 ];
 
 /**
