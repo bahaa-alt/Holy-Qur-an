@@ -67,16 +67,29 @@ export function normalizeRootKey(root: string): string {
   return normalize(root).replace(HAMZA, "ا");
 }
 
+// Alif maksura (ى) directly followed by a dagger alif, e.g. عَلَىٰ/إِلَىٰ.
+// Here the dagger alif marks that already-final ى as long ("ilā" not
+// "ila") -- it is not a separate elided letter the way a dagger alif on a
+// consonant is (ٱلْعَٰلَمِينَ's عَٰ), so it must NOT be expanded into an extra
+// alif (that would wrongly turn إِلَىٰ into "اليا" instead of "الي", a form
+// nobody would ever type -- see altKeyFor).
+const ALIF_MAKSURA_DAGGER_ALIF = /ىٰ/g;
+
 /**
  * If `text` contains a dagger alif (e.g. رَحْمَٰن), returns an alternate
  * normalized key with the dagger alif rendered as a full alif instead of
  * stripped (so both رحمن and رحمان resolve to the same entry). Returns
  * `null` when there is no dagger alif to disambiguate.
+ *
+ * A dagger alif directly after alif maksura (ىٰ, e.g. عَلَىٰ) is dropped
+ * instead of expanded (see {@link ALIF_MAKSURA_DAGGER_ALIF}) -- everywhere
+ * else (a dagger alif on a consonant) it's still expanded to ا as before.
  */
 export function altKeyFor(text: string): string | null {
   if (!DAGGER_ALIF.test(text)) return null;
   DAGGER_ALIF.lastIndex = 0;
-  return normalize(text.replace(DAGGER_ALIF, "ا"));
+  const withoutMaksuraDagger = text.replace(ALIF_MAKSURA_DAGGER_ALIF, "ى");
+  return normalize(withoutMaksuraDagger.replace(DAGGER_ALIF, "ا"));
 }
 
 /** True if `text` contains any Arabic-block character. */

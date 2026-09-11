@@ -66,6 +66,24 @@ describe("altKeyFor", () => {
     expect(altKeyFor("كِتَابُ")).toBeNull();
     expect(altKeyFor("hello")).toBeNull();
   });
+
+  it("drops a dagger alif directly after alif maksura instead of expanding it", () => {
+    // إِلَىٰ/عَلَىٰ's dagger alif marks the already-final ى as long ("ilā"),
+    // not a separate elided letter -- expanding it the same way as a
+    // dagger alif on a consonant would wrongly produce "اليا"/"عليا"
+    // (4 letters), a form nobody would ever type; a plainly-typed query
+    // ("إلى"/"على", no diacritics at all) must still match.
+    expect(altKeyFor("إِلَىٰ")).toBe("الي");
+    expect(altKeyFor("عَلَىٰ")).toBe("علي");
+    // The small high madda variant (إِلَىٰٓ) carries the same dagger alif.
+    expect(altKeyFor("إِلَىٰٓ")).toBe("الي");
+  });
+
+  it("still expands a dagger alif on a consonant, even alongside alif maksura elsewhere in the word", () => {
+    // Regression guard: fixing the ىٰ case must not disable the general
+    // consonant case this function exists for.
+    expect(altKeyFor("رَحْمَٰنِى")).toBe("رحماني");
+  });
 });
 
 describe("normalizeForPhraseSearch", () => {
