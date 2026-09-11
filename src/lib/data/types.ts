@@ -369,6 +369,9 @@ export interface VerbPrepositionRow {
    * frequently) associated with a given verb.
    */
   pmi: number;
+  /** every occurrence of this combo, uncapped -- w is the verb's own
+   *  1-based word position; the preposition/its object is the next word (w+1) */
+  refs: { s: number; a: number; w: number }[];
 }
 
 export interface CollocationsFile {
@@ -393,6 +396,19 @@ export interface AbjadTotalsFile {
   byVerse: number[];
   /** index n-1 -> Juz' n's total (30 entries) */
   byJuz: number[];
+  /** every distinct word form (diacritics stripped -- abjadValueOf() itself
+   *  ignores them, so different tashkeel of one word would otherwise
+   *  multiply entries for the same value) in the corpus THAT SHARES its
+   *  Abjad value with at least one other distinct form -- a form whose
+   *  value is unique to it is dropped, since it has nothing to be "common"
+   *  with and would just be dead weight. A value shared by many forms (a
+   *  handful of very common short words) is additionally capped at
+   *  MAX_FORMS_PER_ABJAD_VALUE (see build-abjad.ts's groupSharedValues) so
+   *  a few huge clusters can't dominate the payload -- small groups (the
+   *  more remarkable coincidences) are unaffected. Grouping the survivors
+   *  by `value` answers "which words share this Abjad value", the same way
+   *  byVerse/bySurah already let a value be reverse-looked-up. */
+  byWord: { form: string; value: number; count: number }[];
 }
 
 /** One pair of roots and how many distinct verses both occur in together. */

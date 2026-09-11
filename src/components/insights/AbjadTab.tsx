@@ -8,6 +8,7 @@ import { JUZ_COUNT } from "@/lib/quran/juz";
 import { HIZB_COUNT } from "@/lib/quran/hizb";
 import { AbjadAyahBreakdown } from "./AbjadAyahBreakdown";
 import { AbjadReverseLookup } from "./AbjadReverseLookup";
+import { AbjadCommonValues } from "./AbjadCommonValues";
 import { useT } from "@/lib/i18n/LanguageContext";
 import type { AbjadTotalsFile, MetaFile } from "@/lib/data/types";
 
@@ -180,6 +181,10 @@ export function AbjadTab({ meta }: { meta: MetaFile }) {
               </button>
             </p>
           )}
+
+          <div className="mt-6">
+            <AbjadCommonValues abjad={abjad} onSelectValue={lookUpValue} />
+          </div>
 
           <div id="abjad-lookup" className="mt-6">
             <AbjadReverseLookup abjad={abjad} meta={meta} input={lookupInput} onInputChange={setLookupInput} />

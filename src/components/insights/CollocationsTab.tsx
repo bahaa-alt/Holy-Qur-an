@@ -3,28 +3,47 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Loader2, X } from "lucide-react";
-import { getCollocations, getIndex } from "@/lib/data/loader";
+import { getCollocations, getIndex, getMeta } from "@/lib/data/loader";
 import { normalize } from "@/lib/arabic/normalize";
 import { rootHref } from "@/lib/search/suggest";
 import { metricBarPct } from "@/lib/insights/metricScale";
+import { CollocationDetail } from "./CollocationDetail";
 import { useT } from "@/lib/i18n/LanguageContext";
-import type { CollocationsFile, IndexFile, VerbPrepositionRow } from "@/lib/data/types";
+import type { CollocationsFile, IndexFile, MetaFile, VerbPrepositionRow } from "@/lib/data/types";
 
 type SortMode = "count" | "pmi";
 const SORT_PILL_CLASS = (active: boolean) => `rounded-md px-3 py-1 text-xs ${active ? "bg-accent text-accent-fg" : "text-muted"}`;
 
-function Bar({ row, values, metric, pmiLabel }: { row: VerbPrepositionRow; values: readonly number[]; metric: SortMode; pmiLabel: string }) {
+function Bar({
+  row,
+  values,
+  metric,
+  pmiLabel,
+  active,
+  onClick,
+}: {
+  row: VerbPrepositionRow;
+  values: readonly number[];
+  metric: SortMode;
+  pmiLabel: string;
+  active: boolean;
+  onClick: () => void;
+}) {
   const pct = metricBarPct(metric === "count" ? row.count : row.pmi, values);
   return (
-    <div className="flex items-center gap-3 py-1.5">
-      <div className="arabic-ui w-20 shrink-0 text-sm text-ink">{row.prepositionLemma}</div>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex w-full items-center gap-3 rounded-lg py-1.5 ps-2 pe-1 transition-colors ${active ? "bg-accent/10" : "hover:bg-bg"}`}
+    >
+      <div className="arabic-ui w-20 shrink-0 text-start text-sm text-ink">{row.prepositionLemma}</div>
       <div className="relative h-5 flex-1 overflow-hidden rounded bg-bg">
         <div className="h-full rounded bg-accent/70" style={{ width: `${pct}%` }} />
       </div>
       <div className="w-32 shrink-0 text-end text-xs text-muted">
         {row.count.toLocaleString()} · {pmiLabel}
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -32,22 +51,27 @@ export function CollocationsTab() {
   const t = useT();
   const [collocations, setCollocations] = useState<CollocationsFile | null>(null);
   const [index, setIndex] = useState<IndexFile | null>(null);
+  const [meta, setMeta] = useState<MetaFile | null>(null);
   const [query, setQuery] = useState("");
   const [selectedRoot, setSelectedRoot] = useState<string | null>(null);
   const [sortMode, setSortMode] = useState<SortMode>("count");
+  const [selectedCombo, setSelectedCombo] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([getCollocations(), getIndex()]).then(([c, i]) => {
+    Promise.all([getCollocations(), getIndex(), getMeta()]).then(([c, i, m]) => {
       if (!cancelled) {
         setCollocations(c);
         setIndex(i);
+        setMeta(m);
       }
     });
     return () => {
       cancelled = true;
     };
   }, []);
+
+  const surahMetaByNum = useMemo(() => new Map(meta?.surahs.map((s) => [s.n, s]) ?? []), [meta]);
 
   const matches = useMemo(() => {
     if (!index) return [];
@@ -63,7 +87,8 @@ export function CollocationsTab() {
   }, [collocations, selectedRoot, sortMode]);
   const metricValues = rows.map((r) => (sortMode === "count" ? r.count : r.pmi));
 
-  const loading = !collocations || !index;
+  const selectedRow = rows.find((r) => r.prepositionKey === selectedCombo) ?? null;
+  const loading = !collocations || !index || !meta;
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
@@ -85,6 +110,7 @@ export function CollocationsTab() {
                   onClick={() => {
                     setSelectedRoot(null);
                     setQuery("");
+                    setSelectedCombo(null);
                   }}
                   className="text-muted hover:text-ink"
                 >
@@ -109,6 +135,7 @@ export function CollocationsTab() {
                         onClick={() => {
                           setSelectedRoot(r.ar);
                           setQuery("");
+                          setSelectedCombo(null);
                         }}
                         className="arabic-ui inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
                       >
@@ -146,11 +173,23 @@ export function CollocationsTab() {
                     values={metricValues}
                     metric={sortMode}
                     pmiLabel={t.insightsPage.pmiLabel(row.pmi.toFixed(2))}
+                    active={selectedCombo === row.prepositionKey}
+                    onClick={() => setSelectedCombo((prev) => (prev === row.prepositionKey ? null : row.prepositionKey))}
                   />
                 ))}
                 <Link href={rootHref(selectedRoot)} className="mt-2 inline-block text-xs text-accent hover:text-accent-strong">
                   {selectedRoot} →
                 </Link>
+
+                {selectedRow && (
+                  <div className="mt-4 border-t border-border pt-4">
+                    <CollocationDetail
+                      key={`${selectedRow.verbRootAr}|${selectedRow.prepositionKey}`}
+                      refs={selectedRow.refs}
+                      surahMetaByNum={surahMetaByNum}
+                    />
+                  </div>
+                )}
               </>
             )}
           </div>

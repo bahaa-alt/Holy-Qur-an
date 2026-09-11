@@ -96,6 +96,23 @@ export function AbjadReverseLookup({
               </div>
             )}
           </div>
+
+          {matches.words.length > 0 && (
+            <div>
+              <p className="text-xs text-muted">{t.insightsPage.abjadLookupWordsFound(matches.words.length)}</p>
+              <div className="mt-1.5 flex flex-wrap gap-2">
+                {matches.words.map((w) => (
+                  <span
+                    key={w.form}
+                    className="arabic-ui rounded-full border border-border px-2.5 py-1 text-xs text-ink"
+                  >
+                    {w.form}
+                    {w.count > 1 && <span className="text-muted"> ×{w.count}</span>}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

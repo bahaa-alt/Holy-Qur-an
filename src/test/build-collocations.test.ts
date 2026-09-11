@@ -44,11 +44,22 @@ describe("buildCollocations", () => {
   it("detects a preposition fused as the following word's first (prefix) segment", () => {
     const row = verbPrepositions.find((r) => r.verbRootAr === "أمن" && r.prepositionKey === "ب");
     expect(row).toMatchObject({ prepositionLemma: "بِ", count: 1 });
+    expect(row!.refs).toEqual([{ s: 1, a: 1, w: 1 }]);
   });
 
   it("detects a preposition that stands as its own full word", () => {
     const row = verbPrepositions.find((r) => r.verbRootAr === "أمن" && r.prepositionKey === "الي");
     expect(row).toMatchObject({ prepositionLemma: "إِلَى", count: 1 });
+    expect(row!.refs).toEqual([{ s: 1, a: 2, w: 1 }]);
+  });
+
+  it("records every occurrence's ref, uncapped, for a combo with more than one", () => {
+    const row = verbPrepositions.find((r) => r.verbRootAr === "علم" && r.prepositionKey === "ب")!;
+    expect(row.refs).toEqual([
+      { s: 2, a: 1, w: 1 },
+      { s: 2, a: 2, w: 1 },
+      { s: 2, a: 3, w: 1 },
+    ]);
   });
 
   it("does not record a combo when the next word isn't a preposition", () => {

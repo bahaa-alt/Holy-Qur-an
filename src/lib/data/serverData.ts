@@ -66,8 +66,20 @@ export function readLemmaFile(key: string): RootFile {
   return readDataFile<RootFile>(`lemmas/${key}.json`);
 }
 
+// Memoized per-worker-process for the same reason as readVerseRoots below:
+// word pages now read every surah their lemma touches (to know each
+// occurrence's verse length, for WordPositionStatsCard) -- a common word
+// can span most of the 114 surahs, and a plain readFileSync per call would
+// reread the same handful of files across thousands of word-page builds.
+const surahFileCache = new Map<number, SurahFile>();
+
 export function readSurahFile(n: number): SurahFile {
-  return readDataFile<SurahFile>(`surahs/${n}.json`);
+  let cached = surahFileCache.get(n);
+  if (!cached) {
+    cached = readDataFile<SurahFile>(`surahs/${n}.json`);
+    surahFileCache.set(n, cached);
+  }
+  return cached;
 }
 
 // Unlike the other readers above, verse-roots.json is large (~every rooted

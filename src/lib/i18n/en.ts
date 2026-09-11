@@ -153,6 +153,16 @@ export const en: Dict = {
     bySurahDescription: "Where this root's occurrences fall across the 114 surahs.",
     byRevelationDescription: "The same occurrences, ordered by the conventional chronological (revelation) sequence instead.",
   },
+  wordPositionStats: {
+    heading: "Position within the verse",
+    description: "Where this word's occurrences fall in their verse -- the first word, the last word, or somewhere in between -- and the full breakdown by exact word position.",
+    startsVerse: "Starts the verse",
+    endsVerse: "Ends the verse",
+    withinVerse: "Within the verse",
+    byPositionHeading: "By exact position",
+    positionLabel: (n) => `Word ${n}`,
+    percentOfOccurrences: (pct) => `${pct}% of occurrences`,
+  },
   collocations: {
     heading: "Co-occurring roots",
     description:
@@ -437,6 +447,15 @@ export const en: Dict = {
     abjadLookupSurahsFound: (n) => `${n.toLocaleString()} whole surah${n === 1 ? "" : "s"} match exactly`,
     abjadLookupVersesFound: (shown, total) => `${total.toLocaleString()} verse${total === 1 ? "" : "s"} match exactly${total > shown ? ` (showing ${shown})` : ""}`,
     abjadLookupNoVerses: "No verse matches that value exactly.",
+    abjadLookupWordsFound: (n) => `${n.toLocaleString()} distinct word form${n === 1 ? "" : "s"} match exactly`,
+    abjadCommonValuesHeading: "Common values",
+    abjadCommonValuesDescription:
+      "Numerical values shared by more than one verse, surah, or exact word form -- pick one to see everything that matches it.",
+    abjadCommonValuesVerses: (n) => `${n.toLocaleString()} verse${n === 1 ? "" : "s"}`,
+    abjadCommonValuesSurahs: (n) => `${n.toLocaleString()} surah${n === 1 ? "" : "s"}`,
+    abjadCommonValuesWords: (n) => `${n.toLocaleString()} word${n === 1 ? "" : "s"}`,
+    abjadCommonValuesShowingTop: (shown, total) => `Showing the ${shown.toLocaleString()} most shared of ${total.toLocaleString()} values`,
+    abjadCommonValuesEmpty: "No value is shared by more than one verse, surah, or word yet.",
     cooccurrenceHeading: "Root co-occurrence network",
     cooccurrenceDescription:
       "Which pairs of roots occur together in the same verse most often, across the whole Qur'an -- unlike Collocations (what else appears in one root's own verses), this surfaces the most formulaic/idiomatic pairings corpus-wide. Pairs sharing fewer than 3 verses are excluded as noise.",

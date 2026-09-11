@@ -46,6 +46,7 @@ export function buildCollocations(words: readonly RawWord[]): CollocationsFile {
   }
 
   const counts = new Map<string, number>(); // key: `${verbRootAr}|${prepositionKey}`
+  const refsByCombo = new Map<string, { s: number; a: number; w: number }[]>();
   // Per-verb-root and per-preposition totals within the "opportunity" space
   // (tracked-verb occurrences that have any next word, not just ones
   // followed by a tracked preposition) -- the denominators PMI needs.
@@ -72,6 +73,12 @@ export function buildCollocations(words: readonly RawWord[]): CollocationsFile {
       const comboKey = `${seg.root}|${prepKey}`;
       counts.set(comboKey, (counts.get(comboKey) ?? 0) + 1);
       prepGlobalTotal.set(prepKey, (prepGlobalTotal.get(prepKey) ?? 0) + 1);
+      let refs = refsByCombo.get(comboKey);
+      if (!refs) {
+        refs = [];
+        refsByCombo.set(comboKey, refs);
+      }
+      refs.push({ s: word.s, a: word.a, w: word.w });
     }
   }
 
@@ -80,7 +87,14 @@ export function buildCollocations(words: readonly RawWord[]): CollocationsFile {
     const verbTotal = verbTotalWithNext.get(verbRootAr)!;
     const prepTotal = prepGlobalTotal.get(prepositionKey)!;
     const pmi = Math.log2((count * totalWithNext) / (verbTotal * prepTotal));
-    return { verbRootAr, prepositionKey, prepositionLemma: PREPOSITIONS[prepositionKey], count, pmi };
+    return {
+      verbRootAr,
+      prepositionKey,
+      prepositionLemma: PREPOSITIONS[prepositionKey],
+      count,
+      pmi,
+      refs: refsByCombo.get(comboKey)!,
+    };
   });
   verbPrepositions.sort((a, b) => a.verbRootAr.localeCompare(b.verbRootAr) || b.count - a.count);
 

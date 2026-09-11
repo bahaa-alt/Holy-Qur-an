@@ -176,6 +176,16 @@ export const ar: Dict = {
     bySurahDescription: "أين يرد هذا الجذر عبر السور الـ114.",
     byRevelationDescription: "نفس الورود، مرتبة حسب التسلسل الزمني التقليدي (ترتيب النزول) بدلاً من ذلك.",
   },
+  wordPositionStats: {
+    heading: "الموضع داخل الآية",
+    description: "أين تقع ورودات هذه الكلمة داخل آياتها -- أول كلمة، أم آخر كلمة، أم في مكان ما بينهما -- والتوزيع الكامل حسب الموضع الدقيق للكلمة.",
+    startsVerse: "تبدأ الآية",
+    endsVerse: "تنهي الآية",
+    withinVerse: "داخل الآية",
+    byPositionHeading: "حسب الموضع الدقيق",
+    positionLabel: (n) => `الكلمة ${n}`,
+    percentOfOccurrences: (pct) => `${pct}٪ من الورودات`,
+  },
   collocations: {
     heading: "الجذور المرافقة",
     description:
@@ -459,6 +469,14 @@ export const ar: Dict = {
     abjadLookupSurahsFound: (n) => `${n.toLocaleString()} سورة كاملة تطابق تمامًا`,
     abjadLookupVersesFound: (shown, total) => `${total.toLocaleString()} آية تطابق تمامًا${total > shown ? ` (يُعرض ${shown})` : ""}`,
     abjadLookupNoVerses: "لا آية تطابق هذه القيمة تمامًا.",
+    abjadLookupWordsFound: (n) => `${n.toLocaleString()} صيغة كلمة مختلفة تطابق تمامًا`,
+    abjadCommonValuesHeading: "القيم المشتركة",
+    abjadCommonValuesDescription: "قيم عددية تشترك فيها أكثر من آية أو سورة أو صيغة كلمة واحدة -- اختر واحدة لرؤية كل ما يطابقها.",
+    abjadCommonValuesVerses: (n) => `${n.toLocaleString()} آية`,
+    abjadCommonValuesSurahs: (n) => `${n.toLocaleString()} سورة`,
+    abjadCommonValuesWords: (n) => `${n.toLocaleString()} كلمة`,
+    abjadCommonValuesShowingTop: (shown, total) => `يُعرض ${shown.toLocaleString()} من أكثر ${total.toLocaleString()} قيمة مشتركة`,
+    abjadCommonValuesEmpty: "لا توجد قيمة مشتركة بين أكثر من آية أو سورة أو كلمة بعد.",
     cooccurrenceHeading: "شبكة تلازم الجذور",
     cooccurrenceDescription:
       "أي أزواج من الجذور ترد معًا في الآية نفسها بأكثر تكرار، عبر القرآن كاملاً -- بخلاف \"تلازم الأفعال\" (ما يظهر في آيات جذر واحد)، تُظهر هذه الميزة أكثر الأزواج تلازمًا واصطلاحًا على مستوى المدونة كاملة. الأزواج التي تشترك في أقل من 3 آيات تُستبعد باعتبارها ضجيجًا.",

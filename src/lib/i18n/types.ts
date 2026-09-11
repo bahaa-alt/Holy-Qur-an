@@ -158,6 +158,16 @@ export interface Dict {
     bySurahDescription: string;
     byRevelationDescription: string;
   };
+  wordPositionStats: {
+    heading: string;
+    description: string;
+    startsVerse: string;
+    endsVerse: string;
+    withinVerse: string;
+    byPositionHeading: string;
+    positionLabel: (n: number) => string;
+    percentOfOccurrences: (pct: number) => string;
+  };
   collocations: {
     heading: string;
     description: string;
@@ -422,6 +432,14 @@ export interface Dict {
     abjadLookupSurahsFound: (n: number) => string;
     abjadLookupVersesFound: (shown: number, total: number) => string;
     abjadLookupNoVerses: string;
+    abjadLookupWordsFound: (n: number) => string;
+    abjadCommonValuesHeading: string;
+    abjadCommonValuesDescription: string;
+    abjadCommonValuesVerses: (n: number) => string;
+    abjadCommonValuesSurahs: (n: number) => string;
+    abjadCommonValuesWords: (n: number) => string;
+    abjadCommonValuesShowingTop: (shown: number, total: number) => string;
+    abjadCommonValuesEmpty: string;
     cooccurrenceHeading: string;
     cooccurrenceDescription: string;
     cooccurrenceTopPairsHeading: string;
