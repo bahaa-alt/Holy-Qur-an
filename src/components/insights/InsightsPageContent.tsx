@@ -13,6 +13,7 @@ import { CooccurrenceTab } from "./CooccurrenceTab";
 import { PatternsTab } from "./PatternsTab";
 import { FormulasTab } from "./FormulasTab";
 import { VerseSimilarityTab } from "./VerseSimilarityTab";
+import { HapaxList } from "./HapaxList";
 import type {
   InsightsFile,
   MetaFile,
@@ -78,6 +79,7 @@ export function InsightsPageContent({
 }) {
   const t = useT();
   const [tab, setTab] = useState<Tab>("facts");
+  const [expandedHapax, setExpandedHapax] = useState<"root" | "lemma" | null>(null);
   const mostFrequentLetter = insights.letterFrequency[0];
   const leastFrequentLetter = insights.letterFrequency[insights.letterFrequency.length - 1];
 
@@ -159,18 +161,18 @@ export function InsightsPageContent({
             </StatCard>
             <StatCard label={t.insightsPage.mostFrequentLetterLabel} big>
               {mostFrequentLetter && (
-                <span className="flex items-baseline gap-2">
+                <button type="button" onClick={() => setTab("letters")} className="flex items-baseline gap-2 hover:text-accent">
                   <span className="arabic-ui">{mostFrequentLetter.letter}</span>
                   <span className="text-xs font-normal text-muted">{mostFrequentLetter.count.toLocaleString()}</span>
-                </span>
+                </button>
               )}
             </StatCard>
             <StatCard label={t.insightsPage.leastFrequentLetterLabel} big>
               {leastFrequentLetter && (
-                <span className="flex items-baseline gap-2">
+                <button type="button" onClick={() => setTab("letters")} className="flex items-baseline gap-2 hover:text-accent">
                   <span className="arabic-ui">{leastFrequentLetter.letter}</span>
                   <span className="text-xs font-normal text-muted">{leastFrequentLetter.count.toLocaleString()}</span>
-                </span>
+                </button>
               )}
             </StatCard>
             <StatCard label={t.insightsPage.mostDerivedRootLabel}>
@@ -186,12 +188,32 @@ export function InsightsPageContent({
               <span className="text-xs text-muted">{t.insightsPage.formsCount(insights.mostFormsRoot.formCount)}</span>
             </StatCard>
             <StatCard label={t.insightsPage.hapaxRootsLabel} big>
-              {insights.hapaxRootCount.toLocaleString()}
+              <button
+                type="button"
+                onClick={() => setExpandedHapax((prev) => (prev === "root" ? null : "root"))}
+                className="block text-start hover:text-accent"
+              >
+                {insights.hapaxRootCount.toLocaleString()}
+                <span className="block text-xs font-normal text-muted">{t.insightsPage.hapaxViewHint}</span>
+              </button>
             </StatCard>
             <StatCard label={t.insightsPage.hapaxLemmasLabel} big>
-              {insights.hapaxLemmaCount.toLocaleString()}
+              <button
+                type="button"
+                onClick={() => setExpandedHapax((prev) => (prev === "lemma" ? null : "lemma"))}
+                className="block text-start hover:text-accent"
+              >
+                {insights.hapaxLemmaCount.toLocaleString()}
+                <span className="block text-xs font-normal text-muted">{t.insightsPage.hapaxViewHint}</span>
+              </button>
             </StatCard>
           </div>
+
+          {expandedHapax && (
+            <div className="mt-4 border-t border-border pt-4">
+              <HapaxList key={expandedHapax} kind={expandedHapax} />
+            </div>
+          )}
         </div>
       )}
 

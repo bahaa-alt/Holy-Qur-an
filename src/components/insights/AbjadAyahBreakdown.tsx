@@ -12,7 +12,15 @@ import { useT } from "@/lib/i18n/LanguageContext";
  * instance is exactly what "the selection changed" means here -- same
  * pattern as WordInfoPanel/AyahMorphologyTable/LetterFrequencyResult.
  */
-export function AbjadAyahBreakdown({ surahNum, ayahNum }: { surahNum: number; ayahNum: number }) {
+export function AbjadAyahBreakdown({
+  surahNum,
+  ayahNum,
+  onTotalClick,
+}: {
+  surahNum: number;
+  ayahNum: number;
+  onTotalClick: (value: number) => void;
+}) {
   const t = useT();
   const [selection] = useState({ surahNum, ayahNum });
   const [words, setWords] = useState<string[] | null>(null);
@@ -52,7 +60,9 @@ export function AbjadAyahBreakdown({ surahNum, ayahNum }: { surahNum: number; ay
       </div>
       <p className="mt-3 text-sm text-ink">
         <span className="text-xs uppercase tracking-wide text-muted">{t.insightsPage.abjadTotalLabel}: </span>
-        <span className="text-lg font-semibold">{total.toLocaleString()}</span>
+        <button type="button" onClick={() => onTotalClick(total)} className="text-lg font-semibold hover:text-accent">
+          {total.toLocaleString()}
+        </button>
       </p>
     </div>
   );

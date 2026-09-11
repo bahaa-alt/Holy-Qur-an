@@ -380,6 +380,9 @@ export interface Dict {
     leastFrequentLetterLabel: string;
     hapaxRootsLabel: string;
     hapaxLemmasLabel: string;
+    hapaxViewHint: string;
+    hapaxFilterPlaceholder: string;
+    hapaxNoMatch: (query: string) => string;
     mostDerivedRootLabel: string;
     lemmasCount: (n: number) => string;
     mostFormsRootLabel: string;

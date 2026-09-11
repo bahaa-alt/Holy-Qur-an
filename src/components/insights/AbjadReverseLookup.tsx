@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { findByAbjadValue } from "@/lib/quran/abjadLookup";
 import { useT } from "@/lib/i18n/LanguageContext";
@@ -8,9 +8,24 @@ import type { AbjadTotalsFile, MetaFile } from "@/lib/data/types";
 
 const MAX_VERSES_SHOWN = 60;
 
-export function AbjadReverseLookup({ abjad, meta }: { abjad: AbjadTotalsFile; meta: MetaFile }) {
+/**
+ * Controlled by the parent (AbjadTab) rather than owning its own input
+ * state, so a click on a displayed total elsewhere on the page (e.g. the
+ * "quran total" figure above) can populate this lookup with that exact
+ * value instead of making the user retype the number they just saw.
+ */
+export function AbjadReverseLookup({
+  abjad,
+  meta,
+  input,
+  onInputChange,
+}: {
+  abjad: AbjadTotalsFile;
+  meta: MetaFile;
+  input: string;
+  onInputChange: (value: string) => void;
+}) {
   const t = useT();
-  const [input, setInput] = useState("");
 
   const value = input.trim() === "" ? null : Number(input);
   const isValid = value !== null && Number.isInteger(value) && value > 0;
@@ -28,7 +43,7 @@ export function AbjadReverseLookup({ abjad, meta }: { abjad: AbjadTotalsFile; me
         type="number"
         min={1}
         value={input}
-        onChange={(e) => setInput(e.target.value)}
+        onChange={(e) => onInputChange(e.target.value)}
         placeholder={t.insightsPage.abjadLookupPlaceholder}
         className="mt-2 w-40 rounded-lg border border-border px-3 py-1.5 text-sm text-ink placeholder:text-muted focus:outline-none"
       />

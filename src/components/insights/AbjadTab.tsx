@@ -22,6 +22,12 @@ export function AbjadTab({ meta }: { meta: MetaFile }) {
   const [ayahNum, setAyahNum] = useState(1);
   const [hizbNum, setHizbNum] = useState(1);
   const [juzNum, setJuzNum] = useState(1);
+  const [lookupInput, setLookupInput] = useState("");
+
+  function lookUpValue(value: number) {
+    setLookupInput(String(value));
+    document.getElementById("abjad-lookup")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -144,11 +150,25 @@ export function AbjadTab({ meta }: { meta: MetaFile }) {
       ) : (
         <>
           {scope === "ayah" ? (
-            <AbjadAyahBreakdown key={ayahKey} surahNum={surahNum} ayahNum={clampedAyah} />
+            <AbjadAyahBreakdown key={ayahKey} surahNum={surahNum} ayahNum={clampedAyah} onTotalClick={lookUpValue} />
           ) : (
             <p className="mt-4 text-sm text-ink">
               <span className="text-xs uppercase tracking-wide text-muted">{t.insightsPage.abjadTotalLabel}: </span>
-              <span className="text-2xl font-semibold">
+              <button
+                type="button"
+                onClick={() =>
+                  lookUpValue(
+                    scope === "quran"
+                      ? abjad.bookTotal
+                      : scope === "surah"
+                        ? abjad.bySurah[surahNum - 1]
+                        : scope === "hizb"
+                          ? abjad.byHizb[hizbNum - 1]
+                          : abjad.byJuz[juzNum - 1],
+                  )
+                }
+                className="text-2xl font-semibold hover:text-accent"
+              >
                 {(scope === "quran"
                   ? abjad.bookTotal
                   : scope === "surah"
@@ -157,12 +177,12 @@ export function AbjadTab({ meta }: { meta: MetaFile }) {
                       ? abjad.byHizb[hizbNum - 1]
                       : abjad.byJuz[juzNum - 1]
                 ).toLocaleString()}
-              </span>
+              </button>
             </p>
           )}
 
-          <div className="mt-6">
-            <AbjadReverseLookup abjad={abjad} meta={meta} />
+          <div id="abjad-lookup" className="mt-6">
+            <AbjadReverseLookup abjad={abjad} meta={meta} input={lookupInput} onInputChange={setLookupInput} />
           </div>
         </>
       )}
