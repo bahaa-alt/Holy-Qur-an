@@ -8,7 +8,7 @@ import { formulaHref } from "@/lib/search/suggest";
 import { useT } from "@/lib/i18n/LanguageContext";
 import type { FormulaRow, FormulasFile } from "@/lib/data/types";
 
-const LENGTHS = [3, 4, 5, 6] as const;
+const LENGTHS = [2, 3, 4, 5, 6] as const;
 const LENGTH_PILL_CLASS = (active: boolean) => `rounded-md px-3 py-1.5 ${active ? "bg-accent text-accent-fg" : "text-muted"}`;
 
 function PhraseRow({ length, row, max, occurrencesLabel }: { length: number; row: FormulaRow; max: number; occurrencesLabel: string }) {

@@ -1,12 +1,13 @@
 import { normalize } from "../../src/lib/arabic/normalize";
 import type { FormulaLengthGroup, FormulaRef, FormulaRow, FormulasFile, SurahFile } from "../../src/lib/data/types";
 
-const LENGTHS = [3, 4, 5, 6] as const;
+const LENGTHS = [2, 3, 4, 5, 6] as const;
 // Higher minimum for shorter phrases, since short word sequences recur far
 // more often just by grammatical chance (e.g. common particle + noun
 // pairs); a genuinely "formulaic" 3-word phrase needs to clear a higher
-// bar than a 6-word one to be worth surfacing.
-const MIN_COUNT: Record<number, number> = { 3: 6, 4: 4, 5: 3, 6: 3 };
+// bar than a 6-word one to be worth surfacing. 2-word pairs recur by
+// chance even more often than 3-word ones, so their floor is higher still.
+const MIN_COUNT: Record<number, number> = { 2: 10, 3: 6, 4: 4, 5: 3, 6: 3 };
 const TOP_N = 25;
 
 interface FormulaAgg {
@@ -21,7 +22,7 @@ interface FormulaAgg {
 
 /**
  * Detects recurring multi-word phrases (candidate Qur'anic "formulas"):
- * every contiguous run of 3-6 words within a single verse (never crossing
+ * every contiguous run of 2-6 words within a single verse (never crossing
  * a verse boundary) is grouped by its normalize()-d text and counted
  * across the whole corpus. Each length is analyzed independently (a
  * 3-word phrase and the 4-word phrase containing it are separate rows,

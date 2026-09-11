@@ -68,8 +68,8 @@ const SURAH_FILES = new Map<number, SurahFile>([
         verse(10, ["O", "X2", "X3"]),
         verse(11, ["X1", "M", "N"]),
         verse(12, ["O", "X2", "X3"]),
-        // A 2-token verse, shorter than even the smallest (3-word) window.
-        verse(13, ["P", "Q"]),
+        // A 1-token verse, shorter than even the smallest (2-word) window.
+        verse(13, ["P"]),
       ],
     },
   ],
@@ -90,14 +90,50 @@ const SURAH_FILES = new Map<number, SurahFile>([
       ],
     },
   ],
+  [
+    // Ten 2-token verses, each exactly "R S" -- meets MIN_COUNT[2]=10
+    // exactly (a boundary case for ">="), plus a rare pair below it.
+    5,
+    {
+      n: 5,
+      verses: [
+        verse(1, ["R", "S"]),
+        verse(2, ["R", "S"]),
+        verse(3, ["R", "S"]),
+        verse(4, ["R", "S"]),
+        verse(5, ["R", "S"]),
+        verse(6, ["R", "S"]),
+        verse(7, ["R", "S"]),
+        verse(8, ["R", "S"]),
+        verse(9, ["R", "S"]),
+        verse(10, ["R", "S"]),
+        // A distinct, rare 2-word verse -- its own bigram occurs only
+        // once, below MIN_COUNT[2]=10, so it must not appear in results.
+        verse(11, ["T", "U"]),
+      ],
+    },
+  ],
 ]);
 
 describe("buildFormulas", () => {
   const result = buildFormulas(SURAH_FILES);
   const byLength = new Map(result.lengths.map((g) => [g.length, g.rows]));
 
-  it("returns one group per length 3-6, in ascending order", () => {
-    expect(result.lengths.map((g) => g.length)).toEqual([3, 4, 5, 6]);
+  it("returns one group per length 2-6, in ascending order", () => {
+    expect(result.lengths.map((g) => g.length)).toEqual([2, 3, 4, 5, 6]);
+  });
+
+  it("counts a phrase meeting the length-2 minimum and reports its verse refs", () => {
+    const row = byLength.get(2)!.find((r) => r.phraseKey === "R S");
+    expect(row).toBeDefined();
+    expect(row!.count).toBe(10);
+    expect(row!.display).toBe("R S");
+    expect(row!.refs).toHaveLength(10);
+    expect(row!.refs[0]).toEqual({ s: 5, a: 1, w: 1 });
+  });
+
+  it("excludes a length-2 phrase below the length-2 minimum", () => {
+    expect(byLength.get(2)!.some((r) => r.phraseKey === "T U")).toBe(false);
   });
 
   it("counts a phrase meeting the length-3 minimum and reports its verse refs", () => {
@@ -138,9 +174,9 @@ describe("buildFormulas", () => {
   });
 
   it("handles a verse shorter than the smallest window without error", () => {
-    // Verse 3:13 (["P", "Q"], length 2) contributes no n-gram of any
-    // tracked length; simply not throwing and producing no stray rows
-    // referencing it is the assertion.
+    // Verse 3:13 (["P"], length 1) contributes no n-gram of any tracked
+    // length; simply not throwing and producing no stray rows referencing
+    // it is the assertion.
     for (const rows of byLength.values()) {
       expect(rows.some((r) => r.refs.some((ref) => ref.s === 3 && ref.a === 13))).toBe(false);
     }
