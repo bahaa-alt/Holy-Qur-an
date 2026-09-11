@@ -53,6 +53,7 @@ export function TopicsPageContent() {
         </Link>
       </div>
 
+      <TopicSection heading={t.topicsPage.divineNames} topics={DIVINE_NAME_TOPICS} />
       <TopicSection heading={t.topicsPage.themes} topics={THEME_TOPICS} />
       <TopicSection heading={t.topicsPage.prophets} topics={PROPHET_TOPICS} />
       <TopicSection heading={t.topicsPage.people} topics={PEOPLE_TOPICS} />
@@ -66,7 +67,6 @@ export function TopicsPageContent() {
       <TopicSection heading={t.topicsPage.books} topics={BOOK_TOPICS} />
       <TopicSection heading={t.topicsPage.angels} topics={ANGEL_TOPICS} />
       <TopicSection heading={t.topicsPage.numbers} topics={NUMBER_TOPICS} />
-      <TopicSection heading={t.topicsPage.divineNames} topics={DIVINE_NAME_TOPICS} />
     </div>
   );
 }
