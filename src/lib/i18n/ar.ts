@@ -51,9 +51,7 @@ export const ar: Dict = {
     logoShort: "الجذور",
     quran: "القرآن الكريم",
     roots: "الجذور",
-    compare: "مقارنة",
     search: "بحث",
-    phrases: "العبارات",
     topics: "المواضيع",
     insights: "إحصاءات",
     saved: "المحفوظات",
@@ -230,12 +228,12 @@ export const ar: Dict = {
     clearAria: (label) => `مسح ${label}`,
     searchPlaceholder: "ابحث عن جذر…",
   },
-  searchPage: {
-    title: "البحث عن عبارة أو جملة",
-    subtitle:
-      'ابحث عن كل آية تحتوي على عبارة أو جملة محددة بالضبط -- افتتاحيات شائعة مثل "يا أيها الناس" أو "يا أيها الذين آمنوا"، أو أي تتابع من الكلمات تكتبه. لمطابقة أزواج الجذور بغض النظر عن الكلمات المستخدمة بالضبط، راجع صفحة',
-    phrasesLinkLabel: "العبارات",
-    subtitleAfterLink: "بدلاً من ذلك.",
+  searchHub: {
+    title: "البحث",
+    subtitle: "ثلاث طرق للبحث في المدونة، جنبًا إلى جنب: عبارات دقيقة، وأنماط أزواج الجذور، ومقارنة الجذور.",
+    tabSearch: "البحث النصي",
+    tabPhrases: "أنماط العبارات",
+    tabCompare: "مقارنة الجذور",
     advancedSearchLinkLabel: "تبحث عن نمط نحوي بدلاً من ذلك؟ جرّب البحث المتقدم ←",
   },
   advancedSearchPage: {

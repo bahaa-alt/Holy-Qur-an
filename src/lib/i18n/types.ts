@@ -34,9 +34,7 @@ export interface Dict {
     logoShort: string;
     quran: string;
     roots: string;
-    compare: string;
     search: string;
-    phrases: string;
     topics: string;
     insights: string;
     saved: string;
@@ -209,11 +207,12 @@ export interface Dict {
     clearAria: (label: string) => string;
     searchPlaceholder: string;
   };
-  searchPage: {
+  searchHub: {
     title: string;
     subtitle: string;
-    phrasesLinkLabel: string;
-    subtitleAfterLink: string;
+    tabSearch: string;
+    tabPhrases: string;
+    tabCompare: string;
     advancedSearchLinkLabel: string;
   };
   advancedSearchPage: {

@@ -27,14 +27,8 @@ export function Header() {
           <Link href="/roots/" className={NAV_LINK_CLASS}>
             {t.nav.roots}
           </Link>
-          <Link href="/compare/" className={NAV_LINK_CLASS}>
-            {t.nav.compare}
-          </Link>
           <Link href="/search/" className={NAV_LINK_CLASS}>
             {t.nav.search}
-          </Link>
-          <Link href="/phrases/" className={NAV_LINK_CLASS}>
-            {t.nav.phrases}
           </Link>
           <Link href="/topics/" className={NAV_LINK_CLASS}>
             {t.nav.topics}

@@ -28,9 +28,7 @@ export const en: Dict = {
     logoShort: "Roots",
     quran: "Qur'an",
     roots: "Roots",
-    compare: "Compare",
     search: "Search",
-    phrases: "Phrases",
     topics: "Topics",
     insights: "Insights",
     saved: "Saved",
@@ -207,12 +205,12 @@ export const en: Dict = {
     clearAria: (label) => `Clear ${label}`,
     searchPlaceholder: "Search for a root…",
   },
-  searchPage: {
-    title: "Phrase & sentence search",
-    subtitle:
-      'Find every verse containing an exact phrase or sentence -- common openings like "يا أيها الناس" or "يا أيها الذين آمنوا", or any run of words you type. For matching root pairs regardless of the exact words used, see',
-    phrasesLinkLabel: "Phrases",
-    subtitleAfterLink: "instead.",
+  searchHub: {
+    title: "Search",
+    subtitle: "Three ways to search the corpus, side by side: exact phrases, root-pair patterns, and root comparisons.",
+    tabSearch: "Text Search",
+    tabPhrases: "Phrase Patterns",
+    tabCompare: "Compare Roots",
     advancedSearchLinkLabel: "Looking for a grammatical pattern instead? Try Advanced Search →",
   },
   advancedSearchPage: {
