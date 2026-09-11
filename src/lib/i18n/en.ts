@@ -408,8 +408,6 @@ export const en: Dict = {
     cooccurrenceNoResults: "This root shares fewer than 3 verses with any other root.",
     cooccurrencePickPrompt: "Pick a root above to see which other roots co-occur with it most.",
     cooccurrenceSharedVerses: (n) => `${n.toLocaleString()} shared verses`,
-    cooccurrenceGraphCaption:
-      "The 24 most-connected roots among the top 50 pairs. Node size and line thickness both reflect co-occurrence count; hover a line for its exact count. Click a root to open it.",
     patternsHeading: "Morphological patterns",
     patternsDescription:
       "How productive each verb Form, derivational category, and root shape is across the whole corpus -- a cross-root view of which grammatical patterns are common or rare, distinct from any single root's own forms table.",
@@ -429,7 +427,7 @@ export const en: Dict = {
     patternsShapeRootsShown: (shown, total) => `Showing ${shown.toLocaleString()} of ${total.toLocaleString()} roots, by occurrence count`,
     formulasHeading: "Recurring phrases (formulas)",
     formulasDescription:
-      "Word sequences that recur often enough, in exactly the same words, to be candidate fixed expressions -- classical Qur'anic rhetorical studies call this takrar (repetition). Sliding windows of 2-6 consecutive words within a single verse, never crossing a verse boundary; shorter phrases need a higher repeat count to qualify, since they recur more often by grammatical chance alone.",
+      "Word sequences that recur often enough, in exactly the same words, to be candidate fixed expressions -- classical Qur'anic rhetorical studies call this takrar (repetition). Sliding windows of 3-6 consecutive words within a single verse, never crossing a verse boundary; shorter phrases need a higher repeat count to qualify, since they recur more often by grammatical chance alone.",
     formulasWordsLength: (n) => `${n} words`,
     formulasLoading: "Loading phrases…",
     formulasNoResults: "No phrase of this length recurs often enough to qualify.",
@@ -608,7 +606,7 @@ export const en: Dict = {
       "Every rooted segment is classified by verb Form (I-XI; an untagged verb defaults to Form I, matching the per-root Conjugation table's convention), by the same derivational category used everywhere else in this app, and by root shape (sound, hollow, defective, assimilated, geminate, hamzated, quadriliteral -- see the Roots browse page's \"by shape\" grouping). Each is then tallied across every root in the corpus, giving occurrence and distinct-root counts per Form/category/shape -- a cross-root productivity view, not a per-root breakdown.",
     formulasMethodHeading: "Recurring phrases (formulas)",
     formulasMethodBody:
-      "For every verse, every contiguous run of 2, 3, 4, 5, and 6 words (a sliding window, never crossing into the next verse) is normalized and counted across the whole Qur'an; each length is ranked independently, so a 2-word phrase and the 3-word phrase containing it appear as separate entries. Shorter phrases need more repeats to qualify (minimums of 10/6/4/3/3 occurrences for lengths 2-6) since short sequences recur more often by grammatical chance alone; the top 25 phrases per length are shown, each linking to a page listing every one of its occurrences with full verse text.",
+      "For every verse, every contiguous run of 3, 4, 5, and 6 words (a sliding window, never crossing into the next verse) is normalized and counted across the whole Qur'an; each length is ranked independently, so a 3-word phrase and the 4-word phrase containing it appear as separate entries. Shorter phrases need more repeats to qualify (minimums of 6/4/3/3 occurrences for lengths 3-6) since short sequences recur more often by grammatical chance alone; the top 25 phrases per length are shown, each linking to a page listing every one of its occurrences with full verse text.",
     verseSimilarityMethodHeading: "Similar verses",
     verseSimilarityMethodBody:
       "For every verse, collects its distinct rooted-word roots. Candidate pairs are proposed only through roots occurring in 60 or fewer verses (a shared common root like أله is not a meaningful signal on its own), then every candidate is scored by full Jaccard similarity (shared roots ÷ the union of both verses' distinct roots) over each verse's complete root set. A pair needs at least 4 shared roots and 40% overlap to qualify; every pair clearing that bar is shown (around a thousand), not just a fixed top slice -- over 40% of them are a perfect (100%) match. This heuristic can miss a genuinely similar pair that shares only common roots -- it trades completeness for keeping the comparison corpus-wide rather than one hand-picked pair at a time.",

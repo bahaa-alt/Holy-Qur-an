@@ -532,13 +532,13 @@ export interface FormulaLengthGroup {
 
 /**
  * Recurring multi-word sequences (candidate Qur'anic "formulas") -- a
- * sliding window of 2-6 consecutive words within each verse (never
+ * sliding window of 3-6 consecutive words within each verse (never
  * crossing a verse boundary), grouped by normalize()-d text and counted
  * across the whole corpus. Surfaces fixed expressions classical Qur'anic
  * stylistics studies as takrar (repetition), e.g. recurring refrains and
  * formulaic openings/closings. Powers /insights/'s Formulas tab.
  */
 export interface FormulasFile {
-  /** one group per phrase length 2-6, ordered by length ascending */
+  /** one group per phrase length 3-6, ordered by length ascending */
   lengths: FormulaLengthGroup[];
 }

@@ -395,7 +395,6 @@ export interface Dict {
     cooccurrenceNoResults: string;
     cooccurrencePickPrompt: string;
     cooccurrenceSharedVerses: (n: number) => string;
-    cooccurrenceGraphCaption: string;
     patternsHeading: string;
     patternsDescription: string;
     patternsVerbFormsHeading: string;

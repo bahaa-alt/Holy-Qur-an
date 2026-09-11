@@ -7,7 +7,6 @@ import { getCooccurrence, getIndex } from "@/lib/data/loader";
 import { normalize } from "@/lib/arabic/normalize";
 import { rootHref } from "@/lib/search/suggest";
 import { metricBarPct } from "@/lib/insights/metricScale";
-import { RootNetworkGraph } from "./RootNetworkGraph";
 import { useT } from "@/lib/i18n/LanguageContext";
 import type { CooccurrenceFile, IndexFile, RootCooccurrencePartner } from "@/lib/data/types";
 
@@ -80,12 +79,7 @@ export function CooccurrenceTab() {
         </p>
       ) : (
         <>
-          <div className="mt-4">
-            <RootNetworkGraph pairs={cooccurrence.topPairs} />
-            <p className="mt-1 text-center text-xs text-muted">{t.insightsPage.cooccurrenceGraphCaption}</p>
-          </div>
-
-          <div className="mt-6 flex items-center justify-between gap-3">
+          <div className="mt-4 flex items-center justify-between gap-3">
             <h3 className="text-xs font-medium uppercase tracking-wide text-muted">
               {t.insightsPage.cooccurrenceTopPairsHeading}
             </h3>
