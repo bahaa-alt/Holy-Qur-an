@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { rootHref } from "@/lib/search/suggest";
 import type { RootPairRow } from "@/lib/data/types";
 
@@ -24,6 +24,7 @@ const MAX_DOT_R = 14;
  * which a metric that can go negative doesn't map onto cleanly.
  */
 export function RootNetworkGraph({ pairs }: { pairs: readonly RootPairRow[] }) {
+  const router = useRouter();
   const { nodes, edges, maxEdgeCount, maxWeight } = useMemo(() => {
     const weightByRoot = new Map<string, number>();
     for (const p of pairs) {
@@ -85,8 +86,24 @@ export function RootNetworkGraph({ pairs }: { pairs: readonly RootPairRow[] }) {
       })}
       {nodes.map((n) => {
         const r = MIN_DOT_R + (MAX_DOT_R - MIN_DOT_R) * Math.sqrt(n.weight / maxWeight);
+        const href = rootHref(n.root);
+        function go() {
+          router.push(href);
+        }
         return (
-          <Link key={n.root} href={rootHref(n.root)}>
+          <g
+            key={n.root}
+            role="link"
+            tabIndex={0}
+            onClick={go}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                go();
+              }
+            }}
+            className="cursor-pointer focus:outline-none"
+          >
             <circle cx={n.x} cy={n.y} r={r} className="fill-accent" fillOpacity={0.85}>
               <title>{n.root}</title>
             </circle>
@@ -99,7 +116,7 @@ export function RootNetworkGraph({ pairs }: { pairs: readonly RootPairRow[] }) {
             >
               {n.root}
             </text>
-          </Link>
+          </g>
         );
       })}
     </svg>
