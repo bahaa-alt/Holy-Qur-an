@@ -4,10 +4,10 @@ import { useState } from "react";
 import { DIVINE_NAME_TOPICS } from "@/lib/topics/topicDefinitions";
 import { TopicSection } from "@/components/topics/TopicSection";
 import { NamePairsTab } from "./NamePairsTab";
-import { OpeningPhrasesTab } from "./OpeningPhrasesTab";
+import { PhrasesTab } from "./PhrasesTab";
 import { useT } from "@/lib/i18n/LanguageContext";
 
-type Tab = "names" | "pairs" | "openings";
+type Tab = "names" | "pairs" | "phrases";
 const TAB_CLASS = (active: boolean) => `rounded-md px-3 py-1.5 ${active ? "bg-accent text-accent-fg" : "text-muted"}`;
 
 /**
@@ -15,7 +15,7 @@ const TAB_CLASS = (active: boolean) => `rounded-md px-3 py-1.5 ${active ? "bg-ac
  * /topics/ index (which was getting crowded once this list grew past a
  * handful of entries) into its own three-tab page: the full curated list,
  * how those names pair up when adjacent in the text, and which verses
- * literally open by invoking Allah.
+ * contain a curated set of Allah-invoking phrases.
  */
 export function NamesPageContent() {
   const t = useT();
@@ -35,14 +35,14 @@ export function NamesPageContent() {
         <button type="button" onClick={() => setTab("pairs")} className={TAB_CLASS(tab === "pairs")}>
           {t.namesPage.tabPairs}
         </button>
-        <button type="button" onClick={() => setTab("openings")} className={TAB_CLASS(tab === "openings")}>
-          {t.namesPage.tabOpenings}
+        <button type="button" onClick={() => setTab("phrases")} className={TAB_CLASS(tab === "phrases")}>
+          {t.namesPage.tabPhrases}
         </button>
       </div>
 
       {tab === "names" && <TopicSection heading={t.namesPage.tabNames} topics={DIVINE_NAME_TOPICS} />}
       {tab === "pairs" && <NamePairsTab />}
-      {tab === "openings" && <OpeningPhrasesTab />}
+      {tab === "phrases" && <PhrasesTab />}
     </div>
   );
 }

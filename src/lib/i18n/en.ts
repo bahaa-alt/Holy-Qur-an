@@ -313,10 +313,10 @@ export const en: Dict = {
   namesPage: {
     title: "Names of Allah",
     subtitle:
-      "The Qur'an's ninety-nine traditional names and attributes of Allah, as far as this corpus lets them be cleanly isolated -- plus how they pair up and how verses invoking Allah tend to open.",
+      "The Qur'an's ninety-nine traditional names and attributes of Allah, as far as this corpus lets them be cleanly isolated -- plus how they pair up and which verses contain a curated set of Allah-invoking phrases.",
     tabNames: "Names",
     tabPairs: "Paired names",
-    tabOpenings: "Opening verses",
+    tabPhrases: "Phrases",
   },
   namePairsTab: {
     description:
@@ -325,13 +325,13 @@ export const en: Dict = {
     occurrencesCount: (n) => `${n.toLocaleString()} verse${n === 1 ? "" : "s"}`,
     noResults: "No pairs found.",
   },
-  openingPhrasesTab: {
+  namePhrasesTab: {
     description:
-      "Every verse whose Arabic text literally opens with one of these phrases -- direct addresses to Allah, first/second-person references to Him as \"Lord,\" and a few recurring opening constructions. A curated list, not an automatic frequency scan.",
+      "Every verse containing one of these phrases anywhere in its text -- direct addresses to Allah, first/second-person references to Him as \"Lord,\" and a run of preposition + Allah/\"your Lord\" combinations. A curated list, not an automatic frequency scan.",
     loading: "Loading verses…",
     versesCount: (n) => `${n.toLocaleString()} verse${n === 1 ? "" : "s"}`,
-    noResults: "No verse opens with this phrase.",
-    pickPrompt: "Pick a phrase above to see every verse that opens with it.",
+    noResults: "No verse contains this phrase.",
+    pickPrompt: "Pick a phrase above to see every verse that contains it.",
   },
   insightsPage: {
     title: "Insights",

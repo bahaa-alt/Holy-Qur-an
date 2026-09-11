@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { getArIndex, getMeta } from "@/lib/data/loader";
 import { globalIdToRef } from "@/lib/data/verseId";
-import { OPENING_PHRASES, findVersesStartingWith } from "@/lib/names/openingPhrases";
-import { OpeningPhraseDetail, type OpeningMatchRef } from "./OpeningPhraseDetail";
+import { NAME_PHRASES, findVersesContaining } from "@/lib/names/namePhrases";
+import { PhraseDetail, type PhraseMatchRef } from "./PhraseDetail";
 import { useT } from "@/lib/i18n/LanguageContext";
 import type { ArIndexFile, MetaFile } from "@/lib/data/types";
 
@@ -15,12 +15,12 @@ const PILL_CLASS = (active: boolean) =>
   }`;
 
 /**
- * Browses every verse whose Arabic text literally opens with one of a
- * curated set of Allah-invoking phrases (OPENING_PHRASES) -- computed
- * entirely client-side from ar-index.json, same as VerseSimilarityTab's
- * on-demand fetch pattern, no dedicated build step needed.
+ * Browses every verse containing one of a curated set of Allah-invoking
+ * phrases (NAME_PHRASES) anywhere in its text -- computed entirely
+ * client-side from ar-index.json, same as VerseSimilarityTab's on-demand
+ * fetch pattern, no dedicated build step needed.
  */
-export function OpeningPhrasesTab() {
+export function PhrasesTab() {
   const t = useT();
   const [arIndex, setArIndex] = useState<ArIndexFile | null>(null);
   const [meta, setMeta] = useState<MetaFile | null>(null);
@@ -39,11 +39,11 @@ export function OpeningPhrasesTab() {
     };
   }, []);
 
-  const selectedPhrase = OPENING_PHRASES.find((p) => p.slug === selectedSlug) ?? null;
+  const selectedPhrase = NAME_PHRASES.find((p) => p.slug === selectedSlug) ?? null;
 
-  const matches: OpeningMatchRef[] = useMemo(() => {
+  const matches: PhraseMatchRef[] = useMemo(() => {
     if (!arIndex || !meta || !selectedPhrase) return [];
-    return findVersesStartingWith(selectedPhrase.phraseAr, arIndex).flatMap((m) => {
+    return findVersesContaining(selectedPhrase.phraseAr, arIndex).flatMap((m) => {
       const ref = globalIdToRef(meta, m.globalId);
       return ref ? [{ s: ref.s, a: ref.a, startW: m.startW, endW: m.endW }] : [];
     });
@@ -54,16 +54,16 @@ export function OpeningPhrasesTab() {
 
   return (
     <div>
-      <p className="text-sm text-muted">{t.openingPhrasesTab.description}</p>
+      <p className="text-sm text-muted">{t.namePhrasesTab.description}</p>
 
       {loading ? (
         <p className="mt-4 flex items-center gap-2 text-sm text-muted">
-          <Loader2 size={14} className="animate-spin" /> {t.openingPhrasesTab.loading}
+          <Loader2 size={14} className="animate-spin" /> {t.namePhrasesTab.loading}
         </p>
       ) : (
         <>
           <div className="mt-4 flex flex-wrap gap-2">
-            {OPENING_PHRASES.map((phrase) => (
+            {NAME_PHRASES.map((phrase) => (
               <button
                 key={phrase.slug}
                 type="button"
@@ -78,11 +78,11 @@ export function OpeningPhrasesTab() {
 
           <div className="mt-4 border-t border-border pt-4">
             {!selectedPhrase ? (
-              <p className="text-sm text-muted">{t.openingPhrasesTab.pickPrompt}</p>
+              <p className="text-sm text-muted">{t.namePhrasesTab.pickPrompt}</p>
             ) : matches.length === 0 ? (
-              <p className="text-sm text-muted">{t.openingPhrasesTab.noResults}</p>
+              <p className="text-sm text-muted">{t.namePhrasesTab.noResults}</p>
             ) : (
-              <OpeningPhraseDetail key={selectedPhrase.slug} matches={matches} surahMetaByNum={surahMetaByNum} />
+              <PhraseDetail key={selectedPhrase.slug} matches={matches} surahMetaByNum={surahMetaByNum} />
             )}
           </div>
         </>

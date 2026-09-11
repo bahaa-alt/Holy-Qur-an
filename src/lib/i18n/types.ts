@@ -312,7 +312,7 @@ export interface Dict {
     subtitle: string;
     tabNames: string;
     tabPairs: string;
-    tabOpenings: string;
+    tabPhrases: string;
   };
   namePairsTab: {
     description: string;
@@ -320,7 +320,7 @@ export interface Dict {
     occurrencesCount: (n: number) => string;
     noResults: string;
   };
-  openingPhrasesTab: {
+  namePhrasesTab: {
     description: string;
     loading: string;
     versesCount: (n: number) => string;

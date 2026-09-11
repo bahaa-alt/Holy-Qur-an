@@ -7,7 +7,7 @@ import { AyahCard } from "@/components/ayah/AyahCard";
 import { useT } from "@/lib/i18n/LanguageContext";
 import type { SurahMeta } from "@/lib/data/types";
 
-export interface OpeningMatchRef {
+export interface PhraseMatchRef {
   s: number;
   a: number;
   startW: number;
@@ -15,16 +15,16 @@ export interface OpeningMatchRef {
 }
 
 /**
- * Fetches and renders every verse matching one opening-phrase selection.
+ * Fetches and renders every verse matching one Name Phrases selection.
  * The parent gives this a fresh `key` per selected phrase, so a new mount
  * is exactly what "the selection changed" means -- same pattern as
  * VerseSimilarityDetail/NamePairDetail.
  */
-export function OpeningPhraseDetail({
+export function PhraseDetail({
   matches,
   surahMetaByNum,
 }: {
-  matches: readonly OpeningMatchRef[];
+  matches: readonly PhraseMatchRef[];
   surahMetaByNum: Map<number, SurahMeta>;
 }) {
   const t = useT();
@@ -44,14 +44,14 @@ export function OpeningPhraseDetail({
   if (!verses) {
     return (
       <p className="flex items-center gap-2 text-sm text-muted">
-        <Loader2 size={14} className="animate-spin" /> {t.openingPhrasesTab.loading}
+        <Loader2 size={14} className="animate-spin" /> {t.namePhrasesTab.loading}
       </p>
     );
   }
 
   return (
     <>
-      <p className="text-xs text-muted">{t.openingPhrasesTab.versesCount(selection.length)}</p>
+      <p className="text-xs text-muted">{t.namePhrasesTab.versesCount(selection.length)}</p>
       <div className="mt-3 space-y-4">
         {selection.map((m) => {
           const verse = verses.get(`${m.s}:${m.a}`);
