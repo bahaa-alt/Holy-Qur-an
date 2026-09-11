@@ -13,7 +13,6 @@ const CANDIDATE_ROOT_MAX_VERSES = 60;
 // entirely (also protects the empty-root-set / divide-by-zero case).
 const MIN_SHARED_ROOTS = 4;
 const MIN_JACCARD = 0.4;
-const TOP_N = 50;
 
 /**
  * Finds verse pairs that share an unusually high proportion of their
@@ -28,6 +27,13 @@ const TOP_N = 50;
  * O(verses^2): only roots occurring in few enough verses to be a real
  * signal are used to propose pairs, then every candidate is scored by its
  * full Jaccard similarity over both verses' complete root sets.
+ *
+ * Every pair clearing MIN_SHARED_ROOTS/MIN_JACCARD is returned, not just a
+ * fixed top-N slice: at this corpus's size that's on the order of a
+ * thousand pairs (measured ~60 KB raw), negligible against this app's data
+ * budget, so there's no reason to hide any of them behind an arbitrary cap
+ * -- over 40% of them are perfect (jaccard 1.0) matches, and a fixed
+ * top-50 cap was quietly dropping most of those.
  */
 export function buildVerseSimilarity(
   words: readonly RawWord[],
@@ -100,5 +106,5 @@ export function buildVerseSimilarity(
 
   pairs.sort((x, y) => y.jaccard - x.jaccard || y.sharedRoots - x.sharedRoots || x.a - y.a || x.b - y.b);
 
-  return { pairs: pairs.slice(0, TOP_N) };
+  return { pairs };
 }

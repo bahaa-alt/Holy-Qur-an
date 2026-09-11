@@ -503,8 +503,10 @@ export interface VerseSimilarityPair {
  * parallel verses. Candidate pairs are found via roots that occur in few
  * enough verses to be a meaningful signal (a shared "أله" means nothing;
  * a shared rare root is a real clue), then scored by full Jaccard
- * similarity over each verse's complete root set. Top 50, sorted by
- * Jaccard desc. Powers /insights/'s Verse similarity tab.
+ * similarity over each verse's complete root set. Every pair clearing the
+ * shared-root and Jaccard floor is included (around a thousand pairs, a
+ * few tens of KB), sorted by Jaccard desc. Powers /insights/'s Verse
+ * similarity tab.
  */
 export interface VerseSimilarityFile {
   pairs: VerseSimilarityPair[];
