@@ -38,8 +38,6 @@ export interface Dict {
     topics: string;
     insights: string;
     saved: string;
-    games: string;
-    flashcards: string;
     about: string;
   };
   footer: {
@@ -307,59 +305,6 @@ export interface Dict {
     subtitle: (max: number) => string;
     removeAria: (label: string) => string;
     searchPlaceholder: string;
-  };
-  gamesPage: {
-    title: string;
-    subtitle: string;
-    backToGames: string;
-  };
-  gamesHub: {
-    played: (n: number) => string;
-    bestStreak: (n: number) => string;
-    play: string;
-  };
-  gameShell: {
-    score: (correct: number, total: number) => string;
-    streak: (n: number) => string;
-    correct: string;
-    incorrect: string;
-    nextRound: string;
-  };
-  rootFrequencyGame: {
-    title: string;
-    description: string;
-    prompt: string;
-  };
-  rootMeaningGame: {
-    title: string;
-    description: string;
-    prompt: string;
-  };
-  lemmaRootGame: {
-    title: string;
-    description: string;
-    prompt: string;
-  };
-  fillBlankGame: {
-    title: string;
-    description: string;
-    prompt: string;
-    loading: string;
-  };
-  flashcardsPage: {
-    title: string;
-    subtitle: string;
-    deckRoots: string;
-    deckLemmas: string;
-    flip: string;
-    again: string;
-    hard: string;
-    good: string;
-    easy: string;
-    sessionComplete: (n: number) => string;
-    noCardsDue: string;
-    startSession: string;
-    cardOf: (current: number, total: number) => string;
   };
   insightsPage: {
     title: string;

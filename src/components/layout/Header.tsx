@@ -39,12 +39,6 @@ export function Header() {
           <Link href="/saved/" className={NAV_LINK_CLASS}>
             {t.nav.saved}
           </Link>
-          <Link href="/games/" className={NAV_LINK_CLASS}>
-            {t.nav.games}
-          </Link>
-          <Link href="/flashcards/" className={NAV_LINK_CLASS}>
-            {t.nav.flashcards}
-          </Link>
           <Link href="/about/" className={NAV_LINK_CLASS}>
             {t.nav.about}
           </Link>
