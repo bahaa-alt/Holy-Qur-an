@@ -17,10 +17,10 @@ Measured, not estimated:
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | Build          | clean — `pnpm build` exits 0, 6,910 static pages                                                                             |
 | Tests          | 447 passing across 65 files                                                                                                  |
-| Data pipeline  | all invariants pass; 130,030 segments / 77,429 words / 6,236 verses / 1,651 roots / 4,776 lemmas / 50,269 rooted occurrences |
+| Data pipeline  | all invariants pass; 130,030 segments / 77,429 words / 6,236 verses / 1,651 roots / 4,783 lemmas / 50,269 rooted occurrences |
 | Shipped corpus | 12.7 MB raw, **3.4 MB gzipped**, fully offline                                                                               |
 | Source lines   | ~24,300 TS/TSX                                                                                                               |
-| `out/`         | 692 MB (`word/` 338 MB, `root/` 234 MB, `data/` 56 MB)                                                                       |
+| `out/`         | 692 MB by `du`, but only 584.2 MiB of content — see §5.3                                                                     |
 
 This is not a prototype. It is a well-engineered, genuinely useful piece of software, and
 several of its decisions are better than what most comparable tools do:
@@ -330,22 +330,189 @@ provenance popovers, `datapackage.json`, `/limits`.
 
 ---
 
-## 5. Open questions worth resolving early
+## 5. The three open questions, resolved
 
-- **Is a Qur'anic syntactic treebank obtainable under a usable licence?** The Quranic Arabic
-  Corpus has _iʿrāb_ dependency data, and `kaisdukes/quranic-corpus` (QAC v2) is reachable
-  from this environment — but its README states the grammar diagrams are only ~50% complete,
-  and the data files were not locatable at the paths tried here. Worth a focused look: it
-  would be the single largest capability jump available, and it would make Layer 1's syntax
-  panel real rather than inferred.
-- **Are _qirāʾāt_ available in structured form anywhere reachable?** This is the most-asked-for
-  apparatus in Qur'anic studies and the tool's most conspicuous gap. Unknown as of this review.
-- **What is the deployment ceiling?** `out/` is 692 MB, because every root and word page
-  statically embeds its full tables plus RSC payload (`word/` 338 MB over 4,783 pages;
-  `root/` 234 MB over 1,651). It builds and deploys today, but GitHub Pages has a 1 GB soft
-  limit and Sprint 2 adds 6,236 pages. Rendering a summary statically and hydrating the
-  tables client-side would likely cut this by most of its bulk — worth measuring before the
-  verse pages land, not after.
+All three were investigated, and every "obtainable" claim was re-fetched by an independent
+adversarial pass before being recorded here. Two of the three answers overturned what this
+document originally assumed.
+
+### 5.1 The treebank — obtained twice; the usable one is not the famous one
+
+`kaisdukes/quranic-corpus` bundles **no data at all**: it is an axios client against
+`https://qurancorpus.app/api`. The data lives in the public backend `kaisdukes/quranic-corpus-api`,
+which clones fine — `syntax.txt`, 1.9 MB, 7,373 dependency graphs, 45 relations, 45,087 edges,
+1,853 elided-word nodes.
+
+**Coverage is worse than the README's "~50%", and the gap is structural, not scattered:**
+42.12% of tokens (32,617 / 77,430) and 39.06% of verses (2,436 / 6,236), covering **surahs 1–9
+and 59–114 only — 10–58 are entirely absent**. That is confirmed in their own source
+(`LegacyCorpusGraphMapper.java`: `GAP_CHAPTER_NUMBER_START=9`, `GAP_CHAPTER_NUMBER_END=58`).
+
+**It cannot ship here.** The repo has no LICENSE file of any kind; two sibling READMEs ask
+explicitly, under a heading of their own, that the draft data not be redistributed; its
+`irab.tsv` is a transcription of a modern copyrighted grammar; and its Qur'an text is Tanzil
+under CC BY-ND. The frontend's GPL-3.0 does not reach across repositories.
+
+The usable substitute is **`NoorBayan/Quranic` — MIT, 139,376 rows, 51 columns, extended
+CoNLL-X, 100% coverage**, which joins to this project's existing `surah:ayah:word:segment`
+keys at **98.598%** (128,207 matched; every unmatched key a deictic clitic it merges into the
+stem). It is demonstrably the same corpus: 98.98% identical surface forms after normalisation,
+98.63% root agreement against exactly the 50,269 rooted occurrences this project counts.
+
+Three caveats that must travel with it:
+
+1. **"100% annotated" is overstated.** 15.4% of rows carry the literal value `NonRel` and
+   another 14,166 are `root`; only **74.5% bear an actual syntactic relation**.
+2. **Provenance is unresolved.** The accompanying paper describes a layer built by
+   "algorithmic conversion, Deep Learning-based parsing, and expert validation" — which would
+   mean the 58% Dukes never annotated by hand may be **machine-parsed**. This rests on a search
+   snippet; the DOI and Mendeley record are unreachable from here. **Settle this before shipping.**
+3. Its `location` values are parenthesised (`(1:1:1:1)`), so a naive `split(':')` still yields
+   four parts and fails silently.
+
+Measured integration cost: a per-surah sharded `syntax/{n}.json` adds **1,481.1 KB raw /
+333.8 KB gz**, which requires raising `TOTAL_RAW_BUDGET` — see §5.3.
+
+**A finding that cuts both ways.** The upstream QAC copyright block (recovered from a PyPI
+package) reads "License: GNU Public License" and then "Permission is granted to copy and
+distribute VERBATIM copies of this file, but CHANGING IT IS NOT ALLOWED." Meanwhile
+`mustafa0x/quran-morphology` — the morphology this app is **built on** — has no LICENSE file
+either, while `build-data.ts` and the README both assert "GPL". The Dukes data cannot be
+rejected on a licensing ground that also condemns the corpus already shipping. That is a
+maintainer decision and belongs in `references/grammar-lexicon/manifest.json`.
+
+### 5.2 Qirāʾāt — parallel text obtained; a citable apparatus was not
+
+**The cheapest source was already a production dependency.** `scripts/build-data.ts` defines
+`PICKTHALL_URL` pointing at `raw.githubusercontent.com/fawazahmed0/quran-api/1/...`. That same
+repo, same branch, same URL shape, same `fetchCached` path, same **Unlicense** grant, serves
+**eight riwāyāt** — Ḥafṣ, Warsh, Qālūn, Dūrī, Sūsī, Bazzī, Qunbul, Shuʿba — at 6,236 verses each.
+Adding them is a constant in an existing array.
+
+The data is genuinely divergent, not relabelled Ḥafṣ: Warsh differs from Ḥafṣ in 6,211 of 6,236
+verses, while Shuʿba — sharing ʿĀṣim with Ḥafṣ — differs in only 552. The divergence tracks the
+isnād, which is strong evidence of authenticity. **Disclosure required if shipped:** the
+non-Ḥafṣ editions are re-segmented onto Kufi verse boundaries (native Warsh is 6,214 verses),
+so the wording is Warsh and the division is Ḥafṣ-normalised.
+
+**The dataset that looked like an apparatus was declined.** `qiraat-variants.json` (1,634 loci)
+fails a source-citation test outright: across its 1.3 MB the substrings `edition`, `page`,
+`volume`, `tariq`, `Shatib`, `Taysir` and `isnad` each occur **zero** times. Its notes cite bare
+surnames with no work, edition or locator. Its attribution is classically correct on spot-checks,
+but a research tool cannot cite it. Separately, three of the four parallel-text candidates trace
+back to one unlicensed upstream (`thetruetruth/quran-data-kfgqpc`, no LICENSE); only
+**fawazahmed0 (Unlicense)** and **@saqfish (GPL-3.0)** stand outside that chain.
+
+**What did clear the bar** is narrower and better: `quranpedia/qiraat-ayah-map` cites every one
+of the six ʿadd traditions to al-Dānī's _al-Bayān_, by edition and page — madanī-first 6217,
+madanī-last 6214, makkī 6219, baṣrī 6204, dimashqī 6226, kūfī 6236.
+
+**The finding that matters most needs no dataset at all: this app never names its own reading.**
+`grep -rniE 'hafs|ḥafṣ|warsh|qira'` across `src/` and `scripts/` returns nothing. The only
+descriptor anywhere is "the Uthmani text". What ships is **Ḥafṣ ʿan ʿĀṣim in the 1924 Cairo
+orthography with Kufan numbering** — verifiable in the data itself, where `surahs/42.json`
+splits `حمٓ` and `عٓسٓقٓ` into verses 1 and 2, the Kufan count. By this project's own standard,
+not saying so is already an overclaim.
+
+**And qirāʾāt would hit the core, not sit beside it.** `2:259 نُنشِزُ` (root نشز) becomes
+`نُنشِرُ` (root نشر) under another canonical reading; `10:30 تَبْلُوا۟` (بلو) becomes
+`تَتْلُوا۟` (تلو). Both target roots already exist in `index.json` with live counts. **A
+one-dot difference moves an occurrence from one root page to another and changes both counts.**
+The root index — the thing this project is — is a Ḥafṣ artifact, and
+`surah:ayah:word:segment` is reading-dependent at its two rightmost components. Never attach the
+existing morphology to a variant reading.
+
+Verse numbering is a separate discipline from the reading (the counting tradition belongs to the
+_edition_, not the _qirāʾa_), and conflating them produces two silent failures: cumulative drift,
+where a join returns a real, well-formed, **wrong** verse; and equal totals with different
+division, where al-Fātiḥa is 7 verses everywhere but the Kufan count reaches 7 by counting the
+basmala — so a per-surah total check passes while the text differs.
+
+**Minimum responsible version:** Stage 0, name the reading everywhere including `buildCitation`
+— ship regardless, it is not a qirāʾāt feature. Stage 1, the honest null panel this document
+already proposes. Stage 1.5, the sourced ʿadd layer, buildable today. Stage 2, farsh only,
+symmetric, sourced per locus, morphology-firewalled, **zero computed content** — only if citable
+data appears. One number to defuse first: the 68.6% of word slots on which riwāyāt "disagree" is
+mostly diacritics; the substantive count is **632**.
+
+### 5.3 The size ceiling — measured, and it breaches
+
+The original claim in this document was wrong about both the cause and the remedy.
+
+**`du`'s 692 MB overstates content by 108 MiB** — that is 4 KiB block quantization across 36,530
+files. Apparent content is 584.2 MiB.
+
+**The dominant cost is not page tables; it is Next.js 16 prefetch artifacts.** 285.6 MiB (48.9%)
+is RSC payload, more than the 247.1 MiB of HTML, and the same payload is written **four times per
+page**: inline in `index.html`, as `index.txt`, as `__next._full.txt`, and as `__PAGE__.txt`.
+Verified independently in this repo: `index.txt` is **byte-identical to `__next._full.txt` on
+6,909 of 6,909 pages, zero differing**, and `__next.*` totals **189.0 MiB across 20,727 files** —
+57% of the file count.
+
+Double serialization within a page is also real (10 of 12 `src/components/root/` components are
+`"use client"`, so every datum ships as HTML _and_ JSON props; the 61-entry `bySurah` array ships
+three times) — but it is second-order. Note that `AyahExplorer` **already** fetches
+`/data/v1/roots/{root}.json` client-side, so the static tables duplicate JSON that already ships.
+
+**Over the wire this is a non-issue** — a root page is 10,537 B brotli — but compression buys
+nothing against a published-site limit.
+
+**The projection breaches.** 6,236 verse pages at today's per-page cost add ~441 MiB on disk →
+**~1.13 GB**. Correction to this document's earlier text: GitHub's 1 GB is a **hard** limit
+("Published GitHub Pages sites may be no larger than 1 GB", with bandwidth and build count
+explicitly labelled _soft_). There is no version of Sprint 2 that fits today's cost structure.
+
+Ranked remedies, each measured by controlled A/B builds:
+
+| #   | Remedy                                             |                     Saved | Risk                                        |
+| --- | -------------------------------------------------- | ------------------------: | ------------------------------------------- |
+| 1   | `find out -name '__next.*' -delete` in `postbuild` | **189.0 MiB**, −57% files | medium — **not browser-verified**           |
+| 1a  | _Fallback:_ delete only `__next._full.txt`         |                  96.6 MiB | low — `index.txt` still serves navigation   |
+| 2   | Root page → static summary + hydrated tables       |                 130.3 MiB | medium — needs `sitemap.ts` shipped with it |
+| 3   | `corpus.csv` → release asset                       |                  37.5 MiB | near zero                                   |
+| 4   | Word page → thin shell                             |                  52.6 MiB | medium — costs the word↔word link graph     |
+| —   | `cacheComponents` / PPR / `dynamicParams`          |                         — | **impossible under `output: 'export'`**     |
+
+Full stack ≈ 233 MiB, a 60% cut. **Start with #1**, gated on one browser navigation test — it is
+the only remedy attacking both binding constraints (bytes and file count) at once, and the
+`sw.js` `staleWhileRevalidate` fallthrough currently makes all 285.6 MiB eligible to accumulate
+in every visitor's Cache Storage, so it is a client-storage fix too.
+
+**Two deploy blockers nobody had looked for.** There is **no `.nojekyll`** in `public/` or `out/`
+and nothing generates one — so the `build:ghpages` path would have Jekyll strip `_next/`,
+serving an unstyled, non-hydrating site. That is harder than any size limit, because an overrun
+degrades gracefully and this does not. And Cloudflare Pages is out entirely: 20,000-file free
+limit against 36,530 files, plus a 25 MiB per-asset cap against a 37.5 MiB `corpus.csv`.
+
+### 5.4 Still genuinely unknown
+
+- Whether NoorBayan's surahs 10–58 are human- or machine-annotated (DOI unreachable from here).
+- Whether CC BY 4.0 data can be redistributed inside a GPL-3.0 project, and whether
+  `quran-text`'s third-party carve-out defeats it. **This needs a human, not another agent.**
+- Whether deleting `__next.*.txt` degrades gracefully to full-page navigation. Code-read twice,
+  browser-verified never — no headless browser exists in this environment. It gates the largest remedy.
+- Vercel's actual limits — `vercel.com/docs/limits` is unreachable, and Vercel is the primary
+  target named in both the README and `PLAN.md`, so this is the ceiling that matters most and the
+  one nobody can evidence.
+- Actual deploy time against GitHub Pages' 10-minute timeout, at 36,530 files and rising.
+
+### 5.5 Two defects found in passing
+
+- **`pnpm data:check` does not check sizes.** Despite its docstring, it omits `surahs/*.json`,
+  includes the 38 MB `corpus.csv` the real build excludes, prints gz as literal `0.0 KB` for
+  every row, and performs **no budget comparison at all**. Budgets are only enforced by CI's
+  `Build` step.
+- **`manifest.json` says 4,783 lemmas** (4,635 rooted + 148 rootless). The 4,776 figure in
+  `PLAN.md` — and in §1 of this document as first written — is stale by seven.
+
+### 5.6 One unplanned find worth more than it cost
+
+Hunting qirāʾāt turned up **Lane's Lexicon as a GPL-3.0 SQLite database**
+(`laneslexicon/LexiconDatabase`): 5,160 roots, 47,919 entries of TEI-XML. §2.3 lists the
+lexicon as "one, third-hand" because the app currently shows a 140-character `glossShort`
+taken from an MIT re-packaging. This is Lane proper, under a licence this project already
+uses. It is the cheapest single upgrade to the verse apparatus in §3, and it was not on
+anyone's list.
 
 ---
 
