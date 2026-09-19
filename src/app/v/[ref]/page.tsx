@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { readManifest, readMeta, readSurahFile } from "@/lib/data/serverData";
 import { VersePageContent } from "@/components/verse/VersePageContent";
+import { absoluteUrl } from "@/lib/site";
 
 /**
  * The citable atom: one page per verse, at /v/2:255/.
@@ -35,11 +36,15 @@ function parseRef(ref: string): { s: number; a: number } | null {
 export async function generateMetadata({ params }: { params: Promise<{ ref: string }> }) {
   const { ref } = await params;
   const parsed = parseRef(ref);
-  if (!parsed) return { title: "Verse" };
+  // Without its own canonical a page inherits the layout's, which is the
+  // site root -- telling a crawler that all 6,236 verse pages are the home
+  // page. Set on both paths out of this function for that reason.
+  if (!parsed) return { title: "Verse", alternates: { canonical: absoluteUrl(`/v/${ref}/`) } };
   const meta = readMeta();
   const surah = meta.surahs.find((s) => s.n === parsed.s);
   return {
     title: surah ? `${parsed.s}:${parsed.a} — ${surah.translit}` : `${parsed.s}:${parsed.a}`,
+    alternates: { canonical: absoluteUrl(`/v/${parsed.s}:${parsed.a}/`) },
   };
 }
 

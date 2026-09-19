@@ -1,7 +1,11 @@
 import { readIndex } from "@/lib/data/serverData";
 import { PhrasesPageContent } from "@/components/phrases/PhrasesPageContent";
+import { absoluteUrl } from "@/lib/site";
 
-export const metadata = { title: "Phrase search" };
+export const metadata = {
+  title: "Phrase search",
+  alternates: { canonical: absoluteUrl("/phrases/") },
+};
 
 export default function PhrasesPage() {
   const index = readIndex();

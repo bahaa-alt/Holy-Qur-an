@@ -1,7 +1,11 @@
 import { readIndex } from "@/lib/data/serverData";
 import { RootsPageContent } from "@/components/root/RootsPageContent";
+import { absoluteUrl } from "@/lib/site";
 
-export const metadata = { title: "Browse all roots" };
+export const metadata = {
+  title: "Browse all roots",
+  alternates: { canonical: absoluteUrl("/roots/") },
+};
 
 export default function RootsPage() {
   const index = readIndex();

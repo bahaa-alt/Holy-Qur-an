@@ -1,7 +1,11 @@
 import { readMeta } from "@/lib/data/serverData";
 import { CuriositiesPageContent } from "@/components/curiosities/CuriositiesPageContent";
+import { absoluteUrl } from "@/lib/site";
 
-export const metadata = { title: "Curiosities" };
+export const metadata = {
+  title: "Curiosities",
+  alternates: { canonical: absoluteUrl("/curiosities/") },
+};
 
 /**
  * Material that is interesting but is not linguistic evidence.

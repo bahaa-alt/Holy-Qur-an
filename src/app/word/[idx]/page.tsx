@@ -1,5 +1,11 @@
 import { notFound } from "next/navigation";
-import { readIndex, readLemmaFile, readManifest, readRootFile, readSurahFile } from "@/lib/data/serverData";
+import {
+  readIndex,
+  readLemmaFile,
+  readManifest,
+  readRootFile,
+  readSurahFile,
+} from "@/lib/data/serverData";
 import { buildOccurrenceRows, filterRows } from "@/lib/root/occurrences";
 import { buildWordPositionStats } from "@/lib/word/positionStats";
 import { WordHeader } from "@/components/word/WordHeader";
@@ -9,6 +15,7 @@ import { FormsTable } from "@/components/root/FormsTable";
 import { WordPositionStatsCard } from "@/components/word/WordPositionStatsCard";
 import { AyahExplorer } from "@/components/ayah/AyahExplorer";
 import type { RootFile, RootFormEntry, RootLemmaEntry } from "@/lib/data/types";
+import { absoluteUrl } from "@/lib/site";
 
 export function generateStaticParams() {
   const index = readIndex();
@@ -19,7 +26,10 @@ export async function generateMetadata({ params }: { params: Promise<{ idx: stri
   const { idx } = await params;
   const index = readIndex();
   const row = index.lemmas[Number(idx)];
-  return { title: row ? row.lemma : "Word" };
+  return {
+    title: row ? row.lemma : "Word",
+    alternates: { canonical: absoluteUrl(`/word/${idx}/`) },
+  };
 }
 
 export default async function WordPage({ params }: { params: Promise<{ idx: string }> }) {
@@ -53,7 +63,9 @@ export default async function WordPage({ params }: { params: Promise<{ idx: stri
   // A rootless lemma file's occ is already scoped to this exact word; a
   // rooted one covers the whole root, so it's filtered to this lemma's
   // key, same as AyahExplorer's own initialFilters below.
-  const occRows = root ? filterRows(buildOccurrenceRows(file), { lemmaKey: row.key }) : buildOccurrenceRows(file);
+  const occRows = root
+    ? filterRows(buildOccurrenceRows(file), { lemmaKey: row.key })
+    : buildOccurrenceRows(file);
   const touchedSurahs = [...new Set(occRows.map((r) => r.s))];
   const verseWordCounts = new Map<string, number>();
   for (const surahNum of touchedSurahs) {
@@ -74,8 +86,17 @@ export default async function WordPage({ params }: { params: Promise<{ idx: stri
         formCount={forms.length}
         actions={
           <>
-            <SaveButton id={`word:${row.key}`} kind="word" label={row.lemma} href={`/word/${idx}/`} />
-            <CiteButton subject={{ kind: "word", label: row.lemma }} manifest={manifest} />
+            <SaveButton
+              id={`word:${row.key}`}
+              kind="word"
+              label={row.lemma}
+              href={`/word/${idx}/`}
+            />
+            <CiteButton
+              subject={{ kind: "word", label: row.lemma }}
+              manifest={manifest}
+              canonical={absoluteUrl(`/word/${idx}/`)}
+            />
           </>
         }
       />

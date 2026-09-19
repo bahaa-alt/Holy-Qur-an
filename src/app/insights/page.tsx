@@ -1,8 +1,12 @@
 import { readIndex, readInsights, readMeta } from "@/lib/data/serverData";
 import { rootHref, wordHref } from "@/lib/search/suggest";
 import { InsightsPageContent } from "@/components/insights/InsightsPageContent";
+import { absoluteUrl } from "@/lib/site";
 
-export const metadata = { title: "Insights" };
+export const metadata = {
+  title: "Insights",
+  alternates: { canonical: absoluteUrl("/insights/") },
+};
 
 export default function InsightsPage() {
   const insights = readInsights();

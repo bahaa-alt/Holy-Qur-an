@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { readFormulas, readMeta, readSurahFile } from "@/lib/data/serverData";
 import { FormulaDetailView, type FormulaOccurrence } from "@/components/insights/FormulaDetailView";
+import { absoluteUrl } from "@/lib/site";
 
 export function generateStaticParams() {
   const formulas = readFormulas();
@@ -9,9 +10,16 @@ export function generateStaticParams() {
   );
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ length: string; key: string }> }) {
-  const { key: rawKey } = await params;
-  return { title: `Formula: ${decodeURIComponent(rawKey)}` };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ length: string; key: string }>;
+}) {
+  const { length, key: rawKey } = await params;
+  return {
+    title: `Formula: ${decodeURIComponent(rawKey)}`,
+    alternates: { canonical: absoluteUrl(`/insights/formulas/${length}/${rawKey}/`) },
+  };
 }
 
 export default async function FormulaDetailPage({
