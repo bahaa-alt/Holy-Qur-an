@@ -353,6 +353,14 @@ export interface Dict {
     labelLabel: string;
     labelPlaceholder: string;
   };
+  versePage: {
+    words: string;
+    revelation: string;
+    chronological: string;
+    juz: string;
+    hizb: string;
+    surahLength: string;
+  };
   lane: {
     heading: string;
     loading: string;

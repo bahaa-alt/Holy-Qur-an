@@ -361,6 +361,14 @@ export const en: Dict = {
     labelLabel: "English label",
     labelPlaceholder: "e.g. Min rabbikum (From your Lord)",
   },
+  versePage: {
+    words: "Words",
+    revelation: "Revealed",
+    chronological: "Chronological order",
+    juz: "Juz'",
+    hizb: "\u1E24izb",
+    surahLength: "Verses in surah",
+  },
   lane: {
     heading: "Lane's Lexicon",
     loading: "Loading the lexicon\u2026",

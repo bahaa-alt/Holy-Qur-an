@@ -384,6 +384,14 @@ export const ar: Dict = {
     labelLabel: "التسمية بالإنجليزية",
     labelPlaceholder: "مثال: Min rabbikum (From your Lord)",
   },
+  versePage: {
+    words: "\u0627\u0644\u0643\u0644\u0645\u0627\u062A",
+    revelation: "\u0627\u0644\u0646\u0632\u0648\u0644",
+    chronological: "\u062A\u0631\u062A\u064A\u0628 \u0627\u0644\u0646\u0632\u0648\u0644",
+    juz: "\u0627\u0644\u062C\u0632\u0621",
+    hizb: "\u0627\u0644\u062D\u0632\u0628",
+    surahLength: "\u0622\u064A\u0627\u062A \u0627\u0644\u0633\u0648\u0631\u0629",
+  },
   lane: {
     heading: "\u0645\u0639\u062C\u0645 \u0644\u064A\u0646",
     loading: "\u062C\u0627\u0631\u064D \u062A\u062D\u0645\u064A\u0644 \u0627\u0644\u0645\u0639\u062C\u0645\u2026",
