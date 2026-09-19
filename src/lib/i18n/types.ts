@@ -379,6 +379,14 @@ export interface Dict {
     /** shown in Arabic mode: Lane defines in English, and there is no Arabic edition to swap in */
     englishWork: string;
   };
+  mujam: {
+    heading: string;
+    loading: string;
+    failed: string;
+    underSpelling: string;
+    noEntry: (covered: number, total: number) => string;
+    coverage: (covered: number, total: number) => string;
+  };
   tafsir: {
     toggle: string;
     loading: string;

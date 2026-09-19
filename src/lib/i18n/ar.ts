@@ -425,6 +425,16 @@ export const ar: Dict = {
     englishWork:
       "\u0645\u0639\u062C\u0645 \u0644\u064A\u0646 \u0645\u0639\u062C\u0645 \u0639\u0631\u0628\u064A-\u0625\u0646\u062C\u0644\u064A\u0632\u064A\u060C \u0648\u0634\u0631\u0648\u062D\u0647 \u0645\u0643\u062A\u0648\u0628\u0629 \u0628\u0627\u0644\u0625\u0646\u062C\u0644\u064A\u0632\u064A\u0629 \u0641\u064A \u0623\u0635\u0644\u0647\u060C \u0648\u0644\u0627 \u062A\u0648\u062C\u062F \u0644\u0647 \u0637\u0628\u0639\u0629 \u0639\u0631\u0628\u064A\u0629 \u062A\u062D\u0644 \u0645\u062D\u0644\u0647\u0627. \u0648\u0627\u0644\u0634\u0648\u0627\u0647\u062F \u0648\u0627\u0644\u0645\u062F\u062E\u0644\u0627\u062A \u0639\u0631\u0628\u064A\u0629 \u0643\u0645\u0627 \u0647\u064A.",
   },
+  mujam: {
+    heading: "المعاجم العربية",
+    loading: "جارٍ تحميل المعاجم\u2026",
+    failed: "تعذّر تحميل المعاجم.",
+    underSpelling: "مذكور تحت",
+    noEntry: (covered, total) =>
+      `لا مادة لهذا الجذر في أيٍّ من المعاجم الثلاثة. وهي تغطي مجتمعةً ${covered.toLocaleString("ar-EG")} جذرًا من ${total.toLocaleString("ar-EG")}.`,
+    coverage: (covered, total) =>
+      `يغطي ${covered.toLocaleString("ar-EG")} جذرًا من ${total.toLocaleString("ar-EG")} في هذه المدوّنة.`,
+  },
   tafsir: {
     toggle: "\u0627\u0644\u062A\u0641\u0633\u064A\u0631",
     loading:

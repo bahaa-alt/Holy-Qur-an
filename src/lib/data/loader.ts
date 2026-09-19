@@ -20,6 +20,8 @@ import type {
   ReadingsMetaFile,
   LaneMetaFile,
   LaneRootFile,
+  MujamMetaFile,
+  MujamRootFile,
   SurahVerse,
   TafsirMetaFile,
   TafsirSurahFile,
@@ -115,6 +117,23 @@ export function getLaneMeta(): Promise<LaneMetaFile> {
  */
 export function getLaneRoot(root: string): Promise<LaneRootFile> {
   return cachedFetch(`${DATA_BASE}/lane/${encodeURIComponent(root)}.json`);
+}
+
+/** Provenance, editions and coverage for the three Arabic lexicons. */
+export function getMujamMeta(): Promise<MujamMetaFile> {
+  return cachedFetch(`${DATA_BASE}/mujam/meta.json`);
+}
+
+/**
+ * One root's articles across all three Arabic lexicons (~6 KB). One fetch
+ * rather than three, because the panel opens them together.
+ *
+ * Lazily fetched and not part of prefetchAll, same as Lane: the three works
+ * restricted to this corpus are ~8.8 MB, and a reader only ever wants the
+ * root in front of them.
+ */
+export function getMujamRoot(root: string): Promise<MujamRootFile> {
+  return cachedFetch(`${DATA_BASE}/mujam/${encodeURIComponent(root)}.json`);
 }
 
 /** Provenance and coverage for a shipped commentary. */

@@ -5,7 +5,15 @@
  * pipeline but skips writing files, only validating invariants and size
  * budgets -- useful in CI without touching the working tree.
  */
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { execFileSync } from "node:child_process";
 import { DatabaseSync } from "node:sqlite";
 import { gzipSync } from "node:zlib";
@@ -23,6 +31,7 @@ import { SYNTAX_TAGS, buildSyntax } from "./lib/build-syntax";
 import { RIWAYAT, buildReadings, type RawEdition } from "./lib/build-readings";
 import { TAFSIR_SLUG, buildTafsir, type RawTafsirRow } from "./lib/build-tafsir";
 import { buildLane, type RawLaneEntry } from "./lib/build-lane";
+import { MUJAM_SOURCE_TABLE, MUJAM_WORKS, buildMujam, type RawMujamEntry } from "./lib/build-mujam";
 import { describeTag } from "../src/lib/morphology/tagLabels";
 import { buildInsights } from "./lib/build-insights";
 import { buildRhyme } from "./lib/build-rhyme";
@@ -35,10 +44,22 @@ import { buildFormulas } from "./lib/build-formulas";
 import { buildVerseSimilarity } from "./lib/build-verse-similarity";
 import { buildDivineNamePairs } from "./lib/build-divine-name-pairs";
 import { buildCorpusExportCsv } from "./lib/build-corpus-export";
-import { SizeReport, checkSizeBudgets, formatBudgetViolation, recordGroup, writeJSON, writeText } from "./lib/emit";
+import {
+  SizeReport,
+  checkSizeBudgets,
+  formatBudgetViolation,
+  recordGroup,
+  writeJSON,
+  writeText,
+} from "./lib/emit";
 import { ALL_TOPICS, DIVINE_NAME_TOPICS } from "../src/lib/topics/topicDefinitions";
 import { topicSourceFileKey } from "../src/lib/topics/buildTopicOccurrences";
-import type { ArIndexFile, ManifestFile, ManifestSource, VerseRootsFile } from "../src/lib/data/types";
+import type {
+  ArIndexFile,
+  ManifestFile,
+  ManifestSource,
+  VerseRootsFile,
+} from "../src/lib/data/types";
 
 interface PickthallEdition {
   quran: { chapter: number; verse: number; text: string }[];
@@ -48,10 +69,12 @@ const args = process.argv.slice(2);
 const CHECK_ONLY = args.includes("--check");
 const FORCE = args.includes("--force");
 
-const MORPHOLOGY_URL = "https://raw.githubusercontent.com/mustafa0x/quran-morphology/master/quran-morphology.txt";
+const MORPHOLOGY_URL =
+  "https://raw.githubusercontent.com/mustafa0x/quran-morphology/master/quran-morphology.txt";
 const QURAN_JSON_CHAPTER_URL = (n: number) =>
   `https://raw.githubusercontent.com/risan/quran-json/main/dist/chapters/en/${n}.json`;
-const ROOTS_GLOSS_URL = "https://raw.githubusercontent.com/R3GENESI5/quran-bil-quran/master/app/data/roots_index.json";
+const ROOTS_GLOSS_URL =
+  "https://raw.githubusercontent.com/R3GENESI5/quran-bil-quran/master/app/data/roots_index.json";
 // Pickthall's translation, from the same tanzil.net corpus quran-json's own
 // Saheeh International text derives from -- a second English rendering
 // shown alongside Saheeh International for translation comparison.
@@ -61,23 +84,33 @@ const ROOTS_GLOSS_URL = "https://raw.githubusercontent.com/R3GENESI5/quran-bil-q
 const READING_URL = (slug: string) =>
   `https://raw.githubusercontent.com/fawazahmed0/quran-api/1/editions/ara-quran${slug}.min.json`;
 
-const PICKTHALL_URL = "https://raw.githubusercontent.com/fawazahmed0/quran-api/1/editions/eng-mohammedmarmadu.min.json";
+const PICKTHALL_URL =
+  "https://raw.githubusercontent.com/fawazahmed0/quran-api/1/editions/eng-mohammedmarmadu.min.json";
 
 const SOURCES: ManifestSource[] = [
   {
     name: "Lane's Arabic-English Lexicon (1863-1893), via laneslexicon/LexiconDatabase",
     url: "https://github.com/laneslexicon/LexiconDatabase",
-    license: "GPL-3.0. Covers 1,617 of this corpus's 1,651 roots; Lane died before finishing, and the tail is thinner.",
+    license:
+      "GPL-3.0. Covers 1,617 of this corpus's 1,651 roots; Lane died before finishing, and the tail is thinner.",
+  },
+  {
+    name: "Maqayis al-Lugha (Ibn Faris, d. 395/1004), al-Mufradat (al-Raghib al-Isfahani, d. 502/1108) and al-Sihah (al-Jawhari, d. 393/1003)",
+    url: "https://github.com/wizsk/arabic_lexicons",
+    license:
+      "The three works are pre-1500 and in the public domain. Each text was identified by verbatim cross-match against the edition-bearing OpenITI corpus (Maqayis 33/33, Mufradat 39/40, al-Sihah 35/36); the editions are named per work in the panel. Covers 1,595 of this corpus's 1,651 roots. The modern in-copyright dictionaries in the same database are excluded.",
   },
   {
     name: "Tafsir al-Jalalayn (al-Mahalli and al-Suyuti, 15th-16th c.) -- committed under references/",
     url: "https://github.com/spa5k/tafsir_api",
-    license: "MIT (repository packaging). The commentary itself is a classical work in the public domain. Covers 6,010 of 6,236 verses.",
+    license:
+      "MIT (repository packaging). The commentary itself is a classical work in the public domain. Covers 6,010 of 6,236 verses.",
   },
   {
     name: "Alternative transmissions (Qalun, Warsh, al-Bazzi, Qunbul, al-Duri, al-Susi, Shu'ba)",
     url: "https://github.com/fawazahmed0/quran-api",
-    license: "Unlicense (public domain). Non-Hafs editions are re-segmented onto Kufan verse boundaries at the source.",
+    license:
+      "Unlicense (public domain). Non-Hafs editions are re-segmented onto Kufan verse boundaries at the source.",
   },
   {
     name: "Quran morphology (Arabic-script fork of the Quranic Arabic Corpus v0.4)",
@@ -106,7 +139,15 @@ const SOURCES: ManifestSource[] = [
 // About page links there (see NEXT_PUBLIC_CORPUS_EXPORT_URL).
 // Tracked in the repo it comes from (lexicon.sqlite.zip, 61.6 MB), so it is
 // fetched and cached like every other source rather than vendored here.
-const LANE_ZIP_URL = "https://raw.githubusercontent.com/laneslexicon/LexiconDatabase/master/lexicon.sqlite.zip";
+const LANE_ZIP_URL =
+  "https://raw.githubusercontent.com/laneslexicon/LexiconDatabase/master/lexicon.sqlite.zip";
+
+// The three Arabic-Arabic lexicons, from the same kind of place as Lane's:
+// a zip tracked in its own repository, fetched and cached rather than
+// vendored here. 48 MB compressed, 173 MB unpacked -- only three of its
+// tables are read (see MUJAM_WORKS).
+const MUJAM_ZIP_URL =
+  "https://raw.githubusercontent.com/wizsk/arabic_lexicons/master/assets/data/db/db.sqlite.zip";
 
 const TAFSIR_SRC_DIR = join(process.cwd(), "references", "tafsir", `ar-tafsir-al-${TAFSIR_SLUG}`);
 const EXPORT_DIR = join(process.cwd(), "dist", "export");
@@ -137,6 +178,11 @@ const EXPECTED = {
   // in ك-ي, the letters he did not live to finish; the tail was assembled
   // posthumously from his notes and is far thinner (ع has 3,800 entries, ي 142).
   laneCoveredRoots: 1617,
+  // At least one of the three Arabic lexicons covers 1,595 of the 1,651
+  // roots. Per work: Maqayis 1,499, Mufradat 1,410, al-Sihah 1,484 -- the
+  // spread is real, Mufradat being a lexicon of Qur'anic vocabulary rather
+  // than of the language at large.
+  mujamCoveredRoots: 1595,
   rootCounts: { كتب: 319, رحم: 339, علم: 854 } as Record<string, number>,
   maxMismatches: 50,
 };
@@ -193,6 +239,10 @@ const TAFSIR_BUDGET_RAW = 6 * 1024 * 1024;
 // Lane's Lexicon restricted to this corpus's roots, one shard per root
 // (~21 MB raw / ~6 MB gz measured). Excluded from the core totals, as above.
 const LANE_BUDGET_RAW = 32 * 1024 * 1024;
+// The three Arabic lexicons restricted to this corpus's roots, one shard per
+// root carrying all three (~9.3 MB of source text measured). Excluded from
+// the core totals, as above.
+const MUJAM_BUDGET_RAW = 16 * 1024 * 1024;
 // Raised from 9 MiB: adding Pickthall's translation to every verse grew
 // surahs/*.json by ~900 KB raw (measured 9.18 MiB total). Gzipped total
 // barely moved (~2.66 MiB, well under TOTAL_GZ_BUDGET) since English prose
@@ -237,7 +287,9 @@ function readLaneEntries(dbPath: string): Map<string, RawLaneEntry[]> {
   const db = new DatabaseSync(dbPath, { readOnly: true });
   try {
     const rows = db
-      .prepare("select root, word, xml, page from entry where root is not null and xml is not null order by root, nodenum")
+      .prepare(
+        "select root, word, xml, page from entry where root is not null and xml is not null order by root, nodenum",
+      )
       .all() as unknown as RawLaneEntry[];
     const byRoot = new Map<string, RawLaneEntry[]>();
     for (const row of rows) {
@@ -246,6 +298,52 @@ function readLaneEntries(dbPath: string): Map<string, RawLaneEntry[]> {
       else byRoot.set(row.root, [row]);
     }
     return byRoot;
+  } finally {
+    db.close();
+  }
+}
+
+/**
+ * Downloads and unpacks the Arabic lexicon database, caching both the
+ * archive and the unpacked file, exactly as fetchLaneDb does.
+ */
+async function fetchMujamDb(): Promise<string> {
+  const dbPath = join(RAW_DIR, "mujam.sqlite");
+  if (existsSync(dbPath) && !FORCE) return dbPath;
+
+  const zipPath = join(RAW_DIR, "mujam.sqlite.zip");
+  if (!existsSync(zipPath) || FORCE) {
+    const res = await fetch(MUJAM_ZIP_URL);
+    if (!res.ok) fail(`Failed to download the Arabic lexicons: ${res.status} ${res.statusText}`);
+    mkdirSync(RAW_DIR, { recursive: true });
+    writeFileSync(zipPath, Buffer.from(await res.arrayBuffer()));
+  }
+  execFileSync("unzip", ["-o", "-j", zipPath, "db.sqlite", "-d", RAW_DIR], { stdio: "pipe" });
+  const unzipped = join(RAW_DIR, "db.sqlite");
+  if (!existsSync(unzipped)) fail(`unzip did not produce ${unzipped}`);
+  renameSync(unzipped, dbPath);
+  return dbPath;
+}
+
+/**
+ * Reads the three lexicons this project ships, keyed by work id.
+ *
+ * Only the three tables named in MUJAM_WORKS are touched. The same database
+ * carries modern in-copyright dictionaries; not reading them is the point.
+ */
+function readMujamEntries(dbPath: string): Map<string, RawMujamEntry[]> {
+  const db = new DatabaseSync(dbPath, { readOnly: true });
+  try {
+    const byWork = new Map<string, RawMujamEntry[]>();
+    for (const work of MUJAM_WORKS) {
+      const rows = db
+        .prepare(
+          `select word, meanings from ${MUJAM_SOURCE_TABLE[work.id]} where word is not null and meanings is not null order by id`,
+        )
+        .all() as unknown as RawMujamEntry[];
+      byWork.set(work.id, rows);
+    }
+    return byWork;
   } finally {
     db.close();
   }
@@ -263,7 +361,9 @@ function assertEqual(label: string, actual: number, expected: number, errors: st
 }
 
 async function main() {
-  console.log(`Data pipeline starting (${CHECK_ONLY ? "check-only" : "build"} mode)${FORCE ? ", forced refetch" : ""}`);
+  console.log(
+    `Data pipeline starting (${CHECK_ONLY ? "check-only" : "build"} mode)${FORCE ? ", forced refetch" : ""}`,
+  );
 
   // --- 1. Download ---
   const [morphology, rootsGloss, pickthall] = await Promise.all([
@@ -278,8 +378,11 @@ async function main() {
         async (r) =>
           [
             r.slug,
-            (await fetchCachedJSON<RawEdition>(READING_URL(r.slug), `reading-${r.slug}.json`, { force: FORCE }))
-              .data,
+            (
+              await fetchCachedJSON<RawEdition>(READING_URL(r.slug), `reading-${r.slug}.json`, {
+                force: FORCE,
+              })
+            ).data,
           ] as const,
       ),
     ),
@@ -304,12 +407,16 @@ async function main() {
     chapters.push(data);
   }
   chapters.sort((a, b) => a.id - b.id);
-  console.log(`Downloaded morphology (${morphology.text.length.toLocaleString()} chars) and ${chapters.length} chapters.`);
+  console.log(
+    `Downloaded morphology (${morphology.text.length.toLocaleString()} chars) and ${chapters.length} chapters.`,
+  );
 
   // --- 2. Parse ---
   const words: RawWord[] = parseMorphologyTSV(morphology.text);
   const totalSegments = words.reduce((sum, w) => sum + w.segments.length, 0);
-  console.log(`Parsed ${words.length.toLocaleString()} words / ${totalSegments.toLocaleString()} segments.`);
+  console.log(
+    `Parsed ${words.length.toLocaleString()} words / ${totalSegments.toLocaleString()} segments.`,
+  );
 
   // --- 3. Build surahs (+ per-verse validation against quran-json) ---
   const { surahFiles, meta, mismatches } = buildSurahs(words, chapters, pickthallByRef);
@@ -375,13 +482,29 @@ async function main() {
   const tafsir = buildTafsir(tafsirRows, versesPerSurah);
 
   // --- 5b-iv. Lane's Lexicon ---
-  const lane = buildLane(readLaneEntries(await fetchLaneDb()), indexRoots.map((r) => r.ar));
+  const lane = buildLane(
+    readLaneEntries(await fetchLaneDb()),
+    indexRoots.map((r) => r.ar),
+  );
+
+  // --- 5b-v. The three Arabic-Arabic lexicons ---
+  const mujam = buildMujam(
+    readMujamEntries(await fetchMujamDb()),
+    indexRoots.map((r) => r.ar),
+  );
 
   // --- 5b-ii. Build the corpus-wide syntactic / rhetorical index ---
   const syntaxIndex = buildSyntax(words);
 
   // --- 5c. Build corpus-wide curiosities for /insights/ ---
-  const insights = buildInsights(words, rootFiles, lemmaFiles, indexRoots, indexLemmas, meta.surahs.length);
+  const insights = buildInsights(
+    words,
+    rootFiles,
+    lemmaFiles,
+    indexRoots,
+    indexLemmas,
+    meta.surahs.length,
+  );
   const rhyme = buildRhyme(surahFiles);
   const distinctiveVocab = buildDistinctiveVocab(words, rootFiles, indexRoots, meta.surahs.length);
   const collocations = buildCollocations(words);
@@ -391,7 +514,12 @@ async function main() {
   const patterns = buildPatterns(words);
   const formulas = buildFormulas(surahFiles);
   const verseSimilarity = buildVerseSimilarity(words, globalIdOf);
-  const divineNamePairs = buildDivineNamePairs(occurrenceIndex, indexRoots, indexLemmas, DIVINE_NAME_TOPICS);
+  const divineNamePairs = buildDivineNamePairs(
+    occurrenceIndex,
+    indexRoots,
+    indexLemmas,
+    DIVINE_NAME_TOPICS,
+  );
   const corpusExportCsv = buildCorpusExportCsv(words, surahFiles, meta);
   const corpusExportBytes = Buffer.byteLength(corpusExportCsv, "utf8");
 
@@ -419,18 +547,41 @@ async function main() {
 
   const verseRootsEntryCount = verseRoots.reduce((sum, v) => sum + v.length, 0);
   assertEqual("verse-roots.json entry count", verseRootsEntryCount, EXPECTED.occurrences, errors);
-  assertEqual("occurrences.json row count", occurrenceIndex.rows.length, EXPECTED.occurrences, errors);
+  assertEqual(
+    "occurrences.json row count",
+    occurrenceIndex.rows.length,
+    EXPECTED.occurrences,
+    errors,
+  );
   assertEqual("syntax.json row count", syntaxIndex.t.length, EXPECTED.syntaxRows, errors);
-  assertEqual("readings shard count", readings.files.size, RIWAYAT.length * meta.surahs.length, errors);
+  assertEqual(
+    "readings shard count",
+    readings.files.size,
+    RIWAYAT.length * meta.surahs.length,
+    errors,
+  );
   assertEqual("readings riwaya count", readings.meta.riwayat.length, RIWAYAT.length, errors);
   assertEqual("tafsir shard count", tafsir.files.size, meta.surahs.length, errors);
   // Coverage is partial by nature (see buildTafsir); asserted so a source
   // change that silently drops commentary is caught, not so it reaches 6,236.
-  assertEqual("tafsir covered verses", tafsir.meta.coveredVerses, EXPECTED.tafsirCoveredVerses, errors);
+  assertEqual(
+    "tafsir covered verses",
+    tafsir.meta.coveredVerses,
+    EXPECTED.tafsirCoveredVerses,
+    errors,
+  );
   // Partial by nature (see buildLane); asserted so a source or matching
   // change that silently loses articles is caught, not to reach 1,651.
   assertEqual("lane covered roots", lane.meta.coveredRoots, EXPECTED.laneCoveredRoots, errors);
-  assertEqual("syntax.json tag vocabulary size", syntaxIndex.tags.length, SYNTAX_TAGS.length, errors);
+  // Partial by nature, and unevenly so per work (see buildMujam); asserted
+  // so a source or matching change that silently drops roots fails loudly.
+  assertEqual("mujam covered roots", mujam.meta.coveredRoots, EXPECTED.mujamCoveredRoots, errors);
+  assertEqual(
+    "syntax.json tag vocabulary size",
+    syntaxIndex.tags.length,
+    SYNTAX_TAGS.length,
+    errors,
+  );
   for (const column of ["s", "a", "w", "g"] as const) {
     if (syntaxIndex[column].length !== syntaxIndex.t.length) {
       errors.push(
@@ -442,7 +593,8 @@ async function main() {
   // unlabelled tag is exactly one whose English label is the code itself.
   // Checked here rather than in a unit test so a corpus change trips it too.
   for (const tag of syntaxIndex.tags) {
-    if (describeTag(tag).en === tag) errors.push(`syntax.json tag "${tag}" has no label in tagLabels.ts`);
+    if (describeTag(tag).en === tag)
+      errors.push(`syntax.json tag "${tag}" has no label in tagLabels.ts`);
   }
   if (verseRoots.length !== indexableVerses.length) {
     errors.push(
@@ -451,7 +603,9 @@ async function main() {
   }
 
   if (arIndex.length !== indexableVerses.length) {
-    errors.push(`ar-index.json length: expected ${indexableVerses.length} (one per verse), got ${arIndex.length}`);
+    errors.push(
+      `ar-index.json length: expected ${indexableVerses.length} (one per verse), got ${arIndex.length}`,
+    );
   }
   const arIndexTokenCount = arIndex.reduce((sum, v) => sum + v.length, 0);
   assertEqual("ar-index.json token count", arIndexTokenCount, EXPECTED.words, errors);
@@ -466,7 +620,9 @@ async function main() {
   }
 
   if (mismatches.length > EXPECTED.maxMismatches) {
-    errors.push(`mismatches: ${mismatches.length} verses mismatched, expected <= ${EXPECTED.maxMismatches}`);
+    errors.push(
+      `mismatches: ${mismatches.length} verses mismatched, expected <= ${EXPECTED.maxMismatches}`,
+    );
   }
 
   // Assert every root file's forms/lemmas indices resolve, and no root-key collisions.
@@ -494,7 +650,8 @@ async function main() {
     }
     const seenSourceKeys = new Set<string>();
     for (const source of topic.sources) {
-      const sourceKey = topicSourceFileKey(source) + (source.kind === "rootedLemma" ? `:${source.lemmaKey}` : "");
+      const sourceKey =
+        topicSourceFileKey(source) + (source.kind === "rootedLemma" ? `:${source.lemmaKey}` : "");
       if (seenSourceKeys.has(sourceKey)) {
         errors.push(`topic "${topic.slug}": duplicate source ${sourceKey}`);
       }
@@ -502,12 +659,16 @@ async function main() {
 
       if (source.kind === "root") {
         if (!rootFiles.has(source.root)) {
-          errors.push(`topic "${topic.slug}": root "${source.root}" not found in this corpus build`);
+          errors.push(
+            `topic "${topic.slug}": root "${source.root}" not found in this corpus build`,
+          );
         }
       } else if (source.kind === "rootedLemma") {
         const rf = rootFiles.get(source.root);
         if (!rf) {
-          errors.push(`topic "${topic.slug}": root "${source.root}" not found in this corpus build`);
+          errors.push(
+            `topic "${topic.slug}": root "${source.root}" not found in this corpus build`,
+          );
         } else if (!rf.lemmas.some((l) => l.key === source.lemmaKey)) {
           errors.push(
             `topic "${topic.slug}": lemma key "${source.lemmaKey}" not found under root "${source.root}"`,
@@ -515,7 +676,9 @@ async function main() {
         }
       } else {
         if (!lemmaFiles.has(source.lemmaKey)) {
-          errors.push(`topic "${topic.slug}": rootless lemma key "${source.lemmaKey}" not found in this corpus build`);
+          errors.push(
+            `topic "${topic.slug}": rootless lemma key "${source.lemmaKey}" not found in this corpus build`,
+          );
         }
       }
     }
@@ -529,7 +692,8 @@ async function main() {
   console.log("✓ All invariants passed.");
 
   // --- 7. Manifest ---
-  const hashInput = morphology.sha256 + rootsGloss.sha256 + pickthall.sha256 + chapters.map((c) => c.id).join(",");
+  const hashInput =
+    morphology.sha256 + rootsGloss.sha256 + pickthall.sha256 + chapters.map((c) => c.id).join(",");
   const manifest: ManifestFile = {
     version: "v1",
     builtAt: new Date().toISOString(),
@@ -599,22 +763,31 @@ async function main() {
   const metaSize = writeJSON(join(OUT_DIR, "meta.json"), meta);
   report.record("meta.json", metaSize.rawBytes, metaSize.gzBytes);
 
-  const indexSize = writeJSON(join(OUT_DIR, "index.json"), { roots: indexRoots, lemmas: indexLemmas });
+  const indexSize = writeJSON(join(OUT_DIR, "index.json"), {
+    roots: indexRoots,
+    lemmas: indexLemmas,
+  });
   report.record("index.json", indexSize.rawBytes, indexSize.gzBytes);
   if (indexSize.rawBytes > BUDGETS_RAW_BYTES["index.json"]) {
-    fail(`index.json exceeds its budget: ${indexSize.rawBytes} > ${BUDGETS_RAW_BYTES["index.json"]} bytes`);
+    fail(
+      `index.json exceeds its budget: ${indexSize.rawBytes} > ${BUDGETS_RAW_BYTES["index.json"]} bytes`,
+    );
   }
 
   const formsSize = writeJSON(join(OUT_DIR, "forms.json"), formsEntries);
   report.record("forms.json", formsSize.rawBytes, formsSize.gzBytes);
   if (formsSize.rawBytes > BUDGETS_RAW_BYTES["forms.json"]) {
-    fail(`forms.json exceeds its budget: ${formsSize.rawBytes} > ${BUDGETS_RAW_BYTES["forms.json"]} bytes`);
+    fail(
+      `forms.json exceeds its budget: ${formsSize.rawBytes} > ${BUDGETS_RAW_BYTES["forms.json"]} bytes`,
+    );
   }
 
   const enIndexSize = writeJSON(join(OUT_DIR, "en-index.json"), enIndex);
   report.record("en-index.json", enIndexSize.rawBytes, enIndexSize.gzBytes);
   if (enIndexSize.rawBytes > BUDGETS_RAW_BYTES["en-index.json"]) {
-    fail(`en-index.json exceeds its budget: ${enIndexSize.rawBytes} > ${BUDGETS_RAW_BYTES["en-index.json"]} bytes`);
+    fail(
+      `en-index.json exceeds its budget: ${enIndexSize.rawBytes} > ${BUDGETS_RAW_BYTES["en-index.json"]} bytes`,
+    );
   }
 
   const verseRootsSize = writeJSON(join(OUT_DIR, "verse-roots.json"), verseRoots);
@@ -644,9 +817,23 @@ async function main() {
     fail(`readings/ exceeds its budget: ${readingsRaw} > ${READINGS_BUDGET_RAW} bytes`);
   }
 
+  const mujamMetaSize = writeJSON(join(OUT_DIR, "mujam", "meta.json"), mujam.meta);
+  report.record("mujam/meta.json", mujamMetaSize.rawBytes, mujamMetaSize.gzBytes);
+  const mujamSizes = [...mujam.files.entries()].map(([root, file]) =>
+    writeJSON(join(OUT_DIR, "mujam", `${root}.json`), file),
+  );
+  const mujamRaw = mujamSizes.reduce((sum, x) => sum + x.rawBytes, 0);
+  const mujamGz = mujamSizes.reduce((sum, x) => sum + x.gzBytes, 0);
+  report.record("mujam/*.json", mujamRaw, mujamGz, false);
+  if (mujamRaw > MUJAM_BUDGET_RAW) {
+    fail(`mujam/ exceeds its budget: ${mujamRaw} > ${MUJAM_BUDGET_RAW} bytes`);
+  }
+
   const laneMetaSize = writeJSON(join(OUT_DIR, "lane", "meta.json"), lane.meta);
   report.record("lane/meta.json", laneMetaSize.rawBytes, laneMetaSize.gzBytes);
-  const laneSizes = [...lane.files.entries()].map(([root, file]) => writeJSON(join(OUT_DIR, "lane", `${root}.json`), file));
+  const laneSizes = [...lane.files.entries()].map(([root, file]) =>
+    writeJSON(join(OUT_DIR, "lane", `${root}.json`), file),
+  );
   // Uncounted, like readings/ and tafsir/: one root's article is fetched when
   // that root's page is opened, and prefetchAll does not warm it.
   const laneRaw = laneSizes.reduce((sum, x) => sum + x.rawBytes, 0);
@@ -673,13 +860,17 @@ async function main() {
   const syntaxSize = writeJSON(join(OUT_DIR, "syntax.json"), syntaxIndex);
   report.record("syntax.json", syntaxSize.rawBytes, syntaxSize.gzBytes);
   if (syntaxSize.rawBytes > BUDGETS_RAW_BYTES["syntax.json"]) {
-    fail(`syntax.json exceeds its budget: ${syntaxSize.rawBytes} > ${BUDGETS_RAW_BYTES["syntax.json"]} bytes`);
+    fail(
+      `syntax.json exceeds its budget: ${syntaxSize.rawBytes} > ${BUDGETS_RAW_BYTES["syntax.json"]} bytes`,
+    );
   }
 
   const arIndexSize = writeJSON(join(OUT_DIR, "ar-index.json"), arIndex);
   report.record("ar-index.json", arIndexSize.rawBytes, arIndexSize.gzBytes);
   if (arIndexSize.rawBytes > BUDGETS_RAW_BYTES["ar-index.json"]) {
-    fail(`ar-index.json exceeds its budget: ${arIndexSize.rawBytes} > ${BUDGETS_RAW_BYTES["ar-index.json"]} bytes`);
+    fail(
+      `ar-index.json exceeds its budget: ${arIndexSize.rawBytes} > ${BUDGETS_RAW_BYTES["ar-index.json"]} bytes`,
+    );
   }
 
   const occurrencesSize = writeJSON(join(OUT_DIR, "occurrences.json"), occurrenceIndex);
@@ -697,7 +888,11 @@ async function main() {
   report.record("rhyme.json", rhymeSize.rawBytes, rhymeSize.gzBytes);
 
   const distinctiveVocabSize = writeJSON(join(OUT_DIR, "distinctive-vocab.json"), distinctiveVocab);
-  report.record("distinctive-vocab.json", distinctiveVocabSize.rawBytes, distinctiveVocabSize.gzBytes);
+  report.record(
+    "distinctive-vocab.json",
+    distinctiveVocabSize.rawBytes,
+    distinctiveVocabSize.gzBytes,
+  );
 
   const collocationsSize = writeJSON(join(OUT_DIR, "collocations.json"), collocations);
   report.record("collocations.json", collocationsSize.rawBytes, collocationsSize.gzBytes);
@@ -718,7 +913,11 @@ async function main() {
   report.record("verse-similarity.json", verseSimilaritySize.rawBytes, verseSimilaritySize.gzBytes);
 
   const divineNamePairsSize = writeJSON(join(OUT_DIR, "divine-name-pairs.json"), divineNamePairs);
-  report.record("divine-name-pairs.json", divineNamePairsSize.rawBytes, divineNamePairsSize.gzBytes);
+  report.record(
+    "divine-name-pairs.json",
+    divineNamePairsSize.rawBytes,
+    divineNamePairsSize.gzBytes,
+  );
 
   // Not recorded in `report`/counted against TOTAL_RAW_BUDGET or
   // TOTAL_GZ_BUDGET on purpose: unlike every file above, this is a
@@ -782,7 +981,9 @@ async function main() {
 
   console.log(`\n✓ Wrote data to ${OUT_DIR}`);
   if (mismatches.length > 0) {
-    console.log(`  (${mismatches.length} verse(s) used the morphology fallback; see manifest.json.mismatches)`);
+    console.log(
+      `  (${mismatches.length} verse(s) used the morphology fallback; see manifest.json.mismatches)`,
+    );
   }
 }
 
@@ -819,7 +1020,11 @@ function printSizeEstimate(data: {
   const report = new SizeReport();
   const rec = (label: string, obj: unknown) => {
     const json = JSON.stringify(obj);
-    report.record(label, Buffer.byteLength(json, "utf8"), gzipSync(Buffer.from(json, "utf8")).length);
+    report.record(
+      label,
+      Buffer.byteLength(json, "utf8"),
+      gzipSync(Buffer.from(json, "utf8")).length,
+    );
   };
   rec("manifest.json", data.manifest);
   rec("meta.json", data.meta);
