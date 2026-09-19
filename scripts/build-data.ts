@@ -29,6 +29,8 @@ import { buildArIndex, type ArIndexableVerse } from "./lib/build-ar-index";
 import { buildVerseRoots } from "./lib/build-verse-roots";
 import { buildSyntax } from "./lib/build-syntax";
 import { SYNTAX_TAGS } from "../src/lib/morphology/syntaxTags";
+import { executeQcql } from "../src/lib/qcql/execute";
+import { parseQcql } from "../src/lib/qcql/parse";
 import { RIWAYAT, buildReadings, type RawEdition } from "./lib/build-readings";
 import { TAFSIR_SLUG, buildTafsir, type RawTafsirRow } from "./lib/build-tafsir";
 import { buildLane, type RawLaneEntry } from "./lib/build-lane";
@@ -184,6 +186,21 @@ const EXPECTED = {
   // spread is real, Mufradat being a lexicon of Qur'anic vocabulary rather
   // than of the language at large.
   mujamCoveredRoots: 1595,
+  // QCQL answers, asserted against the built corpus rather than in a unit
+  // test: these are claims about the DATA, and a unit test that depended on
+  // public/data/v1 having been built would not run on a fresh clone. Each
+  // is independently derivable -- passive is the documented 1,151, and the
+  // restriction count is what /syntax/ shows for RES.
+  qcqlPassive: 1151,
+  qcqlRestriction: 557,
+  qcqlConditional: 1029,
+  // Exactly one WORD in the corpus carries two rooted occurrences:
+  // 20:94:2, يَبْنَؤُمَّ, from بني and أمم. QCQL matches at word
+  // granularity, so this is the one position where an & of two different
+  // roots can match. If a corpus change adds a second such word, the
+  // language's semantics need re-examining -- hence an assertion, not a
+  // comment.
+  qcqlTwoRootedWords: 1,
   rootCounts: { كتب: 319, رحم: 339, علم: 854 } as Record<string, number>,
   maxMismatches: 50,
 };
@@ -555,6 +572,57 @@ async function main() {
     errors,
   );
   assertEqual("syntax.json row count", syntaxIndex.t.length, EXPECTED.syntaxRows, errors);
+
+  // --- QCQL, run against the corpus it will actually query ---
+  // The language's own grammar and set algebra are unit-tested hermetically
+  // (src/test/qcql-*.test.ts). What cannot be tested there is whether it
+  // returns the right ANSWERS, because that is a fact about this data.
+  {
+    const qcqlCorpus = {
+      occurrences: occurrenceIndex,
+      syntax: syntaxIndex,
+      index: { roots: indexRoots, lemmas: indexLemmas },
+      surahs: meta.surahs,
+    };
+    const ask = (src: string) => executeQcql(parseQcql(src), qcqlCorpus).matches;
+
+    assertEqual("qcql [PASS]", ask("[PASS]").length, EXPECTED.qcqlPassive, errors);
+    assertEqual("qcql [RES]", ask("[RES]").length, EXPECTED.qcqlRestriction, errors);
+    assertEqual("qcql [COND]", ask("[COND]").length, EXPECTED.qcqlConditional, errors);
+
+    // A root's matches must agree with the count index.json publishes for
+    // it, or the query language and the rest of the app disagree about what
+    // an occurrence is.
+    for (const root of ["علم", "كتب", "رحم"]) {
+      const published = indexRoots.find((r) => r.ar === root)?.count;
+      assertEqual(`qcql [root=${root}]`, ask(`[root=${root}]`).length, published ?? -1, errors);
+    }
+
+    // Meccan and Medinan must partition a result, with nothing lost.
+    assertEqual(
+      "qcql meccan + medinan = unfiltered",
+      ask("[PASS] :: meccan").length + ask("[PASS] :: medinan").length,
+      EXPECTED.qcqlPassive,
+      errors,
+    );
+
+    const seen = new Set<number>();
+    const twoRooted = new Set<number>();
+    for (const row of occurrenceIndex.rows) {
+      const key = (row[0] * 1000 + row[1]) * 1000 + row[2];
+      if (seen.has(key)) twoRooted.add(key);
+      else seen.add(key);
+    }
+    assertEqual(
+      "words carrying two rooted occurrences",
+      twoRooted.size,
+      EXPECTED.qcqlTwoRootedWords,
+      errors,
+    );
+    if (twoRooted.size === 1 && !twoRooted.has((20 * 1000 + 94) * 1000 + 2)) {
+      errors.push("the one two-rooted word is no longer 20:94:2; QCQL's docs name it");
+    }
+  }
   assertEqual(
     "readings shard count",
     readings.files.size,

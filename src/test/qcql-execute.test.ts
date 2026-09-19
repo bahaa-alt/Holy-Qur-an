@@ -1,36 +1,104 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { CHRONOLOGICAL_ORDER_BY_SURAH } from "@/lib/data/chronologicalOrder";
 import { executeQcql, packKey, unpackKey, type QcqlCorpus } from "@/lib/qcql/execute";
 import { parseQcql } from "@/lib/qcql/parse";
 import { QcqlError } from "@/lib/qcql/types";
+import type { Cat, OccurrenceIndexRow } from "@/lib/data/types";
 
 /**
- * Executed against the REAL corpus, not a fixture.
+ * Hermetic: a hand-built corpus, not public/data/v1.
  *
- * A fixture would prove the set algebra and nothing about whether the
- * language answers questions correctly, which is the only thing that
- * matters here. The counts asserted below were derived independently from
- * the shipped indices, not read off this implementation's output.
+ * These tests are about the LANGUAGE -- set algebra, precedence, negation
+ * against a stated universe, filters -- none of which needs 50,269 real
+ * rows to exercise, and all of which is clearer against a corpus small
+ * enough to read. It also follows this repo's rule, stated in
+ * topicDefinitions.test.ts: a unit test should not depend on the data
+ * pipeline having run, which is exactly what broke this file in CI first
+ * time round.
+ *
+ * The claims that DO need the real corpus -- that PASS is 1,151 rows, that
+ * 20:94:2 is the only word carrying two roots -- are asserted in
+ * scripts/build-data.ts against the built corpus, where every other corpus
+ * fact in this project is already asserted. That is the stronger place for
+ * them: they run on every data build, not only when someone happens to
+ * have built the data before running tests.
  */
-const DATA = join(process.cwd(), "public", "data", "v1");
-const read = (f: string) => JSON.parse(readFileSync(join(DATA, f), "utf8"));
+
+const CATS: Cat[] = ["verb.perf", "verb.impf", "noun", "properNoun"];
+const TAGS = ["COND", "PASS", "RES"];
+
+const ROOTS = ["علم", "كتب", "بني", "أمم"];
+const LEMMAS = ["عَلِمَ", "كِتاب", "ابْن", "أُمّ"];
+
+const ROOT = Object.fromEntries(ROOTS.map((r, i) => [r, i]));
+const CAT = Object.fromEntries(CATS.map((c, i) => [c, i]));
+const TAG = Object.fromEntries(TAGS.map((t, i) => [t, i]));
+
+/** [s, a, w, rootIdx, lemmaIdx, catIdx, verbForm] */
+const OCC: OccurrenceIndexRow[] = [
+  // Surah 1 (Meccan, revelation position 5)
+  [1, 1, 1, ROOT["علم"], 0, CAT["verb.perf"], 1],
+  [1, 1, 2, ROOT["كتب"], 1, CAT["noun"], 0],
+  [1, 2, 1, ROOT["علم"], 0, CAT["verb.impf"], 4],
+  // Surah 2 (Medinan, revelation position 87)
+  [2, 1, 1, ROOT["علم"], 0, CAT["verb.perf"], 1],
+  [2, 1, 3, ROOT["كتب"], 1, CAT["properNoun"], 0],
+  // One WORD carrying two roots, the shape 20:94:2 has in the real corpus.
+  [2, 5, 2, ROOT["بني"], 2, CAT["noun"], 0],
+  [2, 5, 2, ROOT["أمم"], 3, CAT["noun"], 0],
+];
+
+/** Columnar, like the shipped syntax index. Includes rootless positions. */
+const SYN = {
+  tags: TAGS,
+  //      1:1:1  1:3:1  2:1:1  2:9:4
+  s: [1, 1, 2, 2],
+  a: [1, 3, 1, 9],
+  w: [1, 1, 1, 4],
+  g: [1, 1, 1, 1],
+  t: [TAG["PASS"], TAG["COND"], TAG["RES"], TAG["COND"]],
+};
 
 const corpus: QcqlCorpus = {
-  occurrences: read("occurrences.json"),
-  syntax: read("syntax.json"),
-  index: read("index.json"),
-  surahs: read("meta.json").surahs,
+  occurrences: { cats: CATS, rows: OCC },
+  syntax: SYN,
+  index: {
+    roots: ROOTS.map((ar, i) => ({
+      ar,
+      key: `k${i}`,
+      bw: "",
+      count: 0,
+      lemmaCount: 0,
+      verseCount: 0,
+      glossShort: "",
+    })),
+    lemmas: LEMMAS.map((lemma, i) => ({
+      lemma,
+      key: `lk${i}`,
+      rootIdx: i,
+      count: 0,
+      cat: "noun" as Cat,
+    })),
+  },
+  // Surah 1 is 5th by revelation, surah 2 is 87th -- matching the real
+  // order, so the chrono tests below assert against true positions.
+  surahs: [
+    { n: 1, nameAr: "", nameEn: "", translit: "", type: "meccan", ayahs: 7 },
+    { n: 2, nameAr: "", nameEn: "", translit: "", type: "medinan", ayahs: 286 },
+  ],
 };
 
 const run = (src: string) => executeQcql(parseQcql(src), corpus);
+const at = (src: string) => run(src).matches.map((m) => `${m.s}:${m.a}:${m.w}`);
 const count = (src: string) => run(src).matches.length;
 
 describe("packKey / unpackKey", () => {
-  it("round-trips every position the corpus actually contains", () => {
-    for (const row of corpus.occurrences.rows) {
-      const [s, a, w] = row;
+  it("round-trips, including the corpus's largest real coordinates", () => {
+    for (const [s, a, w] of [
+      [1, 1, 1],
+      [2, 255, 4],
+      [114, 6, 3],
+      [2, 286, 129],
+    ]) {
       expect(unpackKey(packKey(s, a, w))).toEqual({ s, a, w });
     }
   });
@@ -42,131 +110,139 @@ describe("packKey / unpackKey", () => {
   });
 });
 
-describe("executeQcql over the real corpus", () => {
-  it("counts a root exactly as the root index does", () => {
-    // index.json's own count for علم, derived by a different code path.
-    const expected = corpus.index.roots.find((r) => r.ar === "علم")!.count;
-    expect(count("[root=علم]")).toBe(expected);
+describe("predicates", () => {
+  it("matches a root", () => {
+    expect(at("[root=علم]")).toEqual(["1:1:1", "1:2:1", "2:1:1"]);
   });
 
-  it("finds the documented 1,151 passive segments", () => {
-    expect(count("[PASS]")).toBe(1151);
+  it("matches a category, and pos as its set of categories", () => {
+    expect(at("[cat=verb.perf]")).toEqual(["1:1:1", "2:1:1"]);
+    expect(at("[pos=V]")).toEqual(["1:1:1", "1:2:1", "2:1:1"]);
+    expect(count("[pos=V]")).toBe(count("[cat=verb.perf | cat=verb.impf]"));
   });
 
-  it("matches rootless particles, which the occurrence index cannot hold", () => {
-    // The reason the syntax layer exists: 1,029 conditional particles, most
-    // of them carrying no root at all.
-    expect(count("[COND]")).toBe(1029);
+  it("matches a verb form", () => {
+    expect(at("[vf=4]")).toEqual(["1:2:1"]);
   });
 
-  it("returns matches in corpus order", () => {
-    const keys = run("[root=علم]").matches.map((m) => packKey(m.s, m.a, m.w));
-    expect(keys).toEqual([...keys].sort((a, b) => a - b));
+  it("matches a lemma", () => {
+    expect(at("[lemma=كِتاب]")).toEqual(["1:1:2", "2:1:3"]);
   });
 
-  it("counts distinct verses alongside matches", () => {
+  it("matches a tag on a ROOTLESS position, which the occurrence index lacks", () => {
+    // 1:3:1 and 2:9:4 appear in no occurrence row. The whole reason the
+    // syntax layer is queried separately.
+    expect(at("[COND]")).toEqual(["1:3:1", "2:9:4"]);
+  });
+
+  it("returns matches in corpus order regardless of evaluation order", () => {
+    expect(at("[COND | root=علم]")).toEqual(["1:1:1", "1:2:1", "1:3:1", "2:1:1", "2:9:4"]);
+  });
+
+  it("counts distinct verses", () => {
     const res = run("[root=علم]");
-    const verses = new Set(res.matches.map((m) => `${m.s}:${m.a}`));
-    expect(res.verseCount).toBe(verses.size);
-    expect(res.verseCount).toBeLessThanOrEqual(res.matches.length);
+    expect(res.matches.length).toBe(3);
+    expect(res.verseCount).toBe(3);
+    expect(run("[root=بني | root=أمم]").verseCount).toBe(1);
   });
 });
 
 describe("set algebra", () => {
-  it("intersects", () => {
-    const both = count("[root=علم & cat=verb.perf]");
-    expect(both).toBeGreaterThan(0);
-    expect(both).toBeLessThanOrEqual(Math.min(count("[root=علم]"), count("[cat=verb.perf]")));
+  it("intersects, including across the two indices", () => {
+    // 1:1:1 is both a perfect verb from علم and a PASS-tagged position.
+    expect(at("[root=علم & PASS]")).toEqual(["1:1:1"]);
   });
 
-  it("unions without double-counting an overlap", () => {
-    const a = count("[cat=verb.perf]");
-    const b = count("[cat=verb.impf]");
-    // Disjoint categories, so the union is exactly the sum.
-    expect(count("[cat=verb.perf | cat=verb.impf]")).toBe(a + b);
+  it("unions without double-counting", () => {
+    expect(count("[cat=verb.perf | cat=verb.impf]")).toBe(3);
+    expect(count("[root=علم | cat=verb.perf]")).toBe(3);
   });
 
-  it("makes | idempotent and & self-absorbing", () => {
-    expect(count("[PASS | PASS]")).toBe(count("[PASS]"));
-    expect(count("[PASS & PASS]")).toBe(count("[PASS]"));
+  it("is idempotent under | and &", () => {
+    expect(at("[PASS | PASS]")).toEqual(at("[PASS]"));
+    expect(at("[PASS & PASS]")).toEqual(at("[PASS]"));
   });
 
-  it("negates against the stated universe, and double negation is identity", () => {
+  it("negates against the universe of both indices, not the whole Qur'an", () => {
     const universe = count("[PASS | !PASS]");
+    // Eight distinct word positions across both indices: the occurrence
+    // index contributes six (2:5:2 is one position carrying two rows) and
+    // the syntax index adds two more that carry no root at all.
+    expect(universe).toBe(8);
     expect(count("[!PASS]")).toBe(universe - count("[PASS]"));
-    expect(count("[!!PASS]")).toBe(count("[PASS]"));
+    expect(at("[!!PASS]")).toEqual(at("[PASS]"));
   });
 
   it("obeys De Morgan", () => {
-    expect(count("[!(PASS | COND)]")).toBe(count("[!PASS & !COND]"));
-    expect(count("[!(PASS & COND)]")).toBe(count("[!PASS | !COND]"));
+    expect(at("[!(PASS | COND)]")).toEqual(at("[!PASS & !COND]"));
+    expect(at("[!(PASS & COND)]")).toEqual(at("[!PASS | !COND]"));
   });
 
-  it("gives & higher precedence than |, and parentheses override it", () => {
-    expect(count("[PASS & COND | RES]")).toBe(count("[(PASS & COND) | RES]"));
-    expect(count("[PASS & (COND | RES)]")).not.toBe(count("[(PASS & COND) | RES]"));
-  });
-
-  it("treats pos=V as exactly its three verb categories", () => {
-    expect(count("[pos=V]")).toBe(count("[cat=verb.perf | cat=verb.impf | cat=verb.impv]"));
+  it("binds & tighter than |, and parentheses override it", () => {
+    expect(at("[root=علم & PASS | COND]")).toEqual(at("[(root=علم & PASS) | COND]"));
+    expect(at("[root=علم & (PASS | COND)]")).toEqual(["1:1:1"]);
+    expect(at("[root=علم & PASS | COND]")).not.toEqual(at("[root=علم & (PASS | COND)]"));
   });
 });
 
-describe("the one word in the corpus carrying two roots", () => {
-  // 20:94:2 is يَبْنَؤُمَّ, "O son of my mother" -- a single orthographic
-  // word built from بني and أمم. It is the only position in 50,269 where
-  // word-granularity matching is observable, so it is the test that proves
-  // the model does what the doc comment on QCQL_VERSION claims.
-  it("is matched by either of its roots", () => {
-    const at = (src: string) => run(src).matches.some((m) => m.s === 20 && m.a === 94 && m.w === 2);
-    expect(at("[root=بني]")).toBe(true);
-    expect(at("[root=أمم]")).toBe(true);
+describe("a word carrying two roots", () => {
+  // The real corpus has exactly one, 20:94:2 (يَبْنَؤُمَّ, from بني and
+  // أمم); build-data.ts asserts that. This is the same shape, testing what
+  // the word-granularity model does with it.
+  it("is matched by either root", () => {
+    expect(at("[root=بني]")).toEqual(["2:5:2"]);
+    expect(at("[root=أمم]")).toEqual(["2:5:2"]);
   });
 
-  it("is the only position where an & of two different roots matches", () => {
-    const both = run("[root=بني & root=أمم]").matches;
-    expect(both).toEqual([{ s: 20, a: 94, w: 2 }]);
+  it("is matched by an & of both, which no single-rooted word can be", () => {
+    expect(at("[root=بني & root=أمم]")).toEqual(["2:5:2"]);
+    expect(at("[root=علم & root=كتب]")).toEqual([]);
+  });
+
+  it("counts once, not twice", () => {
+    expect(count("[root=بني | root=أمم]")).toBe(1);
   });
 });
 
 describe("filters", () => {
-  const meccan = new Set(corpus.surahs.filter((s) => s.type === "meccan").map((s) => s.n));
-
-  it("keeps only Meccan surahs, and meccan + medinan partition the result", () => {
-    expect(run("[PASS] :: meccan").matches.every((m) => meccan.has(m.s))).toBe(true);
-    expect(count("[PASS] :: meccan") + count("[PASS] :: medinan")).toBe(count("[PASS]"));
+  it("keeps one revelation type, and the two partition the result", () => {
+    expect(at("[root=علم] :: meccan")).toEqual(["1:1:1", "1:2:1"]);
+    expect(at("[root=علم] :: medinan")).toEqual(["2:1:1"]);
+    expect(count("[root=علم] :: meccan") + count("[root=علم] :: medinan")).toBe(
+      count("[root=علم]"),
+    );
   });
 
-  it("filters by surah number", () => {
-    expect(run("[PASS] :: surah = 2").matches.every((m) => m.s === 2)).toBe(true);
-    expect(run("[PASS] :: surah <= 5").matches.every((m) => m.s <= 5)).toBe(true);
-    expect(count("[PASS] :: surah != 2")).toBe(count("[PASS]") - count("[PASS] :: surah = 2"));
+  it("compares surah numbers with every operator", () => {
+    expect(at("[root=علم] :: surah = 1")).toEqual(["1:1:1", "1:2:1"]);
+    expect(at("[root=علم] :: surah != 1")).toEqual(["2:1:1"]);
+    expect(at("[root=علم] :: surah >= 2")).toEqual(["2:1:1"]);
+    expect(at("[root=علم] :: surah < 2")).toEqual(["1:1:1", "1:2:1"]);
   });
 
-  it("filters by revelation position, indexed correctly", () => {
-    // The array is keyed surah - 1; getting that wrong shifts every
-    // chronological result by one surah and nothing else would notice.
-    expect(CHRONOLOGICAL_ORDER_BY_SURAH[96 - 1]).toBe(1);
-    expect(run("[PASS] :: chrono = 1").matches.every((m) => m.s === 96)).toBe(true);
-    expect(
-      run("[PASS] :: chrono > 5").matches.every((m) => CHRONOLOGICAL_ORDER_BY_SURAH[m.s - 1] > 5),
-    ).toBe(true);
+  it("compares revelation position, which is not surah order", () => {
+    // Surah 1 is 5th revealed and surah 2 is 87th, so `chrono < 10` keeps
+    // surah 1 and drops surah 2 -- the opposite of what surah order would
+    // give for `< 10`, which is the point of having the filter at all.
+    expect(at("[root=علم] :: chrono < 10")).toEqual(["1:1:1", "1:2:1"]);
+    expect(at("[root=علم] :: chrono = 5")).toEqual(["1:1:1", "1:2:1"]);
+    expect(at("[root=علم] :: chrono > 10")).toEqual(["2:1:1"]);
   });
 
   it("applies several filters conjunctively", () => {
-    const res = run("[PASS] :: meccan & surah <= 20");
-    expect(res.matches.every((m) => meccan.has(m.s) && m.s <= 20)).toBe(true);
+    expect(at("[root=علم] :: meccan & surah = 1")).toEqual(["1:1:1", "1:2:1"]);
+    expect(at("[root=علم] :: meccan & surah = 2")).toEqual([]);
   });
 
-  it("never lets a filter add matches", () => {
-    expect(count("[PASS] :: meccan")).toBeLessThanOrEqual(count("[PASS]"));
+  it("never adds matches", () => {
+    expect(count("[root=علم] :: meccan")).toBeLessThanOrEqual(count("[root=علم]"));
   });
 });
 
 describe("errors that would otherwise read as findings", () => {
   it("rejects an unknown root rather than returning zero matches", () => {
-    // A misspelled root silently returning nothing is a false claim about
-    // the corpus, which is worse than a failed query.
+    // A misspelling silently returning nothing is a false claim about the
+    // corpus, which is worse than a failed query.
     expect(() => run("[root=زززز]")).toThrow(QcqlError);
     expect(() => run("[root=زززز]")).toThrow(/No root/);
   });
@@ -176,7 +252,6 @@ describe("errors that would otherwise read as findings", () => {
   });
 
   it("accepts a root by its normalised key as well as its spelling", () => {
-    const row = corpus.index.roots.find((r) => r.ar !== r.key)!;
-    expect(count(`[root=${row.key}]`)).toBe(count(`[root=${row.ar}]`));
+    expect(at("[root=k0]")).toEqual(at("[root=علم]"));
   });
 });
