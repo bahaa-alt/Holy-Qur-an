@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { verseHref } from "@/lib/search/suggest";
 import { Loader2 } from "lucide-react";
 import { getMeta, getVerses } from "@/lib/data/loader";
 import { AyahCard } from "@/components/ayah/AyahCard";
@@ -23,7 +24,9 @@ interface ResultRow {
 }
 
 function buildMarkdown(results: readonly { s: number; a: number; translation: string }[]): string {
-  return results.map((r) => `- [${r.s}:${r.a}](/surah/${r.s}/?ayah=${r.a}) -- ${r.translation}`).join("\n");
+  return results
+    .map((r) => `- [${r.s}:${r.a}](${verseHref(r.s, r.a)}) -- ${r.translation}`)
+    .join("\n");
 }
 
 /**
@@ -80,7 +83,8 @@ export function TopicVerseList({ matches }: { matches: readonly TopicVerseMatch[
       };
     })
     .filter((r): r is ResultRow => r !== null);
-  const isLoadingVerses = currentPageMatches.length > 0 && pageRows.length < currentPageMatches.length;
+  const isLoadingVerses =
+    currentPageMatches.length > 0 && pageRows.length < currentPageMatches.length;
 
   if (matches.length === 0) {
     return <p className="text-sm text-muted">{t.topicVerseList.noMatches}</p>;
@@ -89,7 +93,9 @@ export function TopicVerseList({ matches }: { matches: readonly TopicVerseMatch[
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-end gap-3">
-        {pageRows.length > 0 && <CopyTextButton text={buildMarkdown(pageRows)} label={t.topicVerseList.copyThisPage} />}
+        {pageRows.length > 0 && (
+          <CopyTextButton text={buildMarkdown(pageRows)} label={t.topicVerseList.copyThisPage} />
+        )}
       </div>
       {isLoadingVerses ? (
         <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted">

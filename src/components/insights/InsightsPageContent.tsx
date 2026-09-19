@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { verseHref } from "@/lib/search/suggest";
 import { useState, type ReactNode } from "react";
 import { useT } from "@/lib/i18n/LanguageContext";
 import { LetterFrequencyExplorer } from "./LetterFrequencyExplorer";
@@ -8,7 +9,6 @@ import { CoverageBarList } from "./CoverageBarList";
 import { RhymeTab } from "./RhymeTab";
 import { DistinctiveVocabTab } from "./DistinctiveVocabTab";
 import { CollocationsTab } from "./CollocationsTab";
-import { AbjadTab } from "./AbjadTab";
 import { CooccurrenceTab } from "./CooccurrenceTab";
 import { PatternsTab } from "./PatternsTab";
 import { FormulasTab } from "./FormulasTab";
@@ -35,16 +35,16 @@ type Tab =
   | "rhyme"
   | "vocabulary"
   | "collocations"
-  | "abjad"
   | "cooccurrence"
   | "patterns"
   | "formulas"
   | "verseSimilarity";
-const TAB_PILL_CLASS = (active: boolean) => `rounded-md px-3 py-1.5 ${active ? "bg-accent text-accent-fg" : "text-muted"}`;
+const TAB_PILL_CLASS = (active: boolean) =>
+  `rounded-md px-3 py-1.5 ${active ? "bg-accent text-accent-fg" : "text-muted"}`;
 
 function VerseLink({ s, a, label }: { s: number; a: number; label: string }) {
   return (
-    <Link href={`/surah/${s}/?ayah=${a}`} className="text-accent hover:text-accent-strong">
+    <Link href={verseHref(s, a)} className="text-accent hover:text-accent-strong">
       <bdi>
         {s}:{a}
       </bdi>{" "}
@@ -57,7 +57,9 @@ function StatCard({ label, children, big }: { label: string; children: ReactNode
   return (
     <div className="rounded-xl border border-border bg-bg p-4">
       <p className="text-xs uppercase tracking-wide text-muted">{label}</p>
-      <div className={`mt-1.5 text-ink ${big ? "text-2xl font-semibold" : "text-sm"}`}>{children}</div>
+      <div className={`mt-1.5 text-ink ${big ? "text-2xl font-semibold" : "text-sm"}`}>
+        {children}
+      </div>
     </div>
   );
 }
@@ -91,34 +93,67 @@ export function InsightsPageContent({
       </div>
 
       <div className="flex flex-wrap rounded-lg border border-border p-0.5 text-sm">
-        <button type="button" onClick={() => setTab("facts")} className={TAB_PILL_CLASS(tab === "facts")}>
+        <button
+          type="button"
+          onClick={() => setTab("facts")}
+          className={TAB_PILL_CLASS(tab === "facts")}
+        >
           {t.insightsPage.tabFacts}
         </button>
-        <button type="button" onClick={() => setTab("letters")} className={TAB_PILL_CLASS(tab === "letters")}>
+        <button
+          type="button"
+          onClick={() => setTab("letters")}
+          className={TAB_PILL_CLASS(tab === "letters")}
+        >
           {t.insightsPage.tabLetters}
         </button>
-        <button type="button" onClick={() => setTab("coverage")} className={TAB_PILL_CLASS(tab === "coverage")}>
+        <button
+          type="button"
+          onClick={() => setTab("coverage")}
+          className={TAB_PILL_CLASS(tab === "coverage")}
+        >
           {t.insightsPage.tabCoverage}
         </button>
-        <button type="button" onClick={() => setTab("rhyme")} className={TAB_PILL_CLASS(tab === "rhyme")}>
+        <button
+          type="button"
+          onClick={() => setTab("rhyme")}
+          className={TAB_PILL_CLASS(tab === "rhyme")}
+        >
           {t.insightsPage.tabRhyme}
         </button>
-        <button type="button" onClick={() => setTab("vocabulary")} className={TAB_PILL_CLASS(tab === "vocabulary")}>
+        <button
+          type="button"
+          onClick={() => setTab("vocabulary")}
+          className={TAB_PILL_CLASS(tab === "vocabulary")}
+        >
           {t.insightsPage.tabVocabulary}
         </button>
-        <button type="button" onClick={() => setTab("collocations")} className={TAB_PILL_CLASS(tab === "collocations")}>
+        <button
+          type="button"
+          onClick={() => setTab("collocations")}
+          className={TAB_PILL_CLASS(tab === "collocations")}
+        >
           {t.insightsPage.tabCollocations}
         </button>
-        <button type="button" onClick={() => setTab("abjad")} className={TAB_PILL_CLASS(tab === "abjad")}>
-          {t.insightsPage.tabAbjad}
-        </button>
-        <button type="button" onClick={() => setTab("cooccurrence")} className={TAB_PILL_CLASS(tab === "cooccurrence")}>
+        <button
+          type="button"
+          onClick={() => setTab("cooccurrence")}
+          className={TAB_PILL_CLASS(tab === "cooccurrence")}
+        >
           {t.insightsPage.tabCooccurrence}
         </button>
-        <button type="button" onClick={() => setTab("patterns")} className={TAB_PILL_CLASS(tab === "patterns")}>
+        <button
+          type="button"
+          onClick={() => setTab("patterns")}
+          className={TAB_PILL_CLASS(tab === "patterns")}
+        >
           {t.insightsPage.tabPatterns}
         </button>
-        <button type="button" onClick={() => setTab("formulas")} className={TAB_PILL_CLASS(tab === "formulas")}>
+        <button
+          type="button"
+          onClick={() => setTab("formulas")}
+          className={TAB_PILL_CLASS(tab === "formulas")}
+        >
           {t.insightsPage.tabFormulas}
         </button>
         <button
@@ -136,13 +171,24 @@ export function InsightsPageContent({
 
           <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
             <StatCard label={t.insightsPage.longestVerseLabel}>
-              <VerseLink s={insights.longestVerse.s} a={insights.longestVerse.a} label={t.insightsPage.wordsCount(insights.longestVerse.wordCount)} />
+              <VerseLink
+                s={insights.longestVerse.s}
+                a={insights.longestVerse.a}
+                label={t.insightsPage.wordsCount(insights.longestVerse.wordCount)}
+              />
             </StatCard>
             <StatCard label={t.insightsPage.shortestVerseLabel}>
-              <VerseLink s={insights.shortestVerse.s} a={insights.shortestVerse.a} label={t.insightsPage.wordsCount(insights.shortestVerse.wordCount)} />
+              <VerseLink
+                s={insights.shortestVerse.s}
+                a={insights.shortestVerse.a}
+                label={t.insightsPage.wordsCount(insights.shortestVerse.wordCount)}
+              />
             </StatCard>
             <StatCard label={t.insightsPage.longestWordLabel}>
-              <Link href={`/surah/${insights.longestWord.s}/?ayah=${insights.longestWord.a}`} className="text-accent hover:text-accent-strong">
+              <Link
+                href={verseHref(insights.longestWord.s, insights.longestWord.a)}
+                className="text-accent hover:text-accent-strong"
+              >
                 <span className="arabic-ui text-base">{insights.longestWord.text}</span>
               </Link>
               <span className="ms-2 text-xs text-muted">
@@ -156,36 +202,61 @@ export function InsightsPageContent({
               <VerseLink
                 s={insights.mostRootDenseVerse.s}
                 a={insights.mostRootDenseVerse.a}
-                label={t.insightsPage.rootsInVerseCount(insights.mostRootDenseVerse.distinctRootCount, insights.mostRootDenseVerse.wordCount)}
+                label={t.insightsPage.rootsInVerseCount(
+                  insights.mostRootDenseVerse.distinctRootCount,
+                  insights.mostRootDenseVerse.wordCount,
+                )}
               />
             </StatCard>
             <StatCard label={t.insightsPage.mostFrequentLetterLabel} big>
               {mostFrequentLetter && (
-                <button type="button" onClick={() => setTab("letters")} className="flex items-baseline gap-2 hover:text-accent">
+                <button
+                  type="button"
+                  onClick={() => setTab("letters")}
+                  className="flex items-baseline gap-2 hover:text-accent"
+                >
                   <span className="arabic-ui">{mostFrequentLetter.letter}</span>
-                  <span className="text-xs font-normal text-muted">{mostFrequentLetter.count.toLocaleString()}</span>
+                  <span className="text-xs font-normal text-muted">
+                    {mostFrequentLetter.count.toLocaleString()}
+                  </span>
                 </button>
               )}
             </StatCard>
             <StatCard label={t.insightsPage.leastFrequentLetterLabel} big>
               {leastFrequentLetter && (
-                <button type="button" onClick={() => setTab("letters")} className="flex items-baseline gap-2 hover:text-accent">
+                <button
+                  type="button"
+                  onClick={() => setTab("letters")}
+                  className="flex items-baseline gap-2 hover:text-accent"
+                >
                   <span className="arabic-ui">{leastFrequentLetter.letter}</span>
-                  <span className="text-xs font-normal text-muted">{leastFrequentLetter.count.toLocaleString()}</span>
+                  <span className="text-xs font-normal text-muted">
+                    {leastFrequentLetter.count.toLocaleString()}
+                  </span>
                 </button>
               )}
             </StatCard>
             <StatCard label={t.insightsPage.mostDerivedRootLabel}>
-              <Link href={mostDerivedRootHref} className="arabic-ui text-accent hover:text-accent-strong">
+              <Link
+                href={mostDerivedRootHref}
+                className="arabic-ui text-accent hover:text-accent-strong"
+              >
                 {insights.mostDerivedRoot.ar}
               </Link>{" "}
-              <span className="text-xs text-muted">{t.insightsPage.lemmasCount(insights.mostDerivedRoot.lemmaCount)}</span>
+              <span className="text-xs text-muted">
+                {t.insightsPage.lemmasCount(insights.mostDerivedRoot.lemmaCount)}
+              </span>
             </StatCard>
             <StatCard label={t.insightsPage.mostFormsRootLabel}>
-              <Link href={mostFormsRootHref} className="arabic-ui text-accent hover:text-accent-strong">
+              <Link
+                href={mostFormsRootHref}
+                className="arabic-ui text-accent hover:text-accent-strong"
+              >
                 {insights.mostFormsRoot.ar}
               </Link>{" "}
-              <span className="text-xs text-muted">{t.insightsPage.formsCount(insights.mostFormsRoot.formCount)}</span>
+              <span className="text-xs text-muted">
+                {t.insightsPage.formsCount(insights.mostFormsRoot.formCount)}
+              </span>
             </StatCard>
             <StatCard label={t.insightsPage.hapaxRootsLabel} big>
               <button
@@ -194,7 +265,9 @@ export function InsightsPageContent({
                 className="block text-start hover:text-accent"
               >
                 {insights.hapaxRootCount.toLocaleString()}
-                <span className="block text-xs font-normal text-muted">{t.insightsPage.hapaxViewHint}</span>
+                <span className="block text-xs font-normal text-muted">
+                  {t.insightsPage.hapaxViewHint}
+                </span>
               </button>
             </StatCard>
             <StatCard label={t.insightsPage.hapaxLemmasLabel} big>
@@ -204,7 +277,9 @@ export function InsightsPageContent({
                 className="block text-start hover:text-accent"
               >
                 {insights.hapaxLemmaCount.toLocaleString()}
-                <span className="block text-xs font-normal text-muted">{t.insightsPage.hapaxViewHint}</span>
+                <span className="block text-xs font-normal text-muted">
+                  {t.insightsPage.hapaxViewHint}
+                </span>
               </button>
             </StatCard>
           </div>
@@ -217,7 +292,9 @@ export function InsightsPageContent({
         </div>
       )}
 
-      {tab === "letters" && <LetterFrequencyExplorer meta={meta} wholeQuranFrequency={insights.letterFrequency} />}
+      {tab === "letters" && (
+        <LetterFrequencyExplorer meta={meta} wholeQuranFrequency={insights.letterFrequency} />
+      )}
 
       {tab === "coverage" && (
         <div className="space-y-6">
@@ -225,7 +302,12 @@ export function InsightsPageContent({
             <h2 className="text-sm font-medium text-ink">{t.insightsPage.rootsCoverageHeading}</h2>
             <p className="mt-1 text-xs text-muted">{t.insightsPage.rootsCoverageDescription}</p>
             <CoverageBarList
-              rows={rootsBySurahCoverage.map((r) => ({ key: r.ar, href: r.href, label: r.ar, surahCount: r.surahCount }))}
+              rows={rootsBySurahCoverage.map((r) => ({
+                key: r.ar,
+                href: r.href,
+                label: r.ar,
+                surahCount: r.surahCount,
+              }))}
               totalSurahs={insights.totalSurahs}
               everySurahBadge={t.insightsPage.everySurahBadge}
             />
@@ -235,7 +317,12 @@ export function InsightsPageContent({
             <h2 className="text-sm font-medium text-ink">{t.insightsPage.lemmasCoverageHeading}</h2>
             <p className="mt-1 text-xs text-muted">{t.insightsPage.lemmasCoverageDescription}</p>
             <CoverageBarList
-              rows={lemmasBySurahCoverage.map((r, i) => ({ key: String(i), href: r.href, label: r.lemma, surahCount: r.surahCount }))}
+              rows={lemmasBySurahCoverage.map((r, i) => ({
+                key: String(i),
+                href: r.href,
+                label: r.lemma,
+                surahCount: r.surahCount,
+              }))}
               totalSurahs={insights.totalSurahs}
               everySurahBadge={t.insightsPage.everySurahBadge}
             />
@@ -246,7 +333,15 @@ export function InsightsPageContent({
       {tab === "rhyme" && <RhymeTab />}
       {tab === "vocabulary" && <DistinctiveVocabTab meta={meta} />}
       {tab === "collocations" && <CollocationsTab />}
-      {tab === "abjad" && <AbjadTab meta={meta} />}
+      {/* Abjad used to be a tab here. It is not corpus evidence, so it now
+          lives on /curiosities/ -- linked, not hidden. */}
+      {tab === "facts" && (
+        <p className="mt-6 text-sm text-muted">
+          <Link href="/curiosities/" className="text-accent hover:text-accent-strong">
+            {t.curiositiesPage.linkFromInsights}
+          </Link>
+        </p>
+      )}
       {tab === "cooccurrence" && <CooccurrenceTab />}
       {tab === "patterns" && <PatternsTab />}
       {tab === "formulas" && <FormulasTab />}

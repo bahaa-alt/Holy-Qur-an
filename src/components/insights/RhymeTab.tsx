@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { verseHref } from "@/lib/search/suggest";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { getRhyme } from "@/lib/data/loader";
@@ -27,7 +28,10 @@ export function RhymeTab() {
   }, []);
 
   const endingCounts = useMemo(() => (rhyme ? countRhymeEndings(rhyme.rows) : []), [rhyme]);
-  const matches = useMemo(() => (rhyme && selected ? versesWithEnding(rhyme.rows, selected) : []), [rhyme, selected]);
+  const matches = useMemo(
+    () => (rhyme && selected ? versesWithEnding(rhyme.rows, selected) : []),
+    [rhyme, selected],
+  );
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
@@ -51,12 +55,17 @@ export function RhymeTab() {
               <p className="text-sm text-muted">{t.insightsPage.rhymePickPrompt}</p>
             ) : (
               <>
-                <p className="text-sm text-muted">{t.insightsPage.rhymeShowingCount(Math.min(matches.length, MAX_SHOWN), matches.length)}</p>
+                <p className="text-sm text-muted">
+                  {t.insightsPage.rhymeShowingCount(
+                    Math.min(matches.length, MAX_SHOWN),
+                    matches.length,
+                  )}
+                </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {matches.slice(0, MAX_SHOWN).map((m) => (
                     <Link
                       key={`${m.s}:${m.a}`}
-                      href={`/surah/${m.s}/?ayah=${m.a}`}
+                      href={verseHref(m.s, m.a)}
                       className="rounded-full border border-border px-2.5 py-1 text-xs text-accent hover:border-accent"
                     >
                       <bdi>

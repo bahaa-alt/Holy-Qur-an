@@ -353,6 +353,21 @@ export interface Dict {
     labelLabel: string;
     labelPlaceholder: string;
   };
+  curiositiesPage: {
+    title: string;
+    intro: string;
+    caveat: string;
+    backToInsights: string;
+    linkFromInsights: string;
+  };
+  versePage: {
+    words: string;
+    revelation: string;
+    chronological: string;
+    juz: string;
+    hizb: string;
+    surahLength: string;
+  };
   lane: {
     heading: string;
     loading: string;
@@ -361,6 +376,8 @@ export interface Dict {
     showAll: (n: number) => string;
     noEntry: (covered: number, total: number) => string;
     coverage: (covered: number, total: number) => string;
+    /** shown in Arabic mode: Lane defines in English, and there is no Arabic edition to swap in */
+    englishWork: string;
   };
   tafsir: {
     toggle: string;
@@ -683,7 +700,13 @@ export interface Dict {
     downloading: (pct: number) => string;
     downloadEverything: string;
     dataBuildHeading: string;
-    dataBuildSummary: (date: string, words: number, roots: number, occurrences: number, verses: number) => string;
+    dataBuildSummary: (
+      date: string,
+      words: number,
+      roots: number,
+      occurrences: number,
+      verses: number,
+    ) => string;
     corpusExportHeading: string;
     corpusExportBody: string;
     corpusExportDownload: (size: string) => string;

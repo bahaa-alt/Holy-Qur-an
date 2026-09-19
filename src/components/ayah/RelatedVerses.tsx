@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { verseHref } from "@/lib/search/suggest";
 import Link from "next/link";
 import { Link2, Loader2 } from "lucide-react";
 import { getIndex, getMeta, getRoot, getVerseRoots } from "@/lib/data/loader";
@@ -90,7 +91,7 @@ export function RelatedVerses({ s, a }: { s: number; a: number }) {
             rows.map((r) => (
               <Link
                 key={`${r.s}:${r.a}`}
-                href={`/surah/${r.s}/?ayah=${r.a}`}
+                href={verseHref(r.s, r.a)}
                 className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs text-ink transition-colors hover:border-accent hover:text-accent"
               >
                 <bdi>
