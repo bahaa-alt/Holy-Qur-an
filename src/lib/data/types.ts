@@ -343,6 +343,64 @@ export interface LaneRootFile {
   articles: { headword: string; page: number | null; tokens: string[] }[];
 }
 
+/**
+ * One of the three classical Arabic-Arabic lexicons, with the edition its
+ * text is, so a reader can cite it.
+ *
+ * `openiti` is the version identifier in the OpenITI scholarly corpus whose
+ * text this one matched verbatim -- the evidence for the `edition` claim
+ * rather than decoration. See scripts/lib/build-mujam.ts for the method and
+ * the per-work match rates.
+ */
+export interface MujamWork {
+  id: "maqayis" | "mufradat" | "sihah";
+  title: string;
+  titleEn: string;
+  author: string;
+  authorEn: string;
+  died: string;
+  edition: string;
+  editionEn: string;
+  openiti: string;
+  /** one line on what this work is for, shown under its name */
+  note: string;
+  noteEn: string;
+  /** corpus roots this work has an article for */
+  coveredRoots: number;
+}
+
+export interface MujamMetaFile {
+  works: MujamWork[];
+  /** corpus roots at least one work covers */
+  coveredRoots: number;
+  totalRoots: number;
+  /** the corpus roots no work covers, so the UI can say so precisely */
+  uncoveredRoots: string[];
+}
+
+/**
+ * One corpus root's articles, across every work that covers it.
+ *
+ * `tokens` are sigil-prefixed strings for the same reason LaneRootFile's
+ * are -- see scripts/lib/parse-mujam.ts for the vocabulary:
+ *
+ *   `t...`  Arabic prose          `q...`  a Qur'anic quotation
+ *   `r...`  a verse reference     `h...`  a quoted hadith or dictum
+ *   `b`     a sense break
+ *
+ * Rendered through ordinary React elements, never innerHTML.
+ */
+export interface MujamRootFile {
+  /** this corpus's spelling, e.g. أبب */
+  root: string;
+  entries: {
+    work: MujamWork["id"];
+    /** the lexicon's own spelling when it differs from the corpus's, e.g. اب */
+    spelling: string | null;
+    articles: { headword: string; tokens: string[] }[];
+  }[];
+}
+
 export interface SurahVerse {
   /** ayah number, 1-based */
   a: number;
@@ -472,7 +530,13 @@ export interface InsightsFile {
    * count) among verses of at least 10 words -- ranked by density, not raw
    * count, so it doesn't just re-report the longest verse.
    */
-  mostRootDenseVerse: { s: number; a: number; distinctRootCount: number; wordCount: number; density: number };
+  mostRootDenseVerse: {
+    s: number;
+    a: number;
+    distinctRootCount: number;
+    wordCount: number;
+    density: number;
+  };
 }
 
 /**

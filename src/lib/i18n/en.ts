@@ -398,6 +398,16 @@ export const en: Dict = {
     // saying so would be noise.
     englishWork: "",
   },
+  mujam: {
+    heading: "Classical Arabic lexicons",
+    loading: "Loading the lexicons\u2026",
+    failed: "The lexicons could not be loaded.",
+    underSpelling: "Listed under",
+    noEntry: (covered, total) =>
+      `None of the three lexicons has an article for this root. Together they cover ${covered.toLocaleString()} of ${total.toLocaleString()} roots.`,
+    coverage: (covered, total) =>
+      `Covers ${covered.toLocaleString()} of this corpus's ${total.toLocaleString()} roots.`,
+  },
   tafsir: {
     toggle: "Commentary",
     loading: "Loading commentary\u2026",

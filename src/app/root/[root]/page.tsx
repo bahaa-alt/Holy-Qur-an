@@ -1,5 +1,11 @@
 import { notFound } from "next/navigation";
-import { readIndex, readManifest, readMeta, readRootFile, readVerseRoots } from "@/lib/data/serverData";
+import {
+  readIndex,
+  readManifest,
+  readMeta,
+  readRootFile,
+  readVerseRoots,
+} from "@/lib/data/serverData";
 import { buildRootSummary } from "@/lib/root/summary";
 import { buildSurahDistribution } from "@/lib/root/distribution";
 import { buildConjugationTables, hasVerbLemma } from "@/lib/root/conjugation";
@@ -13,6 +19,7 @@ import { FrequencyChart } from "@/components/root/FrequencyChart";
 import { FormsTable } from "@/components/root/FormsTable";
 import { SurahDistribution } from "@/components/root/SurahDistribution";
 import { Collocations } from "@/components/root/Collocations";
+import { MujamPanel } from "@/components/mujam/MujamPanel";
 import { LanePanel } from "@/components/lane/LanePanel";
 import { RootInteractive } from "@/components/root/RootInteractive";
 
@@ -62,7 +69,12 @@ export default async function RootPage({ params }: { params: Promise<{ root: str
         distribution={distribution}
         actions={
           <>
-            <SaveButton id={`root:${root}`} kind="root" label={root} href={`/root/${encodeURIComponent(root)}/`} />
+            <SaveButton
+              id={`root:${root}`}
+              kind="root"
+              label={root}
+              href={`/root/${encodeURIComponent(root)}/`}
+            />
             <CiteButton subject={{ kind: "root", label: root }} manifest={manifest} />
           </>
         }
@@ -70,8 +82,11 @@ export default async function RootPage({ params }: { params: Promise<{ root: str
       <FrequencyChart byCategory={summary.byCategory} byLemma={summary.byLemma} />
       <FormsTable forms={file.forms} lemmas={file.lemmas} />
       {collocations.length > 0 && <Collocations rows={collocations} />}
+      <MujamPanel root={root} />
       <LanePanel root={root} />
-      {distribution.bySurah.length > 1 && <SurahHeatmapStrip counts={buildSurahOccurrenceCounts(file)} />}
+      {distribution.bySurah.length > 1 && (
+        <SurahHeatmapStrip counts={buildSurahOccurrenceCounts(file)} />
+      )}
       {distribution.bySurah.length > 1 && (
         <SurahDistribution
           rows={distribution.bySurah.map((r) => ({
@@ -81,7 +96,11 @@ export default async function RootPage({ params }: { params: Promise<{ root: str
           }))}
         />
       )}
-      <RootInteractive root={root} conjugationTables={conjugationTables} filenameBase={`root-${root}`} />
+      <RootInteractive
+        root={root}
+        conjugationTables={conjugationTables}
+        filenameBase={`root-${root}`}
+      />
     </div>
   );
 }
