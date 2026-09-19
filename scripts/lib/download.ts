@@ -2,7 +2,8 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
-const RAW_DIR = join(process.cwd(), "data", "raw");
+/** The pipeline's download cache. Exported so other fetchers share one location. */
+export const RAW_DIR = join(process.cwd(), "data", "raw");
 
 function cachePathFor(cacheKey: string): string {
   return join(RAW_DIR, cacheKey);

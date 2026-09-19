@@ -361,6 +361,17 @@ export const en: Dict = {
     labelLabel: "English label",
     labelPlaceholder: "e.g. Min rabbikum (From your Lord)",
   },
+  lane: {
+    heading: "Lane's Lexicon",
+    loading: "Loading the lexicon\u2026",
+    failed: "Could not load the lexicon.",
+    underSpelling: "Lane files this root under",
+    showAll: (n: number) => `Show all ${n} articles`,
+    noEntry: (covered: number, total: number) =>
+      `Lane has no article for this root. The lexicon covers ${covered.toLocaleString()} of this corpus's ${total.toLocaleString()} roots: Lane died in 1876 having published through roughly \u0642/\u0643, and the remainder was assembled from his notes and is much thinner. Nothing is shown from a similarly-spelled root, because a similar spelling is a different root.`,
+    coverage: (covered: number, total: number) =>
+      `Covers ${covered.toLocaleString()} of this corpus's ${total.toLocaleString()} roots.`,
+  },
   tafsir: {
     toggle: "Commentary",
     loading: "Loading commentary\u2026",

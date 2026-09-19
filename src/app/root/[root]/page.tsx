@@ -13,6 +13,7 @@ import { FrequencyChart } from "@/components/root/FrequencyChart";
 import { FormsTable } from "@/components/root/FormsTable";
 import { SurahDistribution } from "@/components/root/SurahDistribution";
 import { Collocations } from "@/components/root/Collocations";
+import { LanePanel } from "@/components/lane/LanePanel";
 import { RootInteractive } from "@/components/root/RootInteractive";
 
 export function generateStaticParams() {
@@ -69,6 +70,7 @@ export default async function RootPage({ params }: { params: Promise<{ root: str
       <FrequencyChart byCategory={summary.byCategory} byLemma={summary.byLemma} />
       <FormsTable forms={file.forms} lemmas={file.lemmas} />
       {collocations.length > 0 && <Collocations rows={collocations} />}
+      <LanePanel root={root} />
       {distribution.bySurah.length > 1 && <SurahHeatmapStrip counts={buildSurahOccurrenceCounts(file)} />}
       {distribution.bySurah.length > 1 && (
         <SurahDistribution

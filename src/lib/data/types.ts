@@ -309,6 +309,40 @@ export interface TafsirSurahFile {
   entries: { a: number; t: string }[];
 }
 
+/** Provenance and coverage for the bundled Arabic-English lexicon. */
+export interface LaneMetaFile {
+  name: string;
+  author: string;
+  authorAr: string;
+  /** corpus roots Lane covers -- deliberately less than totalRoots */
+  coveredRoots: number;
+  totalRoots: number;
+  /** the corpus roots Lane has no article for, so the UI can say so precisely */
+  uncoveredRoots: string[];
+}
+
+/**
+ * One corpus root's lexicon articles.
+ *
+ * `tokens` are sigil-prefixed strings rather than objects, which costs ~39 MB
+ * raw across the whole lexicon against ~60 MB for `{t,v}` objects:
+ *
+ *   `t...`  English prose        `a...`  Arabic span
+ *   `e...`  emphasised prose     `s<n>`  numbered sense division
+ *   `p<n>`  page in the printed lexicon
+ *   `^`     Lane's tropical-usage mark
+ *
+ * Rendered through ordinary React elements, never innerHTML -- see
+ * scripts/lib/parse-lane-tei.ts for why the source XML is not passed through.
+ */
+export interface LaneRootFile {
+  /** this corpus's spelling, e.g. أبب */
+  root: string;
+  /** Lane's own spelling, which may differ, e.g. اب */
+  laneRoot: string;
+  articles: { headword: string; page: number | null; tokens: string[] }[];
+}
+
 export interface SurahVerse {
   /** ayah number, 1-based */
   a: number;

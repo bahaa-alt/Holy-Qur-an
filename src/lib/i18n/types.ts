@@ -353,6 +353,15 @@ export interface Dict {
     labelLabel: string;
     labelPlaceholder: string;
   };
+  lane: {
+    heading: string;
+    loading: string;
+    failed: string;
+    underSpelling: string;
+    showAll: (n: number) => string;
+    noEntry: (covered: number, total: number) => string;
+    coverage: (covered: number, total: number) => string;
+  };
   tafsir: {
     toggle: string;
     loading: string;
