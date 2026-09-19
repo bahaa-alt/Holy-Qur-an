@@ -1,4 +1,5 @@
-import { useT } from "@/lib/i18n/LanguageContext";
+import { describeTag } from "@/lib/morphology/tagLabels";
+import { useLanguage, useT } from "@/lib/i18n/LanguageContext";
 import type { ConjugationTableData } from "@/lib/root/conjugation";
 import type { RowFilters } from "@/lib/root/occurrences";
 
@@ -10,6 +11,7 @@ export function ConjugationTable({
   onSelectForm: (filters: RowFilters) => void;
 }) {
   const t = useT();
+  const { lang } = useLanguage();
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
@@ -32,13 +34,21 @@ export function ConjugationTable({
                   <div className="mt-1 flex flex-wrap gap-x-6 gap-y-2">
                     {row.cells.map((cell) => (
                       <div key={cell.pgn ?? "none"} className="min-w-0">
-                        <div className="text-xs text-muted">{cell.pgnLabel}</div>
+                        <div className="text-xs text-muted">
+                          {cell.pgn === null
+                            ? t.conjugationTable.unspecifiedPerson
+                            : lang === "ar"
+                              ? describeTag(cell.pgn).ar
+                              : describeTag(cell.pgn).en}
+                        </div>
                         <div className="mt-1 flex flex-wrap gap-1.5">
                           {cell.forms.map((f) => (
                             <button
                               key={`${f.formKey}|${f.mood ?? ""}`}
                               type="button"
-                              onClick={() => onSelectForm({ lemmaKey: f.lemmaKey, formKey: f.formKey })}
+                              onClick={() =>
+                                onSelectForm({ lemmaKey: f.lemmaKey, formKey: f.formKey })
+                              }
                               className="arabic-ui inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
                             >
                               <span>{f.form}</span>

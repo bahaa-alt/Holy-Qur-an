@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react";
 import { getSurah, getSyntaxIndex } from "@/lib/data/loader";
 import { KwicRow } from "@/components/ayah/KwicRow";
 import { Pagination } from "@/components/ayah/Pagination";
-import { useT } from "@/lib/i18n/LanguageContext";
+import { useLanguage, useT } from "@/lib/i18n/LanguageContext";
 import type { SurahFile, SurahMeta, SyntaxIndexFile } from "@/lib/data/types";
 
 const PAGE_SIZE = 25;
@@ -39,6 +39,7 @@ export function SyntaxPageContent({
   total: number;
 }) {
   const t = useT();
+  const { lang } = useLanguage();
   const [selected, setSelected] = useState<number | null>(null);
   const [index, setIndex] = useState<SyntaxIndexFile | null>(null);
   const [page, setPage] = useState(0);
@@ -123,7 +124,9 @@ export function SyntaxPageContent({
                   : "border-border bg-surface text-ink hover:border-accent hover:text-accent"
               }`}
             >
-              {row.en}
+              {/* Every tag carries both labels; the chip shows the one the
+                  reader is reading in. See tagLabels.ts. */}
+              {lang === "ar" ? row.ar : row.en}
               <span className="ms-1.5 text-xs text-muted">{row.count.toLocaleString()}</span>
             </button>
           );
@@ -141,10 +144,17 @@ export function SyntaxPageContent({
         ) : (
           <>
             <h2 className="text-sm font-medium text-ink">
-              {t.syntaxPage.occurrencesIn(selectedRow.en)}{" "}
-              <span dir="rtl" lang="ar" className="arabic-ui text-muted">
-                {selectedRow.ar}
-              </span>
+              {t.syntaxPage.occurrencesIn(lang === "ar" ? selectedRow.ar : selectedRow.en)}{" "}
+              {/* The other language's term alongside it: a grammatical term
+                  is worth having in both, and which one needs the Arabic
+                  typography flips with the interface language. */}
+              {lang === "ar" ? (
+                <span className="text-muted">{selectedRow.en}</span>
+              ) : (
+                <span dir="rtl" lang="ar" className="arabic-ui text-muted">
+                  {selectedRow.ar}
+                </span>
+              )}
             </h2>
             <div className="mt-3">
               {pageHits.map((i) => {

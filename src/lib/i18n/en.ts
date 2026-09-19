@@ -143,6 +143,7 @@ export const en: Dict = {
     colCount: "Count",
   },
   conjugationTable: {
+    unspecifiedPerson: "Unspecified",
     heading: "Verb conjugation",
     subtitle:
       "Attested forms by verb Form, aspect, and person/gender/number. Click a form to filter the explorer below.",

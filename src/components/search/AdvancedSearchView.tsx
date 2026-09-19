@@ -13,10 +13,13 @@ import {
   type AdvancedSearchRow,
   type SyntaxLookups,
 } from "@/lib/search/advancedSearch";
-import { decodeAdvancedSearchQuery, encodeAdvancedSearchQuery } from "@/lib/search/advancedSearchQuery";
+import {
+  decodeAdvancedSearchQuery,
+  encodeAdvancedSearchQuery,
+} from "@/lib/search/advancedSearchQuery";
 import { AdvancedSearchResults } from "./AdvancedSearchResults";
 import { describeTag } from "@/lib/morphology/tagLabels";
-import { useT } from "@/lib/i18n/LanguageContext";
+import { useLanguage, useT } from "@/lib/i18n/LanguageContext";
 import type { Cat, IndexFile, MetaFile, OccurrenceIndexFile } from "@/lib/data/types";
 
 const ALL_CATS = Object.keys(CATEGORY_LABELS) as Cat[];
@@ -28,10 +31,39 @@ const ALL_FORMS = Array.from({ length: 11 }, (_, i) => i + 1);
 // tags from a hand-edited URL, so a drift here degrades to "filter ignored",
 // never to a wrong result.
 const ALL_SYNTAX_TAGS: ReadonlySet<string> = new Set([
-  "ADDR", "AMD", "ANS", "ATT", "AVR", "CAUS", "CERT", "CIRC", "COM", "COND",
-  "EMPH", "EQ", "EXH", "EXL", "EXP", "FUT", "INC", "INT", "INTG", "NEG",
-  "PASS", "PREV", "PRO", "PRP", "REM", "RES", "RET", "RSLT", "SUB", "SUP",
-  "SUR", "T", "VOC",
+  "ADDR",
+  "AMD",
+  "ANS",
+  "ATT",
+  "AVR",
+  "CAUS",
+  "CERT",
+  "CIRC",
+  "COM",
+  "COND",
+  "EMPH",
+  "EQ",
+  "EXH",
+  "EXL",
+  "EXP",
+  "FUT",
+  "INC",
+  "INT",
+  "INTG",
+  "NEG",
+  "PASS",
+  "PREV",
+  "PRO",
+  "PRP",
+  "REM",
+  "RES",
+  "RET",
+  "RSLT",
+  "SUB",
+  "SUP",
+  "SUR",
+  "T",
+  "VOC",
 ]);
 const PAGE_SIZE = 25;
 
@@ -44,7 +76,12 @@ function toggle<T>(set: ReadonlySet<T>, value: T): Set<T> {
 
 export function AdvancedSearchView() {
   const t = useT();
-  const [data, setData] = useState<{ occ: OccurrenceIndexFile; meta: MetaFile; index: IndexFile } | null>(null);
+  const { lang } = useLanguage();
+  const [data, setData] = useState<{
+    occ: OccurrenceIndexFile;
+    meta: MetaFile;
+    index: IndexFile;
+  } | null>(null);
 
   const [cats, setCats] = useState<Set<Cat>>(new Set());
   const [forms, setForms] = useState<Set<number>>(new Set());
@@ -86,7 +123,9 @@ export function AdvancedSearchView() {
         counts.set(tag, (counts.get(tag) ?? 0) + 1);
       }
       setSyntaxTags(
-        [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([tag]) => tag),
+        [...counts.entries()]
+          .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+          .map(([tag]) => tag),
       );
     });
   }, []);
@@ -94,7 +133,11 @@ export function AdvancedSearchView() {
   // One-time hydration from the URL so a shared/bookmarked link restores
   // its filters. Runs once on mount; see the `hydrated` comment above.
   useEffect(() => {
-    const decoded = decodeAdvancedSearchQuery(window.location.search, new Set(ALL_CATS), ALL_SYNTAX_TAGS);
+    const decoded = decodeAdvancedSearchQuery(
+      window.location.search,
+      new Set(ALL_CATS),
+      ALL_SYNTAX_TAGS,
+    );
     if (decoded.cats.length > 0) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration from the URL, not a subscription; see the `hydrated` comment above.
       setCats(new Set(decoded.cats));
@@ -146,7 +189,18 @@ export function AdvancedSearchView() {
     });
     const next = query ? `${window.location.pathname}?${query}` : window.location.pathname;
     window.history.replaceState(null, "", next);
-  }, [cats, forms, revelation, rootFilters, wordSyntax, verseSyntax, surahFrom, surahTo, page, hydrated]);
+  }, [
+    cats,
+    forms,
+    revelation,
+    rootFilters,
+    wordSyntax,
+    verseSyntax,
+    surahFrom,
+    surahTo,
+    page,
+    hydrated,
+  ]);
 
   const rootMatches = useMemo(() => {
     if (!data) return [];
@@ -179,12 +233,24 @@ export function AdvancedSearchView() {
       syntax: syntax ?? undefined,
     };
     return filterOccurrences(data.occ, data.meta, filters);
-  }, [data, cats, forms, revelation, rootFilters, wordSyntax, verseSyntax, syntax, surahFrom, surahTo]);
+  }, [
+    data,
+    cats,
+    forms,
+    revelation,
+    rootFilters,
+    wordSyntax,
+    verseSyntax,
+    syntax,
+    surahFrom,
+    surahTo,
+  ]);
 
   const pageCount = Math.max(1, Math.ceil(allRows.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount - 1);
   const pageRows = allRows.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
-  const resultsKey = pageRows.map((r) => `${r.s}.${r.a}.${r.w}`).join("_") || `empty-${currentPage}`;
+  const resultsKey =
+    pageRows.map((r) => `${r.s}.${r.a}.${r.w}`).join("_") || `empty-${currentPage}`;
 
   const hasFilters =
     cats.size > 0 ||
@@ -295,7 +361,7 @@ export function AdvancedSearchView() {
                             : "border-border text-ink hover:border-accent"
                         }`}
                       >
-                        {describeTag(tag).en}
+                        {lang === "ar" ? describeTag(tag).ar : describeTag(tag).en}
                       </button>
                     ))}
                   </div>
@@ -321,7 +387,7 @@ export function AdvancedSearchView() {
                             : "border-border text-ink hover:border-accent"
                         }`}
                       >
-                        {describeTag(tag).en}
+                        {lang === "ar" ? describeTag(tag).ar : describeTag(tag).en}
                       </button>
                     ))}
                   </div>
@@ -452,7 +518,11 @@ export function AdvancedSearchView() {
             </div>
 
             {hasFilters && (
-              <button type="button" onClick={clearFilters} className="text-sm text-accent hover:text-accent-strong">
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="text-sm text-accent hover:text-accent-strong"
+              >
                 {t.advancedSearchPage.clearFilters}
               </button>
             )}
@@ -470,7 +540,9 @@ export function AdvancedSearchView() {
                 >
                   {t.advancedSearchPage.previousPage}
                 </button>
-                <span className="text-muted">{t.advancedSearchPage.pageOf(currentPage + 1, pageCount)}</span>
+                <span className="text-muted">
+                  {t.advancedSearchPage.pageOf(currentPage + 1, pageCount)}
+                </span>
                 <button
                   type="button"
                   disabled={currentPage >= pageCount - 1}
@@ -486,7 +558,12 @@ export function AdvancedSearchView() {
           {allRows.length === 0 ? (
             <p className="text-sm text-muted">{t.advancedSearchPage.noResults}</p>
           ) : (
-            <AdvancedSearchResults key={resultsKey} rows={pageRows} index={data.index} meta={data.meta} />
+            <AdvancedSearchResults
+              key={resultsKey}
+              rows={pageRows}
+              index={data.index}
+              meta={data.meta}
+            />
           )}
         </>
       )}
