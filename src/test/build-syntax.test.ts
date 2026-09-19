@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseMorphologyTSV } from "../../scripts/lib/parse-morphology";
-import { SYNTAX_TAGS, buildSyntax } from "../../scripts/lib/build-syntax";
+import { buildSyntax } from "../../scripts/lib/build-syntax";
+import { SYNTAX_TAGS } from "@/lib/morphology/syntaxTags";
 
 /** 2:2:1 — ذَٰلِكَ (DEM, not a syntax tag) then كِتَٰبُ (rooted, no syntax tag). */
 const NO_SYNTAX_ROWS = [

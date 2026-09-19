@@ -227,6 +227,7 @@ export interface Dict {
     tabPhrases: string;
     tabCompare: string;
     advancedSearchLinkLabel: string;
+    queryLinkLabel: string;
   };
   advancedSearchPage: {
     wordSyntaxLabel: string;
@@ -255,6 +256,25 @@ export interface Dict {
     previousPage: string;
     nextPage: string;
     verbFormShort: (roman: string) => string;
+  };
+  queryPage: {
+    title: string;
+    subtitle: string;
+    placeholder: string;
+    run: string;
+    examplesHeading: string;
+    examples: {
+      perfectFromRoot: string;
+      passiveFromRoot: string;
+      restriction: string;
+      activeVerbsMeccan: string;
+      conditionalsLate: string;
+      formFour: string;
+    };
+    resultCount: (matches: number, verses: number) => string;
+    unexpectedError: string;
+    /** states what no query can reach, rather than leaving it to be discovered */
+    scopeNote: string;
   };
   phraseTextSearch: {
     label: string;

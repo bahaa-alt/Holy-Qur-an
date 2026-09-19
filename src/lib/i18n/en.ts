@@ -230,6 +230,7 @@ export const en: Dict = {
     tabPhrases: "Phrase Patterns",
     tabCompare: "Compare Roots",
     advancedSearchLinkLabel: "Looking for a grammatical pattern instead? Try Advanced Search →",
+    queryLinkLabel: "Or write the question yourself: Query \u2192",
   },
   advancedSearchPage: {
     wordSyntaxLabel: "This word is",
@@ -261,6 +262,27 @@ export const en: Dict = {
     previousPage: "Previous",
     nextPage: "Next",
     verbFormShort: (roman) => `Form ${roman}`,
+  },
+  queryPage: {
+    title: "Query",
+    subtitle:
+      "A query language over this corpus, for questions the facet checkboxes cannot ask. Every query is a link.",
+    placeholder: "[root=\u0639\u0644\u0645 & cat=verb.perf]",
+    run: "Run",
+    examplesHeading: "Try",
+    examples: {
+      perfectFromRoot: "perfect verbs from \u0639\u0644\u0645",
+      passiveFromRoot: "\u2026 in the passive",
+      restriction: "every restriction particle (\u1e25a\u1e63r)",
+      activeVerbsMeccan: "active verbs in Meccan surahs",
+      conditionalsLate: "conditionals, after the first five surahs revealed",
+      formFour: "Form IV imperfect verbs",
+    },
+    resultCount: (matches, verses) =>
+      `${matches.toLocaleString()} ${matches === 1 ? "match" : "matches"} in ${verses.toLocaleString()} ${verses === 1 ? "verse" : "verses"}`,
+    unexpectedError: "Something went wrong running that query.",
+    scopeNote:
+      "A query matches word positions drawn from two indices: rooted occurrences, and segments carrying a syntactic or rhetorical tag. A word with neither \u2014 most pronouns, for one \u2014 is in neither index, so no query reaches it, and it never appears in a negated result either.",
   },
   phraseTextSearch: {
     label: "Phrase or sentence",

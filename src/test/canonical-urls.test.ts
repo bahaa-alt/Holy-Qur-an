@@ -58,3 +58,41 @@ describe("canonical URLs", () => {
     }
   });
 });
+
+/**
+ * Every static route has to be in the sitemap too.
+ *
+ * Adding a route means touching two files, and the second is easy to
+ * forget -- /query/ shipped with a correct canonical and no sitemap entry,
+ * and nothing failed. The sitemap's own doc comment promises it is built
+ * from the same sources as the routes; this is what holds it to that.
+ *
+ * Dynamic routes are excluded: their paths come from the corpus at build
+ * time, and sitemap.ts enumerates them from the same indices their
+ * generateStaticParams uses.
+ */
+describe("sitemap coverage", () => {
+  const sitemapSrc = readFileSync(join(APP_DIR, "sitemap.ts"), "utf8");
+
+  const staticRoutes = pageFiles(APP_DIR)
+    .map((p) => relative(APP_DIR, p).replace(/page\.tsx$/, ""))
+    .filter((r) => !r.includes("["))
+    .map((r) => `/${r}`);
+
+  it("finds the static routes, so a passing run means something", () => {
+    expect(staticRoutes).toContain("/");
+    expect(staticRoutes.length).toBeGreaterThan(10);
+  });
+
+  it.each(staticRoutes.filter((r) => r !== "/saved/"))("%s is listed in sitemap.ts", (route) => {
+    expect(sitemapSrc).toContain(`"${route}"`);
+  });
+
+  it("deliberately omits /saved/, which has nothing to index", () => {
+    // Per-reader bookmarks out of browser storage: a crawler sees an empty
+    // shell. robots.txt disallows it for the same reason.
+    expect(staticRoutes).toContain("/saved/");
+    expect(sitemapSrc).not.toContain('"/saved/"');
+    expect(sitemapSrc).toMatch(/`\/saved\/` is deliberately absent/);
+  });
+});

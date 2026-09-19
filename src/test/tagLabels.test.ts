@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { describeTag, describeTags } from "@/lib/morphology/tagLabels";
-import { SYNTAX_TAGS } from "../../scripts/lib/build-syntax";
+import { SYNTAX_TAGS } from "@/lib/morphology/syntaxTags";
 
 // The full, exact set of 82 bare tags present in quran-morphology.txt
 // (verified against the downloaded corpus; POS letters N/V/P are a separate

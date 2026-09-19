@@ -39,6 +39,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/roots/",
     "/search/",
     "/search/advanced/",
+    "/query/",
     "/compare/",
     "/insights/",
     "/curiosities/",
