@@ -534,6 +534,7 @@ export const en: Dict = {
     viewMoreInInsights: "More corpus-wide research tools in Insights →",
   },
   surahPage: {
+    readingNote: (transmission: string, numbering: string) => `Text: ${transmission} \u00B7 ${numbering} numbering`,
     previous: "Previous",
     next: "Next",
     meccan: "Meccan",
@@ -640,6 +641,11 @@ export const en: Dict = {
     heading: "About this project",
     intro:
       "A free, open-source, account-less tool for researching Qur'anic Arabic roots and word forms. It runs entirely in your browser as a static site: no accounts, no login, no database server. All data ships as static files and works fully offline once installed.",
+    readingHeading: "Which reading this is",
+    readingBody: (transmission: string, edition: string, numbering: string) =>
+      `The Arabic text throughout this app is ${transmission}, in the ${edition}, with ${numbering} verse numbering (6,236 verses).`,
+    readingWhyItMatters:
+      "This is stated because it is load-bearing, not as a footnote. A different canonical reading can put a word under a different root \u2014 at 2:259 this text reads \u0646\u064F\u0646\u0634\u0650\u0632\u064F (root \u0646\u0634\u0632), where another reads \u0646\u064F\u0646\u0634\u0650\u0631\u064F (root \u0646\u0634\u0631) \u2014 so every root count here is a count for this reading, and every surah:ayah:word reference is an address in this reading. Verse numbering is a separate tradition from the reading, and this app currently offers no others of either.",
     howCountsComputedHeading: "How counts are computed",
     howCountsComputedBody:
       'An "occurrence" of a root is a morphological segment tagged with that root in the underlying corpus. Particles, pronouns, and grammatical clitics (prefixes and suffixes such as the determiner "al-" or attached pronouns) never carry a root and are never counted toward one, even though they still appear in the verse text. This matches how the Quranic Arabic Corpus itself counts roots, which may differ from tools that count whole inflected words. Those uncounted particles are not discarded, though: the ones carrying a syntactic or rhetorical function \u2014 restriction, condition, circumstantial \u1E25\u0101l, prohibition, emphasis and the rest \u2014 are indexed separately and browsable under Syntax. That is a parallel layer with its own counts; it never changes a root\u2019s totals.',

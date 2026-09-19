@@ -62,6 +62,32 @@ export interface ManifestMismatch {
   jsonN: number;
 }
 
+/**
+ * Which reading (qira'a / riwaya) and verse-numbering tradition this build's
+ * text is, recorded explicitly because everything else in this corpus
+ * silently assumes it.
+ *
+ * The app ships one text and used to describe it only as "the Uthmani
+ * text", which names an orthography, not a reading. It is in fact Hafs 'an
+ * 'Asim in the 1924 Cairo tradition, with Kufan verse numbering (6,236
+ * verses; surah 42 counts حمٓ and عٓسٓقٓ as two separate verses). That is
+ * load-bearing, not a footnote: a variant reading can change which ROOT a
+ * word belongs to -- 2:259 نُنشِزُ (root نشز) is نُنشِرُ (root نشر) in
+ * another canonical reading -- so every root count this app displays is a
+ * Hafs count, and the surah:ayah:word:segment key is a Hafs address.
+ */
+export interface ManifestReading {
+  /** e.g. "Hafs 'an 'Asim" */
+  transmission: string;
+  /** e.g. "Hafs 'an 'Asim" in Arabic */
+  transmissionAr: string;
+  /** the printed tradition the orthography follows, e.g. "1924 Cairo (Uthmani orthography)" */
+  edition: string;
+  /** the verse-counting tradition, e.g. "Kufan" -- independent of the reading */
+  verseNumbering: string;
+  verseNumberingAr: string;
+}
+
 export interface ManifestFile {
   version: string;
   builtAt: string;
@@ -80,6 +106,8 @@ export interface ManifestFile {
     corpusExportBytes: number;
   };
   sources: ManifestSource[];
+  /** see ManifestReading -- which reading and numbering tradition this text is */
+  reading: ManifestReading;
   mismatches: ManifestMismatch[];
 }
 

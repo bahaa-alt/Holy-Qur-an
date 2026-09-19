@@ -12,7 +12,7 @@ export function CiteButton({
   manifest,
 }: {
   subject: CitationSubject;
-  manifest: Pick<ManifestFile, "version" | "builtAt" | "hash">;
+  manifest: Pick<ManifestFile, "version" | "builtAt" | "hash" | "reading">;
 }) {
   const t = useT();
   const [copied, setCopied] = useState(false);

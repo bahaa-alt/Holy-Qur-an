@@ -14,7 +14,7 @@ export interface CitationSubject {
  */
 export function buildCitation(
   subject: CitationSubject,
-  manifest: Pick<ManifestFile, "version" | "builtAt" | "hash">,
+  manifest: Pick<ManifestFile, "version" | "builtAt" | "hash" | "reading">,
   url: string,
   accessedOn: Date = new Date(),
 ): string {
@@ -30,8 +30,15 @@ export function buildCitation(
     day: "numeric",
   });
 
+  // The reading is part of the citation, not decoration: a count or a
+  // verse reference from this tool is only reproducible against the text it
+  // was computed from, and a different canonical reading can put a word
+  // under a different root entirely (see ManifestReading).
+  const reading = `${manifest.reading.transmission}, ${manifest.reading.verseNumbering} numbering`;
+
   return (
     `${APP_NAME}. ${subjectLabel} ${subject.label}. ` +
+    `Text: ${reading}. ` +
     `Dataset v${manifest.version} (built ${builtDate}, hash ${manifest.hash}). ` +
     `Accessed ${accessedDate}. ${url}`
   );

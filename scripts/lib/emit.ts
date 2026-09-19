@@ -11,6 +11,11 @@ export interface SizeEntry {
 export class SizeReport {
   private entries: SizeEntry[] = [];
 
+  /** The recorded entries, for budget checking (see checkSizeBudgets). */
+  all(): readonly SizeEntry[] {
+    return this.entries;
+  }
+
   record(label: string, rawBytes: number, gzBytes: number) {
     this.entries.push({ label, rawBytes, gzBytes });
   }
@@ -64,4 +69,63 @@ export function recordGroup(
     sizes.reduce((s, x) => s + x.rawBytes, 0),
     sizes.reduce((s, x) => s + x.gzBytes, 0),
   );
+}
+
+export interface BudgetViolation {
+  /** the offending file's report label, or "TOTAL" for a whole-output budget */
+  label: string;
+  actual: number;
+  budget: number;
+  kind: "raw" | "gz";
+}
+
+/**
+ * Compares a size report's entries against the per-file and whole-output
+ * budgets, returning every violation rather than stopping at the first.
+ *
+ * Extracted so `--check` mode and the real write path enforce budgets
+ * through exactly one implementation. They previously did not: `--check`
+ * built its own report with `gzBytes` hardcoded to 0, left `surahs/*.json`
+ * out, counted `export/corpus.csv` (which the real build excludes), and
+ * then never compared anything to a budget at all -- so the mode whose
+ * documented job is to "validate the pipeline without writing files" could
+ * not fail on size, and a budget regression only surfaced in CI's later
+ * `Build` step.
+ *
+ * `entries` must contain only budget-counted output: pass the same set the
+ * real build totals, i.e. excluding `export/corpus.csv`.
+ */
+export function checkSizeBudgets(opts: {
+  entries: readonly SizeEntry[];
+  perFileRawBudgets: Readonly<Record<string, number>>;
+  totalRawBudget: number;
+  totalGzBudget: number;
+}): BudgetViolation[] {
+  const violations: BudgetViolation[] = [];
+
+  for (const e of opts.entries) {
+    const budget = opts.perFileRawBudgets[e.label];
+    if (budget !== undefined && e.rawBytes > budget) {
+      violations.push({ label: e.label, actual: e.rawBytes, budget, kind: "raw" });
+    }
+  }
+
+  const totalRaw = opts.entries.reduce((sum, e) => sum + e.rawBytes, 0);
+  if (totalRaw > opts.totalRawBudget) {
+    violations.push({ label: "TOTAL", actual: totalRaw, budget: opts.totalRawBudget, kind: "raw" });
+  }
+
+  const totalGz = opts.entries.reduce((sum, e) => sum + e.gzBytes, 0);
+  if (totalGz > opts.totalGzBudget) {
+    violations.push({ label: "TOTAL", actual: totalGz, budget: opts.totalGzBudget, kind: "gz" });
+  }
+
+  return violations;
+}
+
+/** Formats a budget violation as a one-line, actionable build error. */
+export function formatBudgetViolation(v: BudgetViolation): string {
+  const kb = (n: number) => `${(n / 1024).toFixed(1)} KB`;
+  const what = v.label === "TOTAL" ? `Total public/data/v1 ${v.kind} size` : `${v.label} (${v.kind})`;
+  return `${what} exceeds its budget: ${kb(v.actual)} > ${kb(v.budget)}`;
 }

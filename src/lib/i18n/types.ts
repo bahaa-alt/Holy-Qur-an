@@ -507,6 +507,7 @@ export interface Dict {
     viewMoreInInsights: string;
   };
   surahPage: {
+    readingNote: (transmission: string, numbering: string) => string;
     previous: string;
     next: string;
     meccan: string;
@@ -614,6 +615,9 @@ export interface Dict {
     title: string;
     heading: string;
     intro: string;
+    readingHeading: string;
+    readingBody: (transmission: string, edition: string, numbering: string) => string;
+    readingWhyItMatters: string;
     howCountsComputedHeading: string;
     howCountsComputedBody: string;
     insightsMethodologyHeading: string;

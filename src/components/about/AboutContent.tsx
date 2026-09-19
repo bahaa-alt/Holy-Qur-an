@@ -15,6 +15,21 @@ export function AboutContent({ manifest, rootNames }: { manifest: ManifestFile; 
       </div>
 
       <div>
+        <h2 className="text-lg font-semibold">{t.aboutPage.readingHeading}</h2>
+        <p className="mt-2 text-muted">
+          {t.aboutPage.readingBody(
+            manifest.reading.transmission,
+            manifest.reading.edition,
+            manifest.reading.verseNumbering,
+          )}{" "}
+          <bdi dir="rtl" lang="ar" className="arabic-ui">
+            {manifest.reading.transmissionAr}
+          </bdi>
+        </p>
+        <p className="mt-2 text-muted">{t.aboutPage.readingWhyItMatters}</p>
+      </div>
+
+      <div>
         <h2 className="text-lg font-semibold">{t.aboutPage.howCountsComputedHeading}</h2>
         <p className="mt-2 text-muted">{t.aboutPage.howCountsComputedBody}</p>
       </div>

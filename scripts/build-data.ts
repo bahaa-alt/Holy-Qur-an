@@ -6,6 +6,7 @@
  * budgets -- useful in CI without touching the working tree.
  */
 import { existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
+import { gzipSync } from "node:zlib";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 
@@ -29,7 +30,7 @@ import { buildFormulas } from "./lib/build-formulas";
 import { buildVerseSimilarity } from "./lib/build-verse-similarity";
 import { buildDivineNamePairs } from "./lib/build-divine-name-pairs";
 import { buildCorpusExportCsv } from "./lib/build-corpus-export";
-import { SizeReport, recordGroup, writeJSON, writeText } from "./lib/emit";
+import { SizeReport, checkSizeBudgets, formatBudgetViolation, recordGroup, writeJSON, writeText } from "./lib/emit";
 import { ALL_TOPICS, DIVINE_NAME_TOPICS } from "../src/lib/topics/topicDefinitions";
 import { topicSourceFileKey } from "../src/lib/topics/buildTopicOccurrences";
 import type { ArIndexFile, ManifestFile, ManifestSource, VerseRootsFile } from "../src/lib/data/types";
@@ -104,6 +105,24 @@ const EXPECTED = {
 // (e.g. forms.json carries every distinct diacritized surface form, not just
 // bare stems). Kept with headroom above the current measured size so the
 // budget still catches a real regression.
+/**
+ * The reading this build's text actually is. See ManifestReading: the app
+ * previously described its text only as "the Uthmani text", which names an
+ * orthography rather than a reading, and never said which of the canonical
+ * readings it ships. Recorded in the manifest so it reaches the About page,
+ * every citation, and anyone reading the data files directly.
+ *
+ * Verified against the built data rather than assumed: 6,236 verses, and
+ * surahs/42.json splits حمٓ and عٓسٓقٓ into verses 1 and 2 -- the Kufan count.
+ */
+const READING = {
+  transmission: "Hafs 'an 'Asim",
+  transmissionAr: "حفص عن عاصم",
+  edition: "1924 Cairo edition (Uthmani orthography)",
+  verseNumbering: "Kufan",
+  verseNumberingAr: "العدد الكوفي",
+};
+
 const BUDGETS_RAW_BYTES = {
   "index.json": 800 * 1024,
   "forms.json": 1000 * 1024,
@@ -393,12 +412,14 @@ async function main() {
       corpusExportBytes,
     },
     sources: SOURCES,
+    reading: READING,
     mismatches,
   };
 
   if (CHECK_ONLY) {
     console.log("\n--check mode: skipping file writes.");
     printSizeEstimate({
+      surahFiles,
       meta,
       indexRoots,
       indexLemmas,
@@ -559,11 +580,18 @@ async function main() {
 
   report.print();
 
-  if (report.totalRaw() > TOTAL_RAW_BUDGET) {
-    fail(`Total public/data/v1 size exceeds budget: ${report.totalRaw()} > ${TOTAL_RAW_BUDGET} bytes (raw)`);
-  }
-  if (report.totalGz() > TOTAL_GZ_BUDGET) {
-    fail(`Total public/data/v1 gzipped size exceeds budget: ${report.totalGz()} > ${TOTAL_GZ_BUDGET} bytes (gz)`);
+  // Per-file budgets are already enforced at each writeJSON call site
+  // above (so the build fails as early as possible); this re-checks them
+  // plus the two whole-output totals through the same function --check
+  // uses, so the two modes can never diverge again.
+  const violations = checkSizeBudgets({
+    entries: report.all(),
+    perFileRawBudgets: BUDGETS_RAW_BYTES,
+    totalRawBudget: TOTAL_RAW_BUDGET,
+    totalGzBudget: TOTAL_GZ_BUDGET,
+  });
+  if (violations.length > 0) {
+    fail(`Size budget exceeded:\n  ${violations.map(formatBudgetViolation).join("\n  ")}`);
   }
 
   console.log(`\n✓ Wrote data to ${OUT_DIR}`);
@@ -573,6 +601,7 @@ async function main() {
 }
 
 function printSizeEstimate(data: {
+  surahFiles: Map<number, unknown>;
   meta: unknown;
   indexRoots: unknown;
   indexLemmas: unknown;
@@ -597,10 +626,14 @@ function printSizeEstimate(data: {
   lemmaFiles: Map<string, unknown>;
   manifest: unknown;
 }) {
+  // Serializes and gzips exactly as writeJSON() does, so --check's figures
+  // are the real ones rather than an uncompressed-only estimate. Costs a
+  // second or two of gzip over the whole output; worth it for a mode whose
+  // entire purpose is to catch a regression before the files are written.
   const report = new SizeReport();
   const rec = (label: string, obj: unknown) => {
     const json = JSON.stringify(obj);
-    report.record(label, Buffer.byteLength(json, "utf8"), 0);
+    report.record(label, Buffer.byteLength(json, "utf8"), gzipSync(Buffer.from(json, "utf8")).length);
   };
   rec("manifest.json", data.manifest);
   rec("meta.json", data.meta);
@@ -621,10 +654,47 @@ function printSizeEstimate(data: {
   rec("formulas.json", data.formulas);
   rec("verse-similarity.json", data.verseSimilarity);
   rec("divine-name-pairs.json", data.divineNamePairs);
-  report.record("export/corpus.csv (est., not budget-counted)", data.corpusExportBytes, 0);
-  rec("roots/*.json (est.)", [...data.rootFiles.values()]);
-  rec("lemmas/*.json (est.)", [...data.lemmaFiles.values()]);
+  // The real build writes one file per surah/root/lemma; --check has no
+  // files to measure, so it sizes the same payloads in aggregate. surahs/
+  // was previously missing entirely, which hid ~3.3 MB raw from the total.
+  // Sized per member and summed, NOT as one concatenated array: the real
+  // build writes 114 + 1,651 + 4,783 separate files, and gzip does far
+  // better on one big array than on thousands of small documents. Sizing
+  // the array understated the real gzipped total by ~560 KB (16%), which
+  // is most of the gz budget's headroom -- so a gz regression could have
+  // passed --check and still failed the real build.
+  const recGroup = (label: string, objs: Iterable<unknown>) => {
+    let raw = 0;
+    let gz = 0;
+    for (const obj of objs) {
+      const json = JSON.stringify(obj);
+      raw += Buffer.byteLength(json, "utf8");
+      gz += gzipSync(Buffer.from(json, "utf8")).length;
+    }
+    report.record(label, raw, gz);
+  };
+  recGroup("surahs/*.json (est.)", data.surahFiles.values());
+  recGroup("roots/*.json (est.)", data.rootFiles.values());
+  recGroup("lemmas/*.json (est.)", data.lemmaFiles.values());
   report.print();
+
+  // corpus.csv is a bulk download, not part of the app payload -- the real
+  // build excludes it from the budget totals, so --check must too. Reported
+  // after print() precisely so it cannot leak into the report's totals.
+  console.log(
+    `\nexport/corpus.csv          raw ${(data.corpusExportBytes / 1024 / 1024).toFixed(2)} MB (not counted toward the size budgets above)`,
+  );
+
+  const violations = checkSizeBudgets({
+    entries: report.all(),
+    perFileRawBudgets: BUDGETS_RAW_BYTES,
+    totalRawBudget: TOTAL_RAW_BUDGET,
+    totalGzBudget: TOTAL_GZ_BUDGET,
+  });
+  if (violations.length > 0) {
+    fail(`Size budget exceeded:\n  ${violations.map(formatBudgetViolation).join("\n  ")}`);
+  }
+  console.log("\n\u2713 All size budgets satisfied.");
 }
 
 main().catch((err) => {
