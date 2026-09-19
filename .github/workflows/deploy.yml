@@ -1,0 +1,72 @@
+name: Deploy
+
+# Publishes the static export to the `gh-pages` branch, which GitHub Pages
+# serves from. Before this workflow existed the branch was updated by hand,
+# which is why the live site sat eight days behind the default branch.
+#
+# Deploys the SAME artifact CI validates, via `build:ghpages` -- that script
+# sets NEXT_PUBLIC_BASE_PATH so asset URLs resolve under the project-site
+# subpath, and (unlike `pnpm build`) calls the data pipeline, service worker
+# and export prune explicitly, because npm lifecycle hooks do not fire for a
+# script that is not itself named `build`.
+
+on:
+  push:
+    branches: [claude/quranic-root-research-pwa-vhg2w3]
+  workflow_dispatch:
+
+# Never let two deploys race: the publish step force-pushes, so an overlapping
+# run could otherwise put an older build live. `cancel-in-progress: false` so a
+# queued deploy finishes rather than being dropped mid-publish.
+concurrency:
+  group: deploy-gh-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build static export
+        run: pnpm build:ghpages
+
+      - name: Report what is being published
+        run: |
+          echo "files: $(find out -type f | wc -l)"
+          echo "size:  $(du -sh out | cut -f1)"
+          test -f out/.nojekyll || { echo "::error::out/.nojekyll missing - Jekyll would strip _next/"; exit 1; }
+          test -f out/index.html || { echo "::error::out/index.html missing"; exit 1; }
+
+      - name: Publish to gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          cd out
+          # An orphan branch force-pushed each time, NOT a commit on top of the
+          # previous deploy. The export is ~570 MB across ~30,000 files, so
+          # accumulating history here would grow the repository without bound
+          # on every deploy. The trade-off is that gh-pages keeps no deploy
+          # history -- the source history on the default branch is the record,
+          # and each deploy commit names the source commit it came from.
+          git init -q
+          git checkout -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -qm "Deploy ${GITHUB_SHA} — $(git -C "$GITHUB_WORKSPACE" log -1 --format=%s "${GITHUB_SHA}")"
+          git push -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
