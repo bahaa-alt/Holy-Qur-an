@@ -16,6 +16,8 @@ import type {
   RhymeFile,
   RootFile,
   SurahFile,
+  ReadingSurahFile,
+  ReadingsMetaFile,
   SurahVerse,
   SyntaxIndexFile,
   VerseRootsFile,
@@ -80,6 +82,21 @@ export function getVerseRoots(): Promise<VerseRootsFile> {
  */
 export function getSyntaxIndex(): Promise<SyntaxIndexFile> {
   return cachedFetch(`${DATA_BASE}/syntax.json`);
+}
+
+/** The list of alternative transmissions (see RiwayaMeta). ~0.8 KB. */
+export function getReadingsMeta(): Promise<ReadingsMetaFile> {
+  return cachedFetch(`${DATA_BASE}/readings/meta.json`);
+}
+
+/**
+ * One surah in one riwaya. Deliberately NOT part of prefetchAll's offline
+ * warm-up: the seven transmissions together are ~10 MB, and they are an
+ * apparatus a reader opts into per verse rather than core payload. Whatever
+ * a reader actually opens is cached by the service worker as usual.
+ */
+export function getReadingSurah(slug: string, n: number): Promise<ReadingSurahFile> {
+  return cachedFetch(`${DATA_BASE}/readings/${slug}/${n}.json`);
 }
 
 /**

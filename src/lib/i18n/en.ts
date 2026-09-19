@@ -361,6 +361,18 @@ export const en: Dict = {
     labelLabel: "English label",
     labelPlaceholder: "e.g. Min rabbikum (From your Lord)",
   },
+  readings: {
+    toggle: "Other transmissions",
+    loading: "Loading transmissions\u2026",
+    failed: "Could not load the transmissions.",
+    hafsLabel: "\u1E24af\u0163 \u02BFan \u02BF\u0100\u1E63im",
+    baseTextNote: "\u00B7 this app's base text",
+    viaQari: (qari: string) => `\u00B7 from ${qari}`,
+    scopeNote:
+      "These are written texts, so they show wording (farsh) differences only. Most of what audibly distinguishes the readings \u2014 madd, im\u0101la, idgh\u0101m, sakt, treatment of hamza \u2014 is u\u1E63\u016Bl and is not visible here. Nothing on this panel is computed, diffed or highlighted.",
+    numberingNote:
+      "The source re-segments each transmission onto Kufan verse boundaries so they align one-to-one with this app's numbering. The wording is each transmission's own; the verse division is not. Verse counting is a separate tradition from the reading.",
+  },
   syntaxPage: {
     heading: "Syntax & rhetoric",
     intro:
@@ -710,5 +722,8 @@ export const en: Dict = {
     corpusExportBody:
       "Every word of the Qur'an in one CSV file -- surah, ayah, word, root, lemma, grammatical category, tags, and both English translations -- for analysis in Excel, pandas, R, or any other tool outside this app. This is the same data every page here is built from, unfiltered.",
     corpusExportDownload: (size) => `Download full corpus (CSV, ${size})`,
+    corpusExportReleases: "Browse releases",
+    corpusExportNotPublished: (size) =>
+      `The export is ${size} \u2014 too large to ship with the site, so it is published as a release asset rather than served from here. Build it yourself with \`pnpm data:build\`; it lands in \`dist/export/corpus.csv\`.`,
   },
 };

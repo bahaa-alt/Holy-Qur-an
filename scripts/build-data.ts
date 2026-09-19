@@ -18,6 +18,7 @@ import { buildEnIndex, type IndexableVerse } from "./lib/build-en-index";
 import { buildArIndex, type ArIndexableVerse } from "./lib/build-ar-index";
 import { buildVerseRoots } from "./lib/build-verse-roots";
 import { SYNTAX_TAGS, buildSyntax } from "./lib/build-syntax";
+import { RIWAYAT, buildReadings, type RawEdition } from "./lib/build-readings";
 import { describeTag } from "../src/lib/morphology/tagLabels";
 import { buildInsights } from "./lib/build-insights";
 import { buildRhyme } from "./lib/build-rhyme";
@@ -50,9 +51,20 @@ const ROOTS_GLOSS_URL = "https://raw.githubusercontent.com/R3GENESI5/quran-bil-q
 // Pickthall's translation, from the same tanzil.net corpus quran-json's own
 // Saheeh International text derives from -- a second English rendering
 // shown alongside Saheeh International for translation comparison.
+// The alternative transmissions come from the same repo, branch and URL
+// shape as PICKTHALL_URL below, under the same Unlicense grant -- adding
+// them needed no new host, fetch path or licence review.
+const READING_URL = (slug: string) =>
+  `https://raw.githubusercontent.com/fawazahmed0/quran-api/1/editions/ara-quran${slug}.min.json`;
+
 const PICKTHALL_URL = "https://raw.githubusercontent.com/fawazahmed0/quran-api/1/editions/eng-mohammedmarmadu.min.json";
 
 const SOURCES: ManifestSource[] = [
+  {
+    name: "Alternative transmissions (Qalun, Warsh, al-Bazzi, Qunbul, al-Duri, al-Susi, Shu'ba)",
+    url: "https://github.com/fawazahmed0/quran-api",
+    license: "Unlicense (public domain). Non-Hafs editions are re-segmented onto Kufan verse boundaries at the source.",
+  },
   {
     name: "Quran morphology (Arabic-script fork of the Quranic Arabic Corpus v0.4)",
     url: "https://github.com/mustafa0x/quran-morphology",
@@ -75,6 +87,10 @@ const SOURCES: ManifestSource[] = [
   },
 ];
 
+// Bulk downloads that are deliberately NOT part of the deployed site. Git-
+// ignored; a maintainer uploads the contents to a GitHub release, and the
+// About page links there (see NEXT_PUBLIC_CORPUS_EXPORT_URL).
+const EXPORT_DIR = join(process.cwd(), "dist", "export");
 const OUT_DIR = join(process.cwd(), "public", "data", "v1");
 
 // --- invariants asserted against the known-correct corpus facts (see PLAN.md) ---
@@ -141,6 +157,10 @@ const BUDGETS_RAW_BYTES = {
   "syntax.json": 400 * 1024,
 };
 const LARGEST_ROOT_BUDGET_RAW = 60 * 1024;
+// The seven alternative transmissions, sharded per surah (~1.6 MB per
+// riwaya). Budgeted separately and excluded from the core totals -- see the
+// emit call site for why.
+const READINGS_BUDGET_RAW = 14 * 1024 * 1024;
 // Raised from 9 MiB: adding Pickthall's translation to every verse grew
 // surahs/*.json by ~900 KB raw (measured 9.18 MiB total). Gzipped total
 // barely moved (~2.66 MiB, well under TOTAL_GZ_BUDGET) since English prose
@@ -177,6 +197,19 @@ async function main() {
     fetchCachedJSON<RootsGlossMap>(ROOTS_GLOSS_URL, "roots_index.json", { force: FORCE }),
     fetchCachedJSON<PickthallEdition>(PICKTHALL_URL, "pickthall.json", { force: FORCE }),
   ]);
+
+  const readingEditions = new Map<string, RawEdition>(
+    await Promise.all(
+      RIWAYAT.map(
+        async (r) =>
+          [
+            r.slug,
+            (await fetchCachedJSON<RawEdition>(READING_URL(r.slug), `reading-${r.slug}.json`, { force: FORCE }))
+              .data,
+          ] as const,
+      ),
+    ),
+  );
   const pickthallByRef = new Map<string, string>();
   for (const v of pickthall.data.quran) {
     pickthallByRef.set(`${v.chapter}:${v.verse}`, v.text);
@@ -251,6 +284,12 @@ async function main() {
   // --- 5b. Build the global per-verse rooted-word index ---
   const verseRoots: VerseRootsFile = buildVerseRoots(words, rootTextToGlobalIdx, globalIdOf);
 
+  // --- 5b-i. Shard the alternative transmissions ---
+  const versesPerSurah = new Map(
+    [...surahFiles.entries()].map(([n, file]) => [n, file.verses.map((v) => v.a)] as const),
+  );
+  const readings = buildReadings(readingEditions, versesPerSurah);
+
   // --- 5b-ii. Build the corpus-wide syntactic / rhetorical index ---
   const syntaxIndex = buildSyntax(words);
 
@@ -295,6 +334,8 @@ async function main() {
   assertEqual("verse-roots.json entry count", verseRootsEntryCount, EXPECTED.occurrences, errors);
   assertEqual("occurrences.json row count", occurrenceIndex.rows.length, EXPECTED.occurrences, errors);
   assertEqual("syntax.json row count", syntaxIndex.t.length, EXPECTED.syntaxRows, errors);
+  assertEqual("readings shard count", readings.files.size, RIWAYAT.length * meta.surahs.length, errors);
+  assertEqual("readings riwaya count", readings.meta.riwayat.length, RIWAYAT.length, errors);
   assertEqual("syntax.json tag vocabulary size", syntaxIndex.tags.length, SYNTAX_TAGS.length, errors);
   for (const column of ["s", "a", "w", "g"] as const) {
     if (syntaxIndex[column].length !== syntaxIndex.t.length) {
@@ -490,6 +531,25 @@ async function main() {
     );
   }
 
+  const readingsMetaSize = writeJSON(join(OUT_DIR, "readings", "meta.json"), readings.meta);
+  report.record("readings/meta.json", readingsMetaSize.rawBytes, readingsMetaSize.gzBytes);
+  const readingSizes = [...readings.files.entries()].map(([key, file]) =>
+    writeJSON(join(OUT_DIR, "readings", `${key}.json`), file),
+  );
+  // Recorded but NOT counted toward the core totals: these are an apparatus
+  // a reader opts into per verse, fetched lazily and deliberately left out
+  // of prefetchAll's offline warm-up. Counting ~11 MB of alternative text
+  // against the core budget would mean either refusing the feature or
+  // doubling the "download everything for offline" cost for every visitor,
+  // neither of which reflects what this data is for. It still gets its own
+  // budget, immediately below.
+  const readingsRaw = readingSizes.reduce((sum, x) => sum + x.rawBytes, 0);
+  const readingsGz = readingSizes.reduce((sum, x) => sum + x.gzBytes, 0);
+  report.record("readings/*/*.json", readingsRaw, readingsGz, false);
+  if (readingsRaw > READINGS_BUDGET_RAW) {
+    fail(`readings/ exceeds its budget: ${readingsRaw} > ${READINGS_BUDGET_RAW} bytes`);
+  }
+
   const syntaxSize = writeJSON(join(OUT_DIR, "syntax.json"), syntaxIndex);
   report.record("syntax.json", syntaxSize.rawBytes, syntaxSize.gzBytes);
   if (syntaxSize.rawBytes > BUDGETS_RAW_BYTES["syntax.json"]) {
@@ -546,9 +606,15 @@ async function main() {
   // app itself (no getX() loader, no service-worker precache entry) --
   // it shouldn't compete with the app-shell size budgets those exist to
   // protect. Printed on its own line below instead.
-  const exportSize = writeText(join(OUT_DIR, "export", "corpus.csv"), corpusExportCsv);
+  // Written OUTSIDE public/ so it never reaches the deployed site. At 37.5 MB
+  // it is a third of the export's bytes, it breaches Cloudflare Pages'
+  // 25 MiB per-asset cap at every tier, and it is a bulk download a handful
+  // of visitors ever take -- not app payload. It is published as a release
+  // asset instead; see the About page and EXPORT_DIR below.
+  const exportSize = writeText(join(EXPORT_DIR, "corpus.csv"), corpusExportCsv);
   console.log(
-    `\nexport/corpus.csv          raw ${(exportSize.rawBytes / 1024 / 1024).toFixed(2)} MB  gz ${(exportSize.gzBytes / 1024 / 1024).toFixed(2)} MB (not counted toward the size budgets above)`,
+    `\ndist/export/corpus.csv     raw ${(exportSize.rawBytes / 1024 / 1024).toFixed(2)} MB  gz ${(exportSize.gzBytes / 1024 / 1024).toFixed(2)} MB` +
+      `\n  (not deployed -- upload to a GitHub release and set NEXT_PUBLIC_CORPUS_EXPORT_URL)`,
   );
 
   const surahSizes = [...surahFiles.entries()]
@@ -682,7 +748,7 @@ function printSizeEstimate(data: {
   // build excludes it from the budget totals, so --check must too. Reported
   // after print() precisely so it cannot leak into the report's totals.
   console.log(
-    `\nexport/corpus.csv          raw ${(data.corpusExportBytes / 1024 / 1024).toFixed(2)} MB (not counted toward the size budgets above)`,
+    `\ndist/export/corpus.csv     raw ${(data.corpusExportBytes / 1024 / 1024).toFixed(2)} MB (not deployed; see the About page)`,
   );
 
   const violations = checkSizeBudgets({

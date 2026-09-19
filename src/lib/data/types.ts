@@ -102,7 +102,7 @@ export interface ManifestFile {
     rootedLemmas: number;
     rootlessLemmas: number;
     occurrences: number;
-    /** byte size of the bulk corpus CSV export (public/data/v1/export/corpus.csv), for display before download */
+    /** byte size of the bulk corpus CSV export (dist/export/corpus.csv, published as a release asset), for display before download */
     corpusExportBytes: number;
   };
   sources: ManifestSource[];
@@ -266,6 +266,28 @@ export interface SyntaxIndexFile {
   g: number[];
   /** index into `tags` */
   t: number[];
+}
+
+/** One non-Hafs transmission (riwaya) shipped alongside the base text. */
+export interface RiwayaMeta {
+  /** directory name under readings/, and the source edition's own slug */
+  slug: string;
+  riwaya: string;
+  riwayaAr: string;
+  /** the reader (qari) this riwaya transmits from */
+  qari: string;
+  qariAr: string;
+}
+
+export interface ReadingsMetaFile {
+  riwayat: RiwayaMeta[];
+}
+
+/** One surah's text in one riwaya. */
+export interface ReadingSurahFile {
+  slug: string;
+  n: number;
+  verses: { a: number; t: string }[];
 }
 
 export interface SurahVerse {

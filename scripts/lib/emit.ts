@@ -6,26 +6,44 @@ export interface SizeEntry {
   label: string;
   rawBytes: number;
   gzBytes: number;
+  /**
+   * Whether this entry counts toward the whole-output budgets. False for
+   * output that ships but is deliberately not part of the core offline
+   * payload -- currently the alternative readings, which a researcher opts
+   * into per verse and which `prefetchAll` does not warm. Such entries are
+   * still printed (they are real bytes on the host) and still get their own
+   * per-file budget; they just do not consume the core total's headroom.
+   */
+  counted: boolean;
 }
 
 export class SizeReport {
   private entries: SizeEntry[] = [];
 
-  /** The recorded entries, for budget checking (see checkSizeBudgets). */
+  /**
+   * The budget-counted entries, for checkSizeBudgets. Uncounted entries are
+   * excluded here rather than filtered at each call site, so a new uncounted
+   * row can never accidentally consume the core total's headroom.
+   */
   all(): readonly SizeEntry[] {
+    return this.entries.filter((e) => e.counted);
+  }
+
+  /** Every entry, counted or not -- for printing and per-file checks. */
+  allIncludingUncounted(): readonly SizeEntry[] {
     return this.entries;
   }
 
-  record(label: string, rawBytes: number, gzBytes: number) {
-    this.entries.push({ label, rawBytes, gzBytes });
+  record(label: string, rawBytes: number, gzBytes: number, counted = true) {
+    this.entries.push({ label, rawBytes, gzBytes, counted });
   }
 
   totalRaw(): number {
-    return this.entries.reduce((sum, e) => sum + e.rawBytes, 0);
+    return this.all().reduce((sum, e) => sum + e.rawBytes, 0);
   }
 
   totalGz(): number {
-    return this.entries.reduce((sum, e) => sum + e.gzBytes, 0);
+    return this.all().reduce((sum, e) => sum + e.gzBytes, 0);
   }
 
   print() {
@@ -33,7 +51,10 @@ export class SizeReport {
     const width = Math.max(...this.entries.map((e) => e.label.length), "TOTAL".length) + 2;
     console.log("\n--- public/data size report ---");
     for (const e of this.entries) {
-      console.log(`${e.label.padEnd(width)} raw ${fmt(e.rawBytes).padStart(10)}  gz ${fmt(e.gzBytes).padStart(10)}`);
+      const suffix = e.counted ? "" : "   (not counted toward the totals)";
+      console.log(
+        `${e.label.padEnd(width)} raw ${fmt(e.rawBytes).padStart(10)}  gz ${fmt(e.gzBytes).padStart(10)}${suffix}`,
+      );
     }
     console.log(
       `${"TOTAL".padEnd(width)} raw ${fmt(this.totalRaw()).padStart(10)}  gz ${fmt(this.totalGz()).padStart(10)}`,

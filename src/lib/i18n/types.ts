@@ -353,6 +353,16 @@ export interface Dict {
     labelLabel: string;
     labelPlaceholder: string;
   };
+  readings: {
+    toggle: string;
+    loading: string;
+    failed: string;
+    hafsLabel: string;
+    baseTextNote: string;
+    viaQari: (qari: string) => string;
+    scopeNote: string;
+    numberingNote: string;
+  };
   syntaxPage: {
     heading: string;
     intro: string;
@@ -662,5 +672,7 @@ export interface Dict {
     corpusExportHeading: string;
     corpusExportBody: string;
     corpusExportDownload: (size: string) => string;
+    corpusExportReleases: string;
+    corpusExportNotPublished: (size: string) => string;
   };
 }

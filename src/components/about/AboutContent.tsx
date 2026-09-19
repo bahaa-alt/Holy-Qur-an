@@ -4,6 +4,9 @@ import { useT } from "@/lib/i18n/LanguageContext";
 import { OfflineDownload } from "@/components/layout/OfflineDownload";
 import type { ManifestFile } from "@/lib/data/types";
 
+/** Set once the CSV is uploaded to a release; see scripts/build-data.ts EXPORT_DIR. */
+const CORPUS_EXPORT_URL = process.env.NEXT_PUBLIC_CORPUS_EXPORT_URL ?? "";
+
 export function AboutContent({ manifest, rootNames }: { manifest: ManifestFile; rootNames: string[] }) {
   const t = useT();
 
@@ -117,12 +120,34 @@ export function AboutContent({ manifest, rootNames }: { manifest: ManifestFile; 
       <div>
         <h2 className="text-lg font-semibold">{t.aboutPage.corpusExportHeading}</h2>
         <p className="mt-2 text-muted">{t.aboutPage.corpusExportBody}</p>
-        <a
-          href={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/data/v1/export/corpus.csv`}
-          className="mt-3 inline-block rounded-lg border border-accent/40 bg-accent/10 px-4 py-2 text-sm text-accent hover:bg-accent/20"
-        >
-          {t.aboutPage.corpusExportDownload(formatBytes(manifest.counts.corpusExportBytes))}
-        </a>
+        {/* The CSV is deliberately not deployed (37.5 MB, a third of the
+            export's bytes, and over Cloudflare Pages' 25 MiB per-asset cap at
+            every tier). When a release asset URL is configured this links
+            straight at it; otherwise it links to the releases page and says
+            plainly where the file comes from, rather than offering a download
+            that is not there. */}
+        {CORPUS_EXPORT_URL ? (
+          <a
+            href={CORPUS_EXPORT_URL}
+            className="mt-3 inline-block rounded-lg border border-accent/40 bg-accent/10 px-4 py-2 text-sm text-accent hover:bg-accent/20"
+          >
+            {t.aboutPage.corpusExportDownload(formatBytes(manifest.counts.corpusExportBytes))}
+          </a>
+        ) : (
+          <>
+            <p className="mt-2 text-muted">
+              {t.aboutPage.corpusExportNotPublished(formatBytes(manifest.counts.corpusExportBytes))}
+            </p>
+            <a
+              href="https://github.com/bahaa-alt/Holy-Qur-an/releases"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 inline-block rounded-lg border border-accent/40 bg-accent/10 px-4 py-2 text-sm text-accent hover:bg-accent/20"
+            >
+              {t.aboutPage.corpusExportReleases}
+            </a>
+          </>
+        )}
       </div>
 
       <div>

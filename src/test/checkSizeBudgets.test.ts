@@ -4,7 +4,7 @@ import { checkSizeBudgets } from "../../scripts/lib/emit";
 const BUDGETS = { "index.json": 100, "forms.json": 100 };
 
 function entry(label: string, rawBytes: number, gzBytes = 0) {
-  return { label, rawBytes, gzBytes };
+  return { label, rawBytes, gzBytes, counted: true };
 }
 
 describe("checkSizeBudgets", () => {

@@ -55,3 +55,6 @@ next-env.d.ts
 # vitest
 /coverage
 
+
+# bulk downloads built but never deployed (see scripts/build-data.ts EXPORT_DIR)
+/dist/
