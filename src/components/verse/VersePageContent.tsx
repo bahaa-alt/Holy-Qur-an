@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { verseHref } from "@/lib/search/suggest";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { HighlightedVerse } from "@/components/ayah/HighlightedVerse";
 import { AyahActions } from "@/components/ayah/AyahActions";
@@ -104,7 +105,7 @@ export function VersePageContent({
             id={`verse:${s}:${a}`}
             kind="verse"
             label={`${s}:${a}`}
-            href={`/v/${s}:${a}/`}
+            href={verseHref(s, a)}
           />
         </div>
       </div>

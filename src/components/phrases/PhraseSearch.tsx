@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { verseHref } from "@/lib/search/suggest";
 import { Loader2, Search } from "lucide-react";
 import { getMeta, getVerseRoots, getVerses } from "@/lib/data/loader";
 import { globalIdToRef } from "@/lib/data/verseId";
@@ -12,7 +13,9 @@ import { useT } from "@/lib/i18n/LanguageContext";
 import type { MetaFile, VerseRootsFile } from "@/lib/data/types";
 
 function buildMarkdown(results: readonly { s: number; a: number; translation: string }[]): string {
-  return results.map((r) => `- [${r.s}:${r.a}](/surah/${r.s}/?ayah=${r.a}) -- ${r.translation}`).join("\n");
+  return results
+    .map((r) => `- [${r.s}:${r.a}](${verseHref(r.s, r.a)}) -- ${r.translation}`)
+    .join("\n");
 }
 
 const RESULT_CAP = 50;
@@ -93,8 +96,18 @@ export function PhraseSearch({ roots }: { roots: RootSlotOption[] }) {
     <div className="space-y-6">
       <div className="rounded-2xl border border-border bg-surface p-6">
         <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-end">
-          <RootSlotPicker label={t.phraseSearch.leadingRoot} roots={roots} selected={leadRoot} onChange={setLeadRoot} />
-          <RootSlotPicker label={t.phraseSearch.followedBy} roots={roots} selected={followRoot} onChange={setFollowRoot} />
+          <RootSlotPicker
+            label={t.phraseSearch.leadingRoot}
+            roots={roots}
+            selected={leadRoot}
+            onChange={setLeadRoot}
+          />
+          <RootSlotPicker
+            label={t.phraseSearch.followedBy}
+            roots={roots}
+            selected={followRoot}
+            onChange={setFollowRoot}
+          />
           <button
             type="button"
             disabled={!ready || loading}
@@ -110,7 +123,9 @@ export function PhraseSearch({ roots }: { roots: RootSlotOption[] }) {
       {searched && !loading && (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted">
-            {totalMatches === 0 ? t.phraseSearch.noResults : t.phraseSearch.matchCount(totalMatches, RESULT_CAP)}
+            {totalMatches === 0
+              ? t.phraseSearch.noResults
+              : t.phraseSearch.matchCount(totalMatches, RESULT_CAP)}
           </p>
           {results.length > 0 && <CopyTextButton text={buildMarkdown(results)} />}
         </div>

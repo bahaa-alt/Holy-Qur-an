@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getIndex, getMeta, getVerses } from "@/lib/data/loader";
 import { pickRootOfDay, pickVerseOfDay } from "@/lib/dailyPick/pickOfDay";
-import { rootHref } from "@/lib/search/suggest";
+import { rootHref, verseHref } from "@/lib/search/suggest";
 import { useT } from "@/lib/i18n/LanguageContext";
 import type { IndexRootRow, SurahVerse } from "@/lib/data/types";
 
@@ -47,25 +47,36 @@ export function DailyWidget() {
   return (
     <div className="mt-10 grid gap-4 sm:grid-cols-2">
       <div className="rounded-2xl border border-border bg-surface p-5">
-        <h2 className="text-xs font-medium uppercase tracking-wide text-muted">{t.dailyWidget.rootHeading}</h2>
+        <h2 className="text-xs font-medium uppercase tracking-wide text-muted">
+          {t.dailyWidget.rootHeading}
+        </h2>
         <p className="arabic-ui mt-2 text-2xl text-ink">{state.root.ar}</p>
-        {state.root.glossShort && <p className="mt-1 text-sm text-muted">{state.root.glossShort}</p>}
-        <Link href={rootHref(state.root.ar)} className="mt-3 inline-block text-sm text-accent hover:underline">
+        {state.root.glossShort && (
+          <p className="mt-1 text-sm text-muted">{state.root.glossShort}</p>
+        )}
+        <Link
+          href={rootHref(state.root.ar)}
+          className="mt-3 inline-block text-sm text-accent hover:underline"
+        >
           {t.dailyWidget.viewRoot}
         </Link>
       </div>
       <div className="rounded-2xl border border-border bg-surface p-5">
-        <h2 className="text-xs font-medium uppercase tracking-wide text-muted">{t.dailyWidget.verseHeading}</h2>
+        <h2 className="text-xs font-medium uppercase tracking-wide text-muted">
+          {t.dailyWidget.verseHeading}
+        </h2>
         {state.verse ? (
           <>
-            <p className="arabic-ui mt-2 text-lg leading-loose text-ink">{state.verse.w.join(" ")}</p>
+            <p className="arabic-ui mt-2 text-lg leading-loose text-ink">
+              {state.verse.w.join(" ")}
+            </p>
             <p className="mt-1 text-sm text-muted">{state.verse.t}</p>
           </>
         ) : (
           <p className="mt-2 text-sm text-muted">…</p>
         )}
         <Link
-          href={`/surah/${state.verseRef.s}/?ayah=${state.verseRef.a}`}
+          href={verseHref(state.verseRef.s, state.verseRef.a)}
           className="mt-3 inline-block text-sm text-accent hover:underline"
         >
           {t.dailyWidget.viewVerse}

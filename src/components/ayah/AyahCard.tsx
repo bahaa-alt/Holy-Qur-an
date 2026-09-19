@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { verseHref } from "@/lib/search/suggest";
 import { HighlightedVerse } from "./HighlightedVerse";
 import { AyahActions } from "./AyahActions";
 import { RelatedVerses } from "./RelatedVerses";
@@ -29,7 +30,7 @@ export function AyahCard({
     <div className="rounded-xl border border-border bg-surface p-5">
       <div className="flex items-baseline justify-between gap-3">
         <Link
-          href={`/surah/${surahMeta.n}/?ayah=${ayah}`}
+          href={verseHref(surahMeta.n, ayah)}
           className="text-sm font-medium text-accent hover:text-accent-strong"
         >
           <bdi>
@@ -51,7 +52,9 @@ export function AyahCard({
       <p className="mt-2 text-sm text-muted">{translation}</p>
       {pickthall && (
         <p className="mt-1 text-sm text-muted/80">
-          <span className="text-xs uppercase tracking-wide text-muted/60">{t.ayahCard.pickthallLabel}</span>
+          <span className="text-xs uppercase tracking-wide text-muted/60">
+            {t.ayahCard.pickthallLabel}
+          </span>
           {pickthall}
         </p>
       )}
@@ -69,7 +72,7 @@ export function AyahCard({
             id={`verse:${surahMeta.n}:${ayah}`}
             kind="verse"
             label={`${surahMeta.n}:${ayah}`}
-            href={`/surah/${surahMeta.n}/?ayah=${ayah}`}
+            href={verseHref(surahMeta.n, ayah)}
           />
         </div>
         <RelatedVerses s={surahMeta.n} a={ayah} />

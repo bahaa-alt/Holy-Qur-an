@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { verseHref } from "@/lib/search/suggest";
 import { Loader2, Search } from "lucide-react";
 import { getArIndex, getMeta, getVerses } from "@/lib/data/loader";
 import { globalIdToRef } from "@/lib/data/verseId";
@@ -30,7 +31,9 @@ interface ResultRow {
 }
 
 function buildMarkdown(results: readonly { s: number; a: number; translation: string }[]): string {
-  return results.map((r) => `- [${r.s}:${r.a}](/surah/${r.s}/?ayah=${r.a}) -- ${r.translation}`).join("\n");
+  return results
+    .map((r) => `- [${r.s}:${r.a}](${verseHref(r.s, r.a)}) -- ${r.translation}`)
+    .join("\n");
 }
 
 export function PhraseTextSearch() {
@@ -71,7 +74,9 @@ export function PhraseTextSearch() {
     setSearchedQuery(trimmed);
     setPage(1);
     setMatches(trimmed === "" ? [] : searchArabicPhrase(trimmed, ai));
-    const next = trimmed ? `${window.location.pathname}?q=${encodeURIComponent(trimmed)}` : window.location.pathname;
+    const next = trimmed
+      ? `${window.location.pathname}?q=${encodeURIComponent(trimmed)}`
+      : window.location.pathname;
     window.history.replaceState(null, "", next);
   }
 
@@ -137,7 +142,8 @@ export function PhraseTextSearch() {
         })
         .filter((r): r is ResultRow => r !== null)
     : [];
-  const isLoadingVerses = currentPageMatches.length > 0 && pageRows.length < currentPageMatches.length;
+  const isLoadingVerses =
+    currentPageMatches.length > 0 && pageRows.length < currentPageMatches.length;
 
   const ready = arIndex !== null && meta !== null;
 
@@ -177,7 +183,12 @@ export function PhraseTextSearch() {
               ? t.phraseTextSearch.noResults(searchedQuery)
               : t.phraseTextSearch.matchCount(matches.length, RESULT_CAP)}
           </p>
-          {pageRows.length > 0 && <CopyTextButton text={buildMarkdown(pageRows)} label={t.phraseTextSearch.copyThisPage} />}
+          {pageRows.length > 0 && (
+            <CopyTextButton
+              text={buildMarkdown(pageRows)}
+              label={t.phraseTextSearch.copyThisPage}
+            />
+          )}
         </div>
       )}
 
@@ -190,7 +201,10 @@ export function PhraseTextSearch() {
           pageRows.map((row) => {
             const surahMeta = meta?.surahs.find((s) => s.n === row.s);
             if (!surahMeta) return null;
-            const highlightIndices = Array.from({ length: row.endW - row.startW + 1 }, (_, i) => row.startW + i);
+            const highlightIndices = Array.from(
+              { length: row.endW - row.startW + 1 },
+              (_, i) => row.startW + i,
+            );
             return (
               <AyahCard
                 key={`${row.s}-${row.a}-${row.startW}`}

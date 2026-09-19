@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { verseHref } from "@/lib/search/suggest";
 import { useSearchParams } from "next/navigation";
 import { AyahActions } from "@/components/ayah/AyahActions";
 import { HighlightedVerse } from "@/components/ayah/HighlightedVerse";
@@ -13,7 +14,13 @@ import { useT } from "@/lib/i18n/LanguageContext";
 import { useInterlinearMode } from "@/lib/surah/ReadingModeContext";
 import type { SurahMeta, SurahVerse } from "@/lib/data/types";
 
-export function SurahVerseList({ surahMeta, verses }: { surahMeta: SurahMeta; verses: SurahVerse[] }) {
+export function SurahVerseList({
+  surahMeta,
+  verses,
+}: {
+  surahMeta: SurahMeta;
+  verses: SurahVerse[];
+}) {
   const t = useT();
   const [interlinear] = useInterlinearMode();
   const searchParams = useSearchParams();
@@ -51,13 +58,20 @@ export function SurahVerseList({ surahMeta, verses }: { surahMeta: SurahMeta; ve
               {interlinear ? (
                 <InterlinearVerse s={surahMeta.n} a={verse.a} tokens={verse.w} />
               ) : (
-                <HighlightedVerse s={surahMeta.n} a={verse.a} tokens={verse.w} highlightIndices={[]} />
+                <HighlightedVerse
+                  s={surahMeta.n}
+                  a={verse.a}
+                  tokens={verse.w}
+                  highlightIndices={[]}
+                />
               )}
             </div>
             <p className="mt-2 text-sm text-muted">{verse.t}</p>
             {verse.pickthall && (
               <p className="mt-1 text-sm text-muted/80">
-                <span className="text-xs uppercase tracking-wide text-muted/60">{t.ayahCard.pickthallLabel}</span>
+                <span className="text-xs uppercase tracking-wide text-muted/60">
+                  {t.ayahCard.pickthallLabel}
+                </span>
                 {verse.pickthall}
               </p>
             )}
@@ -74,7 +88,7 @@ export function SurahVerseList({ surahMeta, verses }: { surahMeta: SurahMeta; ve
                   id={`verse:${surahMeta.n}:${verse.a}`}
                   kind="verse"
                   label={`${surahMeta.n}:${verse.a}`}
-                  href={`/surah/${surahMeta.n}/?ayah=${verse.a}`}
+                  href={verseHref(surahMeta.n, verse.a)}
                 />
               </div>
               <TafsirPanel s={surahMeta.n} a={verse.a} />

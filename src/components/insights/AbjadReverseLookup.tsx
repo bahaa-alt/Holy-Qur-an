@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { verseHref } from "@/lib/search/suggest";
 import Link from "next/link";
 import { findByAbjadValue } from "@/lib/quran/abjadLookup";
 import { useT } from "@/lib/i18n/LanguageContext";
@@ -37,7 +38,9 @@ export function AbjadReverseLookup({
 
   return (
     <div className="border-t border-border pt-4">
-      <h3 className="text-xs font-medium uppercase tracking-wide text-muted">{t.insightsPage.abjadLookupHeading}</h3>
+      <h3 className="text-xs font-medium uppercase tracking-wide text-muted">
+        {t.insightsPage.abjadLookupHeading}
+      </h3>
       <p className="mt-1 text-xs text-muted">{t.insightsPage.abjadLookupDescription}</p>
       <input
         type="number"
@@ -56,7 +59,9 @@ export function AbjadReverseLookup({
         <div className="mt-3 space-y-3">
           {matches.surahs.length > 0 && (
             <div>
-              <p className="text-xs text-muted">{t.insightsPage.abjadLookupSurahsFound(matches.surahs.length)}</p>
+              <p className="text-xs text-muted">
+                {t.insightsPage.abjadLookupSurahsFound(matches.surahs.length)}
+              </p>
               <div className="mt-1.5 flex flex-wrap gap-2">
                 {matches.surahs.map((n) => {
                   const s = meta.surahs.find((sm) => sm.n === n);
@@ -78,14 +83,17 @@ export function AbjadReverseLookup({
             <p className="text-xs text-muted">
               {matches.verses.length === 0
                 ? t.insightsPage.abjadLookupNoVerses
-                : t.insightsPage.abjadLookupVersesFound(Math.min(matches.verses.length, MAX_VERSES_SHOWN), matches.verses.length)}
+                : t.insightsPage.abjadLookupVersesFound(
+                    Math.min(matches.verses.length, MAX_VERSES_SHOWN),
+                    matches.verses.length,
+                  )}
             </p>
             {matches.verses.length > 0 && (
               <div className="mt-1.5 flex flex-wrap gap-2">
                 {matches.verses.slice(0, MAX_VERSES_SHOWN).map((ref) => (
                   <Link
                     key={`${ref.s}:${ref.a}`}
-                    href={`/surah/${ref.s}/?ayah=${ref.a}`}
+                    href={verseHref(ref.s, ref.a)}
                     className="rounded-full border border-border px-2.5 py-1 text-xs text-accent hover:border-accent"
                   >
                     <bdi>
@@ -99,7 +107,9 @@ export function AbjadReverseLookup({
 
           {matches.words.length > 0 && (
             <div>
-              <p className="text-xs text-muted">{t.insightsPage.abjadLookupWordsFound(matches.words.length)}</p>
+              <p className="text-xs text-muted">
+                {t.insightsPage.abjadLookupWordsFound(matches.words.length)}
+              </p>
               <div className="mt-1.5 flex flex-wrap gap-2">
                 {matches.words.map((w) => (
                   <span

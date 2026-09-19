@@ -1,13 +1,35 @@
 import { describe, expect, it } from "vitest";
-import { buildArabicSuggestions, buildBuckwalterSuggestions, rootHref, verseHref, wordHref } from "@/lib/search/suggest";
+import {
+  buildArabicSuggestions,
+  buildBuckwalterSuggestions,
+  rootHref,
+  verseHref,
+  wordHref,
+} from "@/lib/search/suggest";
 import type { FormsEntry, IndexFile, IndexLemmaRow } from "@/lib/data/types";
 
 // A small synthetic index: roots كتب (bw ktb) and رحم (bw rHm), one rooted
 // lemma each, plus a rootless lemma "الذين".
 const INDEX: IndexFile = {
   roots: [
-    { ar: "رحم", key: "رحم", bw: "rHm", count: 339, lemmaCount: 2, verseCount: 300, glossShort: "Mercy." },
-    { ar: "كتب", key: "كتب", bw: "ktb", count: 319, lemmaCount: 2, verseCount: 250, glossShort: "To write." },
+    {
+      ar: "رحم",
+      key: "رحم",
+      bw: "rHm",
+      count: 339,
+      lemmaCount: 2,
+      verseCount: 300,
+      glossShort: "Mercy.",
+    },
+    {
+      ar: "كتب",
+      key: "كتب",
+      bw: "ktb",
+      count: 319,
+      lemmaCount: 2,
+      verseCount: 250,
+      glossShort: "To write.",
+    },
   ].sort((a, b) => a.key.localeCompare(b.key)),
   lemmas: [
     { lemma: "كِتاب", key: "كتاب", rootIdx: -1, count: 260, cat: "noun" }, // rootIdx fixed below
@@ -94,6 +116,9 @@ describe("href builders", () => {
   });
 
   it("builds a verse href with an ayah query param", () => {
-    expect(verseHref(2, 255)).toBe("/surah/2/?ayah=255");
+    // The canonical link to a verse is its own page, not a scroll position
+    // inside its surah. Every cross-reference routes through this helper, so
+    // this assertion is what keeps the app's ~13 link sites consistent.
+    expect(verseHref(2, 255)).toBe("/v/2:255/");
   });
 });

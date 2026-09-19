@@ -24,8 +24,20 @@ export function wordHref(globalLemmaIdx: number): string {
   return `/word/${globalLemmaIdx}/`;
 }
 
+/**
+ * The canonical link to a single verse.
+ *
+ * Points at the verse's own page rather than at a scroll position inside its
+ * surah. A reference like 2:255 used to resolve to /surah/2/?ayah=255 -- a
+ * query parameter on a 286-verse document, with nothing to cite and nowhere
+ * for an apparatus to live. Every cross-reference in the app goes through
+ * here, so the two conventions can never drift apart.
+ *
+ * The surah page still exists and is still the right destination for reading
+ * a surah continuously; it just is not what a reference to one verse means.
+ */
 export function verseHref(s: number, a: number): string {
-  return `/surah/${s}/?ayah=${a}`;
+  return `/v/${s}:${a}/`;
 }
 
 export function formulaHref(length: number, phraseKey: string): string {
@@ -58,7 +70,9 @@ export function buildArabicSuggestions(
   const seenLemmaIdx = new Set<number>();
 
   const [rs, re] = prefixRange(index.roots, qRootKey, (r) => r.key);
-  const rootMatches = [...index.roots.slice(rs, re)].sort((a, b) => b.count - a.count).slice(0, limitEach);
+  const rootMatches = [...index.roots.slice(rs, re)]
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limitEach);
   for (const r of rootMatches) {
     results.push({
       kind: "root",
@@ -91,7 +105,9 @@ export function buildArabicSuggestions(
   }
 
   const [fs, fe] = prefixRange(forms, qKey, (f) => f.key);
-  const formMatches = [...forms.slice(fs, fe)].sort((a, b) => b.count - a.count).slice(0, limitEach);
+  const formMatches = [...forms.slice(fs, fe)]
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limitEach);
   for (const f of formMatches) {
     if (seenLemmaIdx.has(f.lemmaIdx)) continue;
     seenLemmaIdx.add(f.lemmaIdx);
@@ -112,7 +128,11 @@ export function buildArabicSuggestions(
 }
 
 /** Roots whose Buckwalter transliteration starts with the (Latin) query. */
-export function buildBuckwalterSuggestions(query: string, index: IndexFile, limit = 5): Suggestion[] {
+export function buildBuckwalterSuggestions(
+  query: string,
+  index: IndexFile,
+  limit = 5,
+): Suggestion[] {
   const q = query.trim().toLowerCase();
   if (q.length === 0) return [];
   return index.roots
