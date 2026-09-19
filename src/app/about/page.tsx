@@ -1,7 +1,11 @@
 import { readIndex, readManifest } from "@/lib/data/serverData";
 import { AboutContent } from "@/components/about/AboutContent";
+import { absoluteUrl } from "@/lib/site";
 
-export const metadata = { title: "About" };
+export const metadata = {
+  title: "About",
+  alternates: { canonical: absoluteUrl("/about/") },
+};
 
 export default function AboutPage() {
   const manifest = readManifest();

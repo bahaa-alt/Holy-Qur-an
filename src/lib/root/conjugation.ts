@@ -1,6 +1,10 @@
 import type { Cat, RootFile } from "@/lib/data/types";
-import { ROMAN_FORMS, extractMood, extractPersonGenderNumber, extractVerbForm } from "@/lib/morphology/classify";
-import { describeTag } from "@/lib/morphology/tagLabels";
+import {
+  ROMAN_FORMS,
+  extractMood,
+  extractPersonGenderNumber,
+  extractVerbForm,
+} from "@/lib/morphology/classify";
 
 export interface ConjugationForm {
   form: string;
@@ -11,8 +15,11 @@ export interface ConjugationForm {
 }
 
 export interface ConjugationCell {
+  /** the person-gender-number tag, e.g. "3MS"; null when the corpus marks none.
+   *  Deliberately the TAG and not a rendered label -- a label baked here
+   *  would be baked in one language, and this table is read in two. The
+   *  component calls describeTag() for the reader's own. */
   pgn: string | null;
-  pgnLabel: string;
   forms: ConjugationForm[];
   total: number;
 }
@@ -135,7 +142,7 @@ export function buildConjugationTables(file: RootFile): ConjugationTableData[] {
           const pgn = pgnKey === "" ? null : pgnKey;
           const forms = [...byAgg.values()].sort((a, b) => b.count - a.count);
           const total = forms.reduce((sum, f) => sum + f.count, 0);
-          return { pgn, pgnLabel: pgn ? describeTag(pgn).en : "Unspecified", forms, total };
+          return { pgn, forms, total };
         })
         .sort((a, b) => comparePgn(a.pgn, b.pgn));
 

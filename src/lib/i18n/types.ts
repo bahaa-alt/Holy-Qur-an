@@ -149,6 +149,8 @@ export interface Dict {
   conjugationTable: {
     heading: string;
     subtitle: string;
+    /** shown for the cell of forms the corpus marks with no person-gender-number */
+    unspecifiedPerson: string;
     form: (verbForm: string) => string;
     occurrencesCount: (count: number) => string;
   };

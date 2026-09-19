@@ -10,15 +10,21 @@ import type { ManifestFile } from "@/lib/data/types";
 export function CiteButton({
   subject,
   manifest,
+  canonical,
 }: {
   subject: CitationSubject;
   manifest: Pick<ManifestFile, "version" | "builtAt" | "hash" | "reading">;
+  /** this page's canonical absolute URL, from absoluteUrl() on the server */
+  canonical: string;
 }) {
   const t = useT();
   const [copied, setCopied] = useState(false);
 
   async function handleClick() {
-    const citation = buildCitation(subject, manifest, window.location.href);
+    // The canonical URL, not window.location.href: a citation has to name
+    // the one authoritative address, which is not necessarily the one this
+    // reader arrived at -- a preview, a mirror, or next dev all differ.
+    const citation = buildCitation(subject, manifest, canonical);
     const ok = await copyToClipboard(citation);
     if (ok) {
       setCopied(true);

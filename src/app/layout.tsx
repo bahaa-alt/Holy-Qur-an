@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { SITE_ORIGIN, absoluteUrl } from "@/lib/site";
 import { Amiri_Quran, Inter, Noto_Naskh_Arabic } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
@@ -27,6 +28,12 @@ const amiriQuran = Amiri_Quran({
 });
 
 export const metadata: Metadata = {
+  // Set so Open Graph and Twitter image paths resolve absolutely. Canonical
+  // URLs are NOT resolved against it -- Next uses the URL constructor, which
+  // drops the /Holy-Qur-an base path from any path starting with "/", so
+  // every page builds its own with absoluteUrl(). See src/lib/site.ts.
+  metadataBase: new URL(`${SITE_ORIGIN}/`),
+  alternates: { canonical: absoluteUrl("/") },
   title: {
     default: "Quran Root Research",
     template: "%s · Quran Root Research",

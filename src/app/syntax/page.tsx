@@ -1,8 +1,12 @@
 import { readMeta, readSyntaxIndex } from "@/lib/data/serverData";
 import { describeTag } from "@/lib/morphology/tagLabels";
 import { SyntaxPageContent } from "@/components/syntax/SyntaxPageContent";
+import { absoluteUrl } from "@/lib/site";
 
-export const metadata = { title: "Syntax & rhetoric" };
+export const metadata = {
+  title: "Syntax & rhetoric",
+  alternates: { canonical: absoluteUrl("/syntax/") },
+};
 
 export default function SyntaxPage() {
   const syntax = readSyntaxIndex();

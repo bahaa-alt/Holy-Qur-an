@@ -22,6 +22,7 @@ import { Collocations } from "@/components/root/Collocations";
 import { MujamPanel } from "@/components/mujam/MujamPanel";
 import { LanePanel } from "@/components/lane/LanePanel";
 import { RootInteractive } from "@/components/root/RootInteractive";
+import { absoluteUrl } from "@/lib/site";
 
 export function generateStaticParams() {
   const index = readIndex();
@@ -31,7 +32,10 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ root: string }> }) {
   const { root: rawRoot } = await params;
   const root = decodeURIComponent(rawRoot);
-  return { title: `Root ${root}` };
+  return {
+    title: `Root ${root}`,
+    alternates: { canonical: absoluteUrl(`/root/${encodeURIComponent(root)}/`) },
+  };
 }
 
 export default async function RootPage({ params }: { params: Promise<{ root: string }> }) {
@@ -75,7 +79,11 @@ export default async function RootPage({ params }: { params: Promise<{ root: str
               label={root}
               href={`/root/${encodeURIComponent(root)}/`}
             />
-            <CiteButton subject={{ kind: "root", label: root }} manifest={manifest} />
+            <CiteButton
+              subject={{ kind: "root", label: root }}
+              manifest={manifest}
+              canonical={absoluteUrl(`/root/${encodeURIComponent(root)}/`)}
+            />
           </>
         }
       />

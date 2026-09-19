@@ -4,6 +4,7 @@ import { ALL_TOPICS, findTopicBySlug } from "@/lib/topics/topicDefinitions";
 import { buildTopicVerseMatches, topicSourceFileKey } from "@/lib/topics/buildTopicOccurrences";
 import { TopicPageContent } from "@/components/topics/TopicPageContent";
 import type { RootFile } from "@/lib/data/types";
+import { absoluteUrl } from "@/lib/site";
 
 export function generateStaticParams() {
   return ALL_TOPICS.map((t) => ({ slug: t.slug }));
@@ -12,7 +13,10 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const topic = findTopicBySlug(slug);
-  return { title: topic ? `${topic.labelEn} — Topics` : "Topic" };
+  return {
+    title: topic ? `${topic.labelEn} — Topics` : "Topic",
+    alternates: { canonical: absoluteUrl(`/topics/${slug}/`) },
+  };
 }
 
 export default async function TopicPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -28,7 +32,10 @@ export default async function TopicPage({ params }: { params: Promise<{ slug: st
   for (const source of topic.sources) {
     const key = topicSourceFileKey(source);
     if (files.has(key)) continue;
-    files.set(key, source.kind === "rootlessLemma" ? readLemmaFile(source.lemmaKey) : readRootFile(source.root));
+    files.set(
+      key,
+      source.kind === "rootlessLemma" ? readLemmaFile(source.lemmaKey) : readRootFile(source.root),
+    );
   }
 
   const matches = buildTopicVerseMatches(topic.sources, files);

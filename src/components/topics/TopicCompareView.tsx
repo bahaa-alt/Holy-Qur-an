@@ -4,13 +4,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { getLemma, getRoot } from "@/lib/data/loader";
 import { ALL_TOPICS, findTopicBySlug, type TopicDefinition } from "@/lib/topics/topicDefinitions";
-import { buildTopicVerseMatches, topicSourceFileKey, type TopicVerseMatch } from "@/lib/topics/buildTopicOccurrences";
+import {
+  buildTopicVerseMatches,
+  topicSourceFileKey,
+  type TopicVerseMatch,
+} from "@/lib/topics/buildTopicOccurrences";
 import { decodeTopicsQuery, encodeTopicsQuery } from "@/lib/topics/query";
 import { TopicPicker } from "./TopicPicker";
 import { TopicVerseList } from "./TopicVerseList";
 import { PrintableTopicVerses, type PrintableTopicVersesHandle } from "./PrintableTopicVerses";
 import { PrintButton } from "@/components/export/PrintButton";
-import { useT } from "@/lib/i18n/LanguageContext";
+import { useLanguage, useT } from "@/lib/i18n/LanguageContext";
 import type { RootFile } from "@/lib/data/types";
 
 /**
@@ -24,6 +28,7 @@ import type { RootFile } from "@/lib/data/types";
  */
 export function TopicCompareView() {
   const t = useT();
+  const { lang } = useLanguage();
   // Starts empty to match the prerendered static HTML -- see CompareView's
   // identical comment for why the real initial selection is read from the
   // URL only after mount, never via useState's lazy initializer.
@@ -32,9 +37,9 @@ export function TopicCompareView() {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    const initial = decodeTopicsQuery(new URLSearchParams(window.location.search).get("topics")).filter((slug) =>
-      ALL_TOPICS.some((topic) => topic.slug === slug),
-    );
+    const initial = decodeTopicsQuery(
+      new URLSearchParams(window.location.search).get("topics"),
+    ).filter((slug) => ALL_TOPICS.some((topic) => topic.slug === slug));
     if (initial.length > 0) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration from the URL, not a subscription; see CompareView.
       setSelected(initial);
@@ -53,7 +58,10 @@ export function TopicCompareView() {
   }, [selected, hydrated]);
 
   const selectedTopics = useMemo(
-    () => selected.map((slug) => findTopicBySlug(slug)).filter((topic): topic is TopicDefinition => !!topic),
+    () =>
+      selected
+        .map((slug) => findTopicBySlug(slug))
+        .filter((topic): topic is TopicDefinition => !!topic),
     [selected],
   );
 
@@ -63,21 +71,23 @@ export function TopicCompareView() {
       for (const source of topic.sources) {
         const key = topicSourceFileKey(source);
         if (files.has(key) || toFetch.has(key)) continue;
-        toFetch.set(key, () => (source.kind === "rootlessLemma" ? getLemma(source.lemmaKey) : getRoot(source.root)));
+        toFetch.set(key, () =>
+          source.kind === "rootlessLemma" ? getLemma(source.lemmaKey) : getRoot(source.root),
+        );
       }
     }
     if (toFetch.size === 0) return;
     let cancelled = false;
-    Promise.all([...toFetch.entries()].map(async ([key, fetchFile]) => [key, await fetchFile()] as const)).then(
-      (entries) => {
-        if (cancelled) return;
-        setFiles((prev) => {
-          const next = new Map(prev);
-          for (const [key, file] of entries) next.set(key, file);
-          return next;
-        });
-      },
-    );
+    Promise.all(
+      [...toFetch.entries()].map(async ([key, fetchFile]) => [key, await fetchFile()] as const),
+    ).then((entries) => {
+      if (cancelled) return;
+      setFiles((prev) => {
+        const next = new Map(prev);
+        for (const [key, file] of entries) next.set(key, file);
+        return next;
+      });
+    });
     return () => {
       cancelled = true;
     };
@@ -92,7 +102,8 @@ export function TopicCompareView() {
     return map;
   }, [selectedTopics, files]);
 
-  const stillLoading = selectedTopics.length > 0 && selectedTopics.some((topic) => !topicMatches.has(topic.slug));
+  const stillLoading =
+    selectedTopics.length > 0 && selectedTopics.some((topic) => !topicMatches.has(topic.slug));
 
   const printRefs = useRef(new Map<string, PrintableTopicVersesHandle | null>());
   async function resolveAllForPrint() {
@@ -114,8 +125,15 @@ export function TopicCompareView() {
       {!stillLoading && selectedTopics.length >= 2 && (
         <>
           <div className="flex items-center justify-between">
-            <h1 className="hidden print:block text-xl font-semibold text-ink">
-              {selectedTopics.map((topic) => topic.labelEn).join(" · ")}
+            {/* Print header. Everywhere else the topic shows its Arabic
+                label with the English beneath; on one printed line there is
+                only room for the reader's own. */}
+            <h1
+              className={`hidden print:block text-xl font-semibold text-ink ${lang === "ar" ? "arabic-ui" : ""}`}
+            >
+              {selectedTopics
+                .map((topic) => (lang === "ar" ? topic.labelAr : topic.labelEn))
+                .join(" · ")}
             </h1>
             <div className="print:hidden ms-auto">
               <PrintButton onBeforePrint={resolveAllForPrint} />

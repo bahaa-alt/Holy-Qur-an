@@ -167,6 +167,7 @@ export const ar: Dict = {
     colCount: "العدد",
   },
   conjugationTable: {
+    unspecifiedPerson: "غير محدد",
     heading: "تصريف الفعل",
     subtitle:
       "الصيغ المسجَّلة حسب باب الفعل والزمن والشخص/النوع/العدد. اضغط على صيغة لتصفية المستكشف أدناه.",

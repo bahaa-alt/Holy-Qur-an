@@ -14,6 +14,7 @@ import { SurahPageChrome } from "@/components/surah/SurahPageChrome";
 import { SurahInsightsPanel } from "@/components/surah/SurahInsightsPanel";
 import { LoadingVersesFallback } from "@/components/surah/LoadingVersesFallback";
 import { ReadingModeProvider } from "@/lib/surah/ReadingModeContext";
+import { absoluteUrl } from "@/lib/site";
 
 const DISTINCTIVE_ROOTS_SHOWN = 5;
 
@@ -25,7 +26,10 @@ export async function generateMetadata({ params }: { params: Promise<{ n: string
   const { n } = await params;
   const meta = readMeta();
   const surahMeta = meta.surahs.find((s) => s.n === Number(n));
-  return { title: surahMeta ? `${surahMeta.translit} — Surah ${n}` : "Surah" };
+  return {
+    title: surahMeta ? `${surahMeta.translit} — Surah ${n}` : "Surah",
+    alternates: { canonical: absoluteUrl(`/surah/${n}/`) },
+  };
 }
 
 export default async function SurahPage({ params }: { params: Promise<{ n: string }> }) {
@@ -37,7 +41,8 @@ export default async function SurahPage({ params }: { params: Promise<{ n: strin
 
   const surahFile = readSurahFile(n);
 
-  const distinctiveRoots = readDistinctiveVocab().bySurah[n - 1]?.slice(0, DISTINCTIVE_ROOTS_SHOWN) ?? [];
+  const distinctiveRoots =
+    readDistinctiveVocab().bySurah[n - 1]?.slice(0, DISTINCTIVE_ROOTS_SHOWN) ?? [];
   const rhyme = surahRhymeSummary(readRhyme().rows, n);
   const abjadTotal = readAbjad().bySurah[n - 1] ?? 0;
 

@@ -1,16 +1,92 @@
 import { describe, expect, it } from "vitest";
 import { describeTag, describeTags } from "@/lib/morphology/tagLabels";
+import { SYNTAX_TAGS } from "../../scripts/lib/build-syntax";
 
 // The full, exact set of 82 bare tags present in quran-morphology.txt
 // (verified against the downloaded corpus; POS letters N/V/P are a separate
 // field and not part of this list).
 const REAL_BARE_TAGS = [
-  "1P", "1S", "2D", "2FD", "2FP", "2FS", "2MD", "2MP", "2MS", "3D", "3FD", "3FP", "3FS", "3MD",
-  "3MP", "3MS", "ACC", "ACT_PCPL", "ADDR", "ADJ", "AMD", "ANS", "ATT", "AVR", "CAUS", "CERT",
-  "CIRC", "COM", "COND", "CONJ", "D", "DEM", "DET", "DIST", "EMPH", "EQ", "EXH", "EXL", "EXP", "F",
-  "FD", "FP", "FS", "FUT", "GEN", "IMPF", "IMPV", "INC", "INDEF", "INL", "INT", "INTG", "LOC", "M",
-  "MD", "MP", "MS", "NEG", "NOM", "NV", "P", "PASS", "PASS_PCPL", "PERF", "PN", "PREF", "PREV",
-  "PRO", "PRON", "PRP", "REL", "REM", "RES", "RET", "RSLT", "SUB", "SUFF", "SUP", "SUR", "T", "VN",
+  "1P",
+  "1S",
+  "2D",
+  "2FD",
+  "2FP",
+  "2FS",
+  "2MD",
+  "2MP",
+  "2MS",
+  "3D",
+  "3FD",
+  "3FP",
+  "3FS",
+  "3MD",
+  "3MP",
+  "3MS",
+  "ACC",
+  "ACT_PCPL",
+  "ADDR",
+  "ADJ",
+  "AMD",
+  "ANS",
+  "ATT",
+  "AVR",
+  "CAUS",
+  "CERT",
+  "CIRC",
+  "COM",
+  "COND",
+  "CONJ",
+  "D",
+  "DEM",
+  "DET",
+  "DIST",
+  "EMPH",
+  "EQ",
+  "EXH",
+  "EXL",
+  "EXP",
+  "F",
+  "FD",
+  "FP",
+  "FS",
+  "FUT",
+  "GEN",
+  "IMPF",
+  "IMPV",
+  "INC",
+  "INDEF",
+  "INL",
+  "INT",
+  "INTG",
+  "LOC",
+  "M",
+  "MD",
+  "MP",
+  "MS",
+  "NEG",
+  "NOM",
+  "NV",
+  "P",
+  "PASS",
+  "PASS_PCPL",
+  "PERF",
+  "PN",
+  "PREF",
+  "PREV",
+  "PRO",
+  "PRON",
+  "PRP",
+  "REL",
+  "REM",
+  "RES",
+  "RET",
+  "RSLT",
+  "SUB",
+  "SUFF",
+  "SUP",
+  "SUR",
+  "T",
+  "VN",
   "VOC",
 ];
 
@@ -24,8 +100,14 @@ describe("describeTag", () => {
   });
 
   it("decomposes person/gender/number codes", () => {
-    expect(describeTag("3MP")).toEqual({ en: "3rd person, masculine, plural", ar: "غائب، مذكر، جمع" });
-    expect(describeTag("2FS")).toEqual({ en: "2nd person, feminine, singular", ar: "مخاطب، مؤنث، مفرد" });
+    expect(describeTag("3MP")).toEqual({
+      en: "3rd person, masculine, plural",
+      ar: "غائب، مذكر، جمع",
+    });
+    expect(describeTag("2FS")).toEqual({
+      en: "2nd person, feminine, singular",
+      ar: "مخاطب، مؤنث، مفرد",
+    });
     expect(describeTag("MS")).toEqual({ en: "masculine, singular", ar: "مذكر، مفرد" });
     expect(describeTag("D")).toEqual({ en: "dual", ar: "مثنى" });
   });
@@ -68,5 +150,25 @@ describe("describeTags", () => {
 
   it("returns an empty array for an empty string", () => {
     expect(describeTags("")).toEqual([]);
+  });
+});
+
+describe("Arabic labels for the syntax vocabulary", () => {
+  it("gives every syntax tag a real Arabic label, not an English fallback", () => {
+    // The /syntax/ page renders these chips, and for a while it rendered
+    // `.en` regardless of interface language. The render is fixed; this
+    // guards the other half -- that there is actually Arabic to render,
+    // rather than a label silently falling through to the English string.
+    const missing = SYNTAX_TAGS.filter((tag) => {
+      const label = describeTag(tag);
+      return !label.ar || label.ar === label.en || !/[ء-ي]/.test(label.ar);
+    });
+    expect(missing).toEqual([]);
+  });
+
+  it("gives every syntax tag an English label too", () => {
+    for (const tag of SYNTAX_TAGS) {
+      expect(describeTag(tag).en, tag).not.toBe(tag);
+    }
   });
 });
