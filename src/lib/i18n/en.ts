@@ -361,6 +361,13 @@ export const en: Dict = {
     labelLabel: "English label",
     labelPlaceholder: "e.g. Min rabbikum (From your Lord)",
   },
+  tafsir: {
+    toggle: "Commentary",
+    loading: "Loading commentary\u2026",
+    failed: "Could not load the commentary.",
+    noEntry: (covered: number, total: number) =>
+      `This commentary has no separate note on this verse. It treats ${covered.toLocaleString()} of the Qur'an's ${total.toLocaleString()} verses individually \u2014 verses it passes over are usually ones it has already glossed, such as a repeated refrain. Nothing is shown here rather than the nearest preceding note, which would not be a comment on this verse.`,
+  },
   readings: {
     toggle: "Other transmissions",
     loading: "Loading transmissions\u2026",

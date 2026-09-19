@@ -290,6 +290,25 @@ export interface ReadingSurahFile {
   verses: { a: number; t: string }[];
 }
 
+/** Provenance and coverage for a shipped tafsir (Qur'anic commentary). */
+export interface TafsirMetaFile {
+  slug: string;
+  name: string;
+  nameAr: string;
+  authors: string;
+  authorsAr: string;
+  /** verses this commentary has an entry for -- deliberately less than totalVerses */
+  coveredVerses: number;
+  totalVerses: number;
+}
+
+/** One surah's commentary. Verses with no entry are simply absent (see buildTafsir). */
+export interface TafsirSurahFile {
+  slug: string;
+  n: number;
+  entries: { a: number; t: string }[];
+}
+
 export interface SurahVerse {
   /** ayah number, 1-based */
   a: number;

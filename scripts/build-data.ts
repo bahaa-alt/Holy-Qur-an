@@ -5,7 +5,7 @@
  * pipeline but skips writing files, only validating invariants and size
  * budgets -- useful in CI without touching the working tree.
  */
-import { existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { gzipSync } from "node:zlib";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
@@ -19,6 +19,7 @@ import { buildArIndex, type ArIndexableVerse } from "./lib/build-ar-index";
 import { buildVerseRoots } from "./lib/build-verse-roots";
 import { SYNTAX_TAGS, buildSyntax } from "./lib/build-syntax";
 import { RIWAYAT, buildReadings, type RawEdition } from "./lib/build-readings";
+import { TAFSIR_SLUG, buildTafsir, type RawTafsirRow } from "./lib/build-tafsir";
 import { describeTag } from "../src/lib/morphology/tagLabels";
 import { buildInsights } from "./lib/build-insights";
 import { buildRhyme } from "./lib/build-rhyme";
@@ -61,6 +62,11 @@ const PICKTHALL_URL = "https://raw.githubusercontent.com/fawazahmed0/quran-api/1
 
 const SOURCES: ManifestSource[] = [
   {
+    name: "Tafsir al-Jalalayn (al-Mahalli and al-Suyuti, 15th-16th c.) -- committed under references/",
+    url: "https://github.com/spa5k/tafsir_api",
+    license: "MIT (repository packaging). The commentary itself is a classical work in the public domain. Covers 6,010 of 6,236 verses.",
+  },
+  {
     name: "Alternative transmissions (Qalun, Warsh, al-Bazzi, Qunbul, al-Duri, al-Susi, Shu'ba)",
     url: "https://github.com/fawazahmed0/quran-api",
     license: "Unlicense (public domain). Non-Hafs editions are re-segmented onto Kufan verse boundaries at the source.",
@@ -90,6 +96,7 @@ const SOURCES: ManifestSource[] = [
 // Bulk downloads that are deliberately NOT part of the deployed site. Git-
 // ignored; a maintainer uploads the contents to a GitHub release, and the
 // About page links there (see NEXT_PUBLIC_CORPUS_EXPORT_URL).
+const TAFSIR_SRC_DIR = join(process.cwd(), "references", "tafsir", `ar-tafsir-al-${TAFSIR_SLUG}`);
 const EXPORT_DIR = join(process.cwd(), "dist", "export");
 const OUT_DIR = join(process.cwd(), "public", "data", "v1");
 
@@ -111,6 +118,9 @@ const EXPECTED = {
   // Segments carrying one of SYNTAX_TAGS -- 15,413 rootless particles plus
   // 1,601 rooted (1,151 of them PASS). See SyntaxIndexFile.
   syntaxRows: 17014,
+  // Tafsir al-Jalalayn has no separate note for 226 of the 6,236 verses --
+  // interior gaps across 56 surahs, 32 of them surah 55's repeated refrain.
+  tafsirCoveredVerses: 6010,
   rootCounts: { كتب: 319, رحم: 339, علم: 854 } as Record<string, number>,
   maxMismatches: 50,
 };
@@ -161,6 +171,9 @@ const LARGEST_ROOT_BUDGET_RAW = 60 * 1024;
 // riwaya). Budgeted separately and excluded from the core totals -- see the
 // emit call site for why.
 const READINGS_BUDGET_RAW = 14 * 1024 * 1024;
+// Tafsir al-Jalalayn, sharded per surah (~3.1 MB). Budgeted separately and
+// excluded from the core totals, same as readings/.
+const TAFSIR_BUDGET_RAW = 6 * 1024 * 1024;
 // Raised from 9 MiB: adding Pickthall's translation to every verse grew
 // surahs/*.json by ~900 KB raw (measured 9.18 MiB total). Gzipped total
 // barely moved (~2.66 MiB, well under TOTAL_GZ_BUDGET) since English prose
@@ -290,6 +303,16 @@ async function main() {
   );
   const readings = buildReadings(readingEditions, versesPerSurah);
 
+  // Read from the repo, not the network: this tafsir is committed under
+  // references/ (3.1 MB) and was sitting there unread.
+  const tafsirRows = new Map<number, RawTafsirRow[]>(
+    meta.surahs.map((sm) => [
+      sm.n,
+      JSON.parse(readFileSync(join(TAFSIR_SRC_DIR, `${sm.n}.json`), "utf8")) as RawTafsirRow[],
+    ]),
+  );
+  const tafsir = buildTafsir(tafsirRows, versesPerSurah);
+
   // --- 5b-ii. Build the corpus-wide syntactic / rhetorical index ---
   const syntaxIndex = buildSyntax(words);
 
@@ -336,6 +359,10 @@ async function main() {
   assertEqual("syntax.json row count", syntaxIndex.t.length, EXPECTED.syntaxRows, errors);
   assertEqual("readings shard count", readings.files.size, RIWAYAT.length * meta.surahs.length, errors);
   assertEqual("readings riwaya count", readings.meta.riwayat.length, RIWAYAT.length, errors);
+  assertEqual("tafsir shard count", tafsir.files.size, meta.surahs.length, errors);
+  // Coverage is partial by nature (see buildTafsir); asserted so a source
+  // change that silently drops commentary is caught, not so it reaches 6,236.
+  assertEqual("tafsir covered verses", tafsir.meta.coveredVerses, EXPECTED.tafsirCoveredVerses, errors);
   assertEqual("syntax.json tag vocabulary size", syntaxIndex.tags.length, SYNTAX_TAGS.length, errors);
   for (const column of ["s", "a", "w", "g"] as const) {
     if (syntaxIndex[column].length !== syntaxIndex.t.length) {
@@ -548,6 +575,20 @@ async function main() {
   report.record("readings/*/*.json", readingsRaw, readingsGz, false);
   if (readingsRaw > READINGS_BUDGET_RAW) {
     fail(`readings/ exceeds its budget: ${readingsRaw} > ${READINGS_BUDGET_RAW} bytes`);
+  }
+
+  const tafsirMetaSize = writeJSON(join(OUT_DIR, "tafsir", TAFSIR_SLUG, "meta.json"), tafsir.meta);
+  report.record("tafsir/meta.json", tafsirMetaSize.rawBytes, tafsirMetaSize.gzBytes);
+  const tafsirSizes = [...tafsir.files.entries()].map(([n, file]) =>
+    writeJSON(join(OUT_DIR, "tafsir", TAFSIR_SLUG, `${n}.json`), file),
+  );
+  // Uncounted for the same reason as readings/: an apparatus opened per
+  // verse, fetched lazily, and not warmed by prefetchAll.
+  const tafsirRaw = tafsirSizes.reduce((sum, x) => sum + x.rawBytes, 0);
+  const tafsirGz = tafsirSizes.reduce((sum, x) => sum + x.gzBytes, 0);
+  report.record("tafsir/*/*.json", tafsirRaw, tafsirGz, false);
+  if (tafsirRaw > TAFSIR_BUDGET_RAW) {
+    fail(`tafsir/ exceeds its budget: ${tafsirRaw} > ${TAFSIR_BUDGET_RAW} bytes`);
   }
 
   const syntaxSize = writeJSON(join(OUT_DIR, "syntax.json"), syntaxIndex);
