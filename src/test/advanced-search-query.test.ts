@@ -12,6 +12,8 @@ describe("encodeAdvancedSearchQuery", () => {
         verbForms: [],
         revelation: "all",
         rootArs: [],
+        wordSyntaxTags: [],
+        verseSyntaxTags: [],
         surahFrom: 1,
         surahTo: 114,
         page: 0,
@@ -25,6 +27,8 @@ describe("encodeAdvancedSearchQuery", () => {
       verbForms: [1, 4],
       revelation: "meccan",
       rootArs: ["كتب", "رحم"],
+      wordSyntaxTags: [],
+      verseSyntaxTags: [],
       surahFrom: 2,
       surahTo: 10,
       page: 3,
@@ -47,6 +51,8 @@ describe("decodeAdvancedSearchQuery", () => {
       verbForms: [],
       revelation: "all",
       rootArs: [],
+      wordSyntaxTags: [],
+      verseSyntaxTags: [],
       surahFrom: 1,
       surahTo: 114,
       page: 0,
@@ -59,6 +65,8 @@ describe("decodeAdvancedSearchQuery", () => {
       verbForms: [1, 4],
       revelation: "medinan" as const,
       rootArs: ["أمن", "كتب"],
+      wordSyntaxTags: [],
+      verseSyntaxTags: [],
       surahFrom: 5,
       surahTo: 20,
       page: 2,
@@ -89,5 +97,38 @@ describe("decodeAdvancedSearchQuery", () => {
   it("falls back to page 0 for a negative or non-numeric page", () => {
     expect(decodeAdvancedSearchQuery("page=-1", VALID_CATS).page).toBe(0);
     expect(decodeAdvancedSearchQuery("page=abc", VALID_CATS).page).toBe(0);
+  });
+
+  it("round-trips the two syntax facets", () => {
+    const encoded = encodeAdvancedSearchQuery({
+      cats: [],
+      verbForms: [],
+      revelation: "all",
+      rootArs: [],
+      wordSyntaxTags: ["PASS"],
+      verseSyntaxTags: ["COND", "RES"],
+      surahFrom: 1,
+      surahTo: 114,
+      page: 0,
+    });
+    expect(encoded).toContain("wsyn=PASS");
+    expect(encoded).toContain("vsyn=COND%2CRES");
+
+    const decoded = decodeAdvancedSearchQuery(encoded, VALID_CATS, new Set(["PASS", "COND", "RES"]));
+    expect(decoded.wordSyntaxTags).toEqual(["PASS"]);
+    expect(decoded.verseSyntaxTags).toEqual(["COND", "RES"]);
+  });
+
+  it("drops a syntax tag that is not in the known vocabulary", () => {
+    // A stale bookmark or hand-edited URL must degrade to "no filter on
+    // that facet", never to a silent zero-result page.
+    const decoded = decodeAdvancedSearchQuery("wsyn=PASS,NOPE&vsyn=BOGUS", VALID_CATS, new Set(["PASS"]));
+    expect(decoded.wordSyntaxTags).toEqual(["PASS"]);
+    expect(decoded.verseSyntaxTags).toEqual([]);
+  });
+
+  it("drops every syntax tag when no vocabulary is supplied", () => {
+    const decoded = decodeAdvancedSearchQuery("wsyn=PASS", VALID_CATS);
+    expect(decoded.wordSyntaxTags).toEqual([]);
   });
 });

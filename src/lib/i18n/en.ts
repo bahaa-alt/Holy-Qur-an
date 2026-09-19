@@ -33,6 +33,7 @@ export const en: Dict = {
     topics: "Topics",
     names: "Names",
     insights: "Insights",
+    syntax: "Syntax",
     saved: "Saved",
     about: "About",
   },
@@ -224,6 +225,12 @@ export const en: Dict = {
     advancedSearchLinkLabel: "Looking for a grammatical pattern instead? Try Advanced Search →",
   },
   advancedSearchPage: {
+    wordSyntaxLabel: "This word is",
+    wordSyntaxHint:
+      "The matched word itself carries this function. Mostly passive verbs \u2014 the particles that carry the other functions have no root, so they are not occurrences and cannot be matched this way.",
+    verseSyntaxLabel: "Verse contains",
+    verseSyntaxHint:
+      "The function appears somewhere in the same verse, on any word. This is the one that composes: a root, filtered to where it sits inside a conditional or a restriction.",
     title: "Advanced search",
     subtitle:
       "Combine facets across the whole corpus -- category, verb Form, one or more roots, surah range, and Meccan/Medinan -- to find things no single root's own page can answer, like every Form VIII passive participle in the Medinan surahs, or every occurrence of either of two roots together.",
@@ -353,6 +360,32 @@ export const en: Dict = {
     phrasePlaceholder: "e.g. من ربكم",
     labelLabel: "English label",
     labelPlaceholder: "e.g. Min rabbikum (From your Lord)",
+  },
+  readings: {
+    toggle: "Other transmissions",
+    loading: "Loading transmissions\u2026",
+    failed: "Could not load the transmissions.",
+    hafsLabel: "\u1E24af\u0163 \u02BFan \u02BF\u0100\u1E63im",
+    baseTextNote: "\u00B7 this app's base text",
+    viaQari: (qari: string) => `\u00B7 from ${qari}`,
+    scopeNote:
+      "These are written texts, so they show wording (farsh) differences only. Most of what audibly distinguishes the readings \u2014 madd, im\u0101la, idgh\u0101m, sakt, treatment of hamza \u2014 is u\u1E63\u016Bl and is not visible here. Nothing on this panel is computed, diffed or highlighted.",
+    numberingNote:
+      "The source re-segments each transmission onto Kufan verse boundaries so they align one-to-one with this app's numbering. The wording is each transmission's own; the verse division is not. Verse counting is a separate tradition from the reading.",
+  },
+  syntaxPage: {
+    heading: "Syntax & rhetoric",
+    intro:
+      "Every segment the corpus tags with a syntactic or rhetorical function \u2014 restriction, condition, circumstantial \u1E25\u0101l, prohibition, emphasis, passive voice and more. Most are particles, which carry no root and so appear in none of this app's root counts.",
+    totalSegments: (n: number) => `${n.toLocaleString()} tagged segments`,
+    pickTag: "Choose a function",
+    occurrencesIn: (tag: string) => `Every occurrence of: ${tag}`,
+    loading: "Loading\u2026",
+    noneSelected: "Pick a function above to see every place it occurs.",
+    methodologyNote:
+      "These are not \u201coccurrences\u201d in this app's usual sense. An occurrence is a segment carrying a root, and 15,413 of the 17,014 segments here are rootless particles. They are a parallel layer, counted separately, and they never affect a root's totals.",
+    passiveNote:
+      "Passive voice is listed here rather than as a grammatical category, because voice is independent of aspect \u2014 a passive perfect verb is still a perfect verb, and is still counted as one everywhere else in this app.",
   },
   insightsPage: {
     title: "Insights",
@@ -519,6 +552,7 @@ export const en: Dict = {
     viewMoreInInsights: "More corpus-wide research tools in Insights →",
   },
   surahPage: {
+    readingNote: (transmission: string, numbering: string) => `Text: ${transmission} \u00B7 ${numbering} numbering`,
     previous: "Previous",
     next: "Next",
     meccan: "Meccan",
@@ -625,9 +659,14 @@ export const en: Dict = {
     heading: "About this project",
     intro:
       "A free, open-source, account-less tool for researching Qur'anic Arabic roots and word forms. It runs entirely in your browser as a static site: no accounts, no login, no database server. All data ships as static files and works fully offline once installed.",
+    readingHeading: "Which reading this is",
+    readingBody: (transmission: string, edition: string, numbering: string) =>
+      `The Arabic text throughout this app is ${transmission}, in the ${edition}, with ${numbering} verse numbering (6,236 verses).`,
+    readingWhyItMatters:
+      "This is stated because it is load-bearing, not as a footnote. A different canonical reading can put a word under a different root \u2014 at 2:259 this text reads \u0646\u064F\u0646\u0634\u0650\u0632\u064F (root \u0646\u0634\u0632), where another reads \u0646\u064F\u0646\u0634\u0650\u0631\u064F (root \u0646\u0634\u0631) \u2014 so every root count here is a count for this reading, and every surah:ayah:word reference is an address in this reading. Verse numbering is a separate tradition from the reading, and this app currently offers no others of either.",
     howCountsComputedHeading: "How counts are computed",
     howCountsComputedBody:
-      'An "occurrence" of a root is a morphological segment tagged with that root in the underlying corpus. Particles, pronouns, and grammatical clitics (prefixes and suffixes such as the determiner "al-" or attached pronouns) never carry a root and are never counted toward one, even though they still appear in the verse text. This matches how the Quranic Arabic Corpus itself counts roots, which may differ from tools that count whole inflected words.',
+      'An "occurrence" of a root is a morphological segment tagged with that root in the underlying corpus. Particles, pronouns, and grammatical clitics (prefixes and suffixes such as the determiner "al-" or attached pronouns) never carry a root and are never counted toward one, even though they still appear in the verse text. This matches how the Quranic Arabic Corpus itself counts roots, which may differ from tools that count whole inflected words. Those uncounted particles are not discarded, though: the ones carrying a syntactic or rhetorical function \u2014 restriction, condition, circumstantial \u1E25\u0101l, prohibition, emphasis and the rest \u2014 are indexed separately and browsable under Syntax. That is a parallel layer with its own counts; it never changes a root\u2019s totals.',
     insightsMethodologyHeading: "How the Insights page's numbers are computed",
     insightsMethodologyIntro:
       "The Insights page (letter frequency, corpus facts, rhyme patterns, distinctive vocabulary, verb collocations, Abjad value) adds several metrics beyond simple occurrence counts. Each is documented here so a number can be cited and understood, not just displayed.",
@@ -683,5 +722,8 @@ export const en: Dict = {
     corpusExportBody:
       "Every word of the Qur'an in one CSV file -- surah, ayah, word, root, lemma, grammatical category, tags, and both English translations -- for analysis in Excel, pandas, R, or any other tool outside this app. This is the same data every page here is built from, unfiltered.",
     corpusExportDownload: (size) => `Download full corpus (CSV, ${size})`,
+    corpusExportReleases: "Browse releases",
+    corpusExportNotPublished: (size) =>
+      `The export is ${size} \u2014 too large to ship with the site, so it is published as a release asset rather than served from here. Build it yourself with \`pnpm data:build\`; it lands in \`dist/export/corpus.csv\`.`,
   },
 };

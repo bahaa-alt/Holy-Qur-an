@@ -1,6 +1,13 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { readAbjad, readDistinctiveVocab, readMeta, readRhyme, readSurahFile } from "@/lib/data/serverData";
+import {
+  readAbjad,
+  readDistinctiveVocab,
+  readManifest,
+  readMeta,
+  readRhyme,
+  readSurahFile,
+} from "@/lib/data/serverData";
 import { surahRhymeSummary } from "@/lib/quran/rhyme";
 import { SurahVerseList } from "@/components/surah/SurahVerseList";
 import { SurahPageChrome } from "@/components/surah/SurahPageChrome";
@@ -36,7 +43,7 @@ export default async function SurahPage({ params }: { params: Promise<{ n: strin
 
   return (
     <ReadingModeProvider>
-      <SurahPageChrome n={n} surahMeta={surahMeta}>
+      <SurahPageChrome n={n} surahMeta={surahMeta} reading={readManifest().reading}>
         <SurahInsightsPanel
           distinctiveRoots={distinctiveRoots}
           rhymeDominant={rhyme.dominant}

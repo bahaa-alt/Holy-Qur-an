@@ -62,6 +62,32 @@ export interface ManifestMismatch {
   jsonN: number;
 }
 
+/**
+ * Which reading (qira'a / riwaya) and verse-numbering tradition this build's
+ * text is, recorded explicitly because everything else in this corpus
+ * silently assumes it.
+ *
+ * The app ships one text and used to describe it only as "the Uthmani
+ * text", which names an orthography, not a reading. It is in fact Hafs 'an
+ * 'Asim in the 1924 Cairo tradition, with Kufan verse numbering (6,236
+ * verses; surah 42 counts حمٓ and عٓسٓقٓ as two separate verses). That is
+ * load-bearing, not a footnote: a variant reading can change which ROOT a
+ * word belongs to -- 2:259 نُنشِزُ (root نشز) is نُنشِرُ (root نشر) in
+ * another canonical reading -- so every root count this app displays is a
+ * Hafs count, and the surah:ayah:word:segment key is a Hafs address.
+ */
+export interface ManifestReading {
+  /** e.g. "Hafs 'an 'Asim" */
+  transmission: string;
+  /** e.g. "Hafs 'an 'Asim" in Arabic */
+  transmissionAr: string;
+  /** the printed tradition the orthography follows, e.g. "1924 Cairo (Uthmani orthography)" */
+  edition: string;
+  /** the verse-counting tradition, e.g. "Kufan" -- independent of the reading */
+  verseNumbering: string;
+  verseNumberingAr: string;
+}
+
 export interface ManifestFile {
   version: string;
   builtAt: string;
@@ -76,10 +102,12 @@ export interface ManifestFile {
     rootedLemmas: number;
     rootlessLemmas: number;
     occurrences: number;
-    /** byte size of the bulk corpus CSV export (public/data/v1/export/corpus.csv), for display before download */
+    /** byte size of the bulk corpus CSV export (dist/export/corpus.csv, published as a release asset), for display before download */
     corpusExportBytes: number;
   };
   sources: ManifestSource[];
+  /** see ManifestReading -- which reading and numbering tradition this text is */
+  reading: ManifestReading;
   mismatches: ManifestMismatch[];
 }
 
@@ -188,6 +216,78 @@ export interface OccurrenceIndexFile {
   /** Cat values referenced by each row's catIdx, in index order. */
   cats: Cat[];
   rows: OccurrenceIndexRow[];
+}
+
+/**
+ * Every morphological segment in the corpus that carries a syntactic or
+ * rhetorical function tag -- the layer the corpus ships and the rest of
+ * this app throws away.
+ *
+ * WHY THIS IS A SEPARATE FILE, NOT MORE COLUMNS ON occurrences.json.
+ * This app defines an "occurrence" as a segment carrying a ROOT (see the
+ * About page and OccurrenceIndexFile), and every count it displays rests on
+ * that definition. But 15,413 of the 17,014 segments indexed here are
+ * ROOTLESS -- the particles carrying restriction (RES), condition (COND),
+ * circumstantial hal (CIRC), prohibition (PRO), resumption (REM) and the
+ * rest of the machinery of Qur'anic rhetoric. Folding them into the
+ * occurrence index would silently redefine "occurrence" and change every
+ * root count in the app. They are a parallel layer, not more occurrences.
+ *
+ * ONE TAG PER ROW, NOT A BITMASK. Verified against the real corpus: no
+ * segment carries more than one of these 33 tags, so a single tag id per
+ * row is exact rather than lossy, and needs no mask arithmetic at query
+ * time. scripts/lib/build-syntax.ts throws if that ever stops holding, so a
+ * future corpus fails the build instead of silently dropping a tag.
+ *
+ * COLUMNAR, NOT ROW OBJECTS. Measured over the real corpus: parallel arrays
+ * cost 214.8 KB raw / 33.6 KB gz against 268.9 KB / 60.1 KB for an array of
+ * [s,a,w,seg,tag] tuples -- runs of small integers compress far better kept
+ * in their own columns.
+ *
+ * PASSIVE VOICE LIVES HERE, NOT IN `Cat`. The 1,151 PASS-tagged segments are
+ * rooted, so unlike the rest of this file they DO also appear in
+ * occurrences.json -- but they are indexed here rather than promoted to a
+ * `Cat` value, because voice is orthogonal to aspect: a passive perfect verb
+ * is still a perfect verb. Adding "verb.passive" as a rival category would
+ * move 1,151 occurrences out of verb.perf/verb.impf and change every
+ * frequency chart, category tab and comparison in the app. Join on
+ * (s, a, w) to filter occurrences by voice.
+ */
+export interface SyntaxIndexFile {
+  /** the tag vocabulary; `t[i]` indexes into this */
+  tags: string[];
+  /** surah, one entry per indexed segment, in (s,a,w,seg) order */
+  s: number[];
+  /** ayah */
+  a: number[];
+  /** 1-based word index within the verse, matching Occurrence's `w` */
+  w: number[];
+  /** 1-based segment index within the word, matching Occurrence's `seg` */
+  g: number[];
+  /** index into `tags` */
+  t: number[];
+}
+
+/** One non-Hafs transmission (riwaya) shipped alongside the base text. */
+export interface RiwayaMeta {
+  /** directory name under readings/, and the source edition's own slug */
+  slug: string;
+  riwaya: string;
+  riwayaAr: string;
+  /** the reader (qari) this riwaya transmits from */
+  qari: string;
+  qariAr: string;
+}
+
+export interface ReadingsMetaFile {
+  riwayat: RiwayaMeta[];
+}
+
+/** One surah's text in one riwaya. */
+export interface ReadingSurahFile {
+  slug: string;
+  n: number;
+  verses: { a: number; t: string }[];
 }
 
 export interface SurahVerse {

@@ -6,6 +6,7 @@
  * budgets -- useful in CI without touching the working tree.
  */
 import { existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
+import { gzipSync } from "node:zlib";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 
@@ -16,6 +17,9 @@ import { buildRoots, type RootsGlossMap } from "./lib/build-roots";
 import { buildEnIndex, type IndexableVerse } from "./lib/build-en-index";
 import { buildArIndex, type ArIndexableVerse } from "./lib/build-ar-index";
 import { buildVerseRoots } from "./lib/build-verse-roots";
+import { SYNTAX_TAGS, buildSyntax } from "./lib/build-syntax";
+import { RIWAYAT, buildReadings, type RawEdition } from "./lib/build-readings";
+import { describeTag } from "../src/lib/morphology/tagLabels";
 import { buildInsights } from "./lib/build-insights";
 import { buildRhyme } from "./lib/build-rhyme";
 import { buildDistinctiveVocab } from "./lib/build-distinctive-vocab";
@@ -27,7 +31,7 @@ import { buildFormulas } from "./lib/build-formulas";
 import { buildVerseSimilarity } from "./lib/build-verse-similarity";
 import { buildDivineNamePairs } from "./lib/build-divine-name-pairs";
 import { buildCorpusExportCsv } from "./lib/build-corpus-export";
-import { SizeReport, recordGroup, writeJSON, writeText } from "./lib/emit";
+import { SizeReport, checkSizeBudgets, formatBudgetViolation, recordGroup, writeJSON, writeText } from "./lib/emit";
 import { ALL_TOPICS, DIVINE_NAME_TOPICS } from "../src/lib/topics/topicDefinitions";
 import { topicSourceFileKey } from "../src/lib/topics/buildTopicOccurrences";
 import type { ArIndexFile, ManifestFile, ManifestSource, VerseRootsFile } from "../src/lib/data/types";
@@ -47,9 +51,20 @@ const ROOTS_GLOSS_URL = "https://raw.githubusercontent.com/R3GENESI5/quran-bil-q
 // Pickthall's translation, from the same tanzil.net corpus quran-json's own
 // Saheeh International text derives from -- a second English rendering
 // shown alongside Saheeh International for translation comparison.
+// The alternative transmissions come from the same repo, branch and URL
+// shape as PICKTHALL_URL below, under the same Unlicense grant -- adding
+// them needed no new host, fetch path or licence review.
+const READING_URL = (slug: string) =>
+  `https://raw.githubusercontent.com/fawazahmed0/quran-api/1/editions/ara-quran${slug}.min.json`;
+
 const PICKTHALL_URL = "https://raw.githubusercontent.com/fawazahmed0/quran-api/1/editions/eng-mohammedmarmadu.min.json";
 
 const SOURCES: ManifestSource[] = [
+  {
+    name: "Alternative transmissions (Qalun, Warsh, al-Bazzi, Qunbul, al-Duri, al-Susi, Shu'ba)",
+    url: "https://github.com/fawazahmed0/quran-api",
+    license: "Unlicense (public domain). Non-Hafs editions are re-segmented onto Kufan verse boundaries at the source.",
+  },
   {
     name: "Quran morphology (Arabic-script fork of the Quranic Arabic Corpus v0.4)",
     url: "https://github.com/mustafa0x/quran-morphology",
@@ -72,6 +87,10 @@ const SOURCES: ManifestSource[] = [
   },
 ];
 
+// Bulk downloads that are deliberately NOT part of the deployed site. Git-
+// ignored; a maintainer uploads the contents to a GitHub release, and the
+// About page links there (see NEXT_PUBLIC_CORPUS_EXPORT_URL).
+const EXPORT_DIR = join(process.cwd(), "dist", "export");
 const OUT_DIR = join(process.cwd(), "public", "data", "v1");
 
 // --- invariants asserted against the known-correct corpus facts (see PLAN.md) ---
@@ -89,6 +108,9 @@ const EXPECTED = {
   rootedLemmas: 4635,
   rootlessLemmas: 148,
   occurrences: 50269,
+  // Segments carrying one of SYNTAX_TAGS -- 15,413 rootless particles plus
+  // 1,601 rooted (1,151 of them PASS). See SyntaxIndexFile.
+  syntaxRows: 17014,
   rootCounts: { كتب: 319, رحم: 339, علم: 854 } as Record<string, number>,
   maxMismatches: 50,
 };
@@ -99,6 +121,24 @@ const EXPECTED = {
 // (e.g. forms.json carries every distinct diacritized surface form, not just
 // bare stems). Kept with headroom above the current measured size so the
 // budget still catches a real regression.
+/**
+ * The reading this build's text actually is. See ManifestReading: the app
+ * previously described its text only as "the Uthmani text", which names an
+ * orthography rather than a reading, and never said which of the canonical
+ * readings it ships. Recorded in the manifest so it reaches the About page,
+ * every citation, and anyone reading the data files directly.
+ *
+ * Verified against the built data rather than assumed: 6,236 verses, and
+ * surahs/42.json splits حمٓ and عٓسٓقٓ into verses 1 and 2 -- the Kufan count.
+ */
+const READING = {
+  transmission: "Hafs 'an 'Asim",
+  transmissionAr: "حفص عن عاصم",
+  edition: "1924 Cairo edition (Uthmani orthography)",
+  verseNumbering: "Kufan",
+  verseNumberingAr: "العدد الكوفي",
+};
+
 const BUDGETS_RAW_BYTES = {
   "index.json": 800 * 1024,
   "forms.json": 1000 * 1024,
@@ -112,8 +152,15 @@ const BUDGETS_RAW_BYTES = {
   // One row per rooted occurrence (~50,269), fully numeric (s,a,w,rootIdx,
   // lemmaIdx,catIdx,verbForm) -- see OccurrenceIndexFile.
   "occurrences.json": 2000 * 1024,
+  // One row per syntactically-tagged segment (~17,014), columnar and fully
+  // numeric apart from the 33-entry tag vocabulary -- see SyntaxIndexFile.
+  "syntax.json": 400 * 1024,
 };
 const LARGEST_ROOT_BUDGET_RAW = 60 * 1024;
+// The seven alternative transmissions, sharded per surah (~1.6 MB per
+// riwaya). Budgeted separately and excluded from the core totals -- see the
+// emit call site for why.
+const READINGS_BUDGET_RAW = 14 * 1024 * 1024;
 // Raised from 9 MiB: adding Pickthall's translation to every verse grew
 // surahs/*.json by ~900 KB raw (measured 9.18 MiB total). Gzipped total
 // barely moved (~2.66 MiB, well under TOTAL_GZ_BUDGET) since English prose
@@ -121,7 +168,13 @@ const LARGEST_ROOT_BUDGET_RAW = 60 * 1024;
 // Raised again for occurrences.json (cross-corpus faceted search index,
 // ~1.4 MB raw / ~350 KB gz measured) -- both budgets kept with headroom
 // above the current measured totals, not tight to them.
-const TOTAL_RAW_BUDGET = 12.5 * 1024 * 1024;
+// Raised a third time for syntax.json (the syntactic/rhetorical layer, ~215
+// KB raw / ~34 KB gz measured). Raw is again what needed the headroom: the
+// file is mostly small integers, which gzip collapses to almost nothing but
+// which cost ~4 bytes each uncompressed. Before this raise the total sat at
+// 12.45 of 12.5 MiB -- ~55 KiB of raw headroom, too tight to absorb any new
+// index at all, which is the real reason for the increase.
+const TOTAL_RAW_BUDGET = 14 * 1024 * 1024;
 const TOTAL_GZ_BUDGET = 3.5 * 1024 * 1024;
 
 function fail(message: string): never {
@@ -144,6 +197,19 @@ async function main() {
     fetchCachedJSON<RootsGlossMap>(ROOTS_GLOSS_URL, "roots_index.json", { force: FORCE }),
     fetchCachedJSON<PickthallEdition>(PICKTHALL_URL, "pickthall.json", { force: FORCE }),
   ]);
+
+  const readingEditions = new Map<string, RawEdition>(
+    await Promise.all(
+      RIWAYAT.map(
+        async (r) =>
+          [
+            r.slug,
+            (await fetchCachedJSON<RawEdition>(READING_URL(r.slug), `reading-${r.slug}.json`, { force: FORCE }))
+              .data,
+          ] as const,
+      ),
+    ),
+  );
   const pickthallByRef = new Map<string, string>();
   for (const v of pickthall.data.quran) {
     pickthallByRef.set(`${v.chapter}:${v.verse}`, v.text);
@@ -218,6 +284,15 @@ async function main() {
   // --- 5b. Build the global per-verse rooted-word index ---
   const verseRoots: VerseRootsFile = buildVerseRoots(words, rootTextToGlobalIdx, globalIdOf);
 
+  // --- 5b-i. Shard the alternative transmissions ---
+  const versesPerSurah = new Map(
+    [...surahFiles.entries()].map(([n, file]) => [n, file.verses.map((v) => v.a)] as const),
+  );
+  const readings = buildReadings(readingEditions, versesPerSurah);
+
+  // --- 5b-ii. Build the corpus-wide syntactic / rhetorical index ---
+  const syntaxIndex = buildSyntax(words);
+
   // --- 5c. Build corpus-wide curiosities for /insights/ ---
   const insights = buildInsights(words, rootFiles, lemmaFiles, indexRoots, indexLemmas, meta.surahs.length);
   const rhyme = buildRhyme(surahFiles);
@@ -258,6 +333,23 @@ async function main() {
   const verseRootsEntryCount = verseRoots.reduce((sum, v) => sum + v.length, 0);
   assertEqual("verse-roots.json entry count", verseRootsEntryCount, EXPECTED.occurrences, errors);
   assertEqual("occurrences.json row count", occurrenceIndex.rows.length, EXPECTED.occurrences, errors);
+  assertEqual("syntax.json row count", syntaxIndex.t.length, EXPECTED.syntaxRows, errors);
+  assertEqual("readings shard count", readings.files.size, RIWAYAT.length * meta.surahs.length, errors);
+  assertEqual("readings riwaya count", readings.meta.riwayat.length, RIWAYAT.length, errors);
+  assertEqual("syntax.json tag vocabulary size", syntaxIndex.tags.length, SYNTAX_TAGS.length, errors);
+  for (const column of ["s", "a", "w", "g"] as const) {
+    if (syntaxIndex[column].length !== syntaxIndex.t.length) {
+      errors.push(
+        `syntax.json column "${column}": expected ${syntaxIndex.t.length} entries, got ${syntaxIndex[column].length}`,
+      );
+    }
+  }
+  // describeTag() echoes the raw tag back when it knows no label, so an
+  // unlabelled tag is exactly one whose English label is the code itself.
+  // Checked here rather than in a unit test so a corpus change trips it too.
+  for (const tag of syntaxIndex.tags) {
+    if (describeTag(tag).en === tag) errors.push(`syntax.json tag "${tag}" has no label in tagLabels.ts`);
+  }
   if (verseRoots.length !== indexableVerses.length) {
     errors.push(
       `verse-roots.json length: expected ${indexableVerses.length} (one per verse), got ${verseRoots.length}`,
@@ -361,18 +453,21 @@ async function main() {
       corpusExportBytes,
     },
     sources: SOURCES,
+    reading: READING,
     mismatches,
   };
 
   if (CHECK_ONLY) {
     console.log("\n--check mode: skipping file writes.");
     printSizeEstimate({
+      surahFiles,
       meta,
       indexRoots,
       indexLemmas,
       formsEntries,
       enIndex,
       verseRoots,
+      syntaxIndex,
       arIndex,
       occurrenceIndex,
       insights,
@@ -436,6 +531,31 @@ async function main() {
     );
   }
 
+  const readingsMetaSize = writeJSON(join(OUT_DIR, "readings", "meta.json"), readings.meta);
+  report.record("readings/meta.json", readingsMetaSize.rawBytes, readingsMetaSize.gzBytes);
+  const readingSizes = [...readings.files.entries()].map(([key, file]) =>
+    writeJSON(join(OUT_DIR, "readings", `${key}.json`), file),
+  );
+  // Recorded but NOT counted toward the core totals: these are an apparatus
+  // a reader opts into per verse, fetched lazily and deliberately left out
+  // of prefetchAll's offline warm-up. Counting ~11 MB of alternative text
+  // against the core budget would mean either refusing the feature or
+  // doubling the "download everything for offline" cost for every visitor,
+  // neither of which reflects what this data is for. It still gets its own
+  // budget, immediately below.
+  const readingsRaw = readingSizes.reduce((sum, x) => sum + x.rawBytes, 0);
+  const readingsGz = readingSizes.reduce((sum, x) => sum + x.gzBytes, 0);
+  report.record("readings/*/*.json", readingsRaw, readingsGz, false);
+  if (readingsRaw > READINGS_BUDGET_RAW) {
+    fail(`readings/ exceeds its budget: ${readingsRaw} > ${READINGS_BUDGET_RAW} bytes`);
+  }
+
+  const syntaxSize = writeJSON(join(OUT_DIR, "syntax.json"), syntaxIndex);
+  report.record("syntax.json", syntaxSize.rawBytes, syntaxSize.gzBytes);
+  if (syntaxSize.rawBytes > BUDGETS_RAW_BYTES["syntax.json"]) {
+    fail(`syntax.json exceeds its budget: ${syntaxSize.rawBytes} > ${BUDGETS_RAW_BYTES["syntax.json"]} bytes`);
+  }
+
   const arIndexSize = writeJSON(join(OUT_DIR, "ar-index.json"), arIndex);
   report.record("ar-index.json", arIndexSize.rawBytes, arIndexSize.gzBytes);
   if (arIndexSize.rawBytes > BUDGETS_RAW_BYTES["ar-index.json"]) {
@@ -486,9 +606,15 @@ async function main() {
   // app itself (no getX() loader, no service-worker precache entry) --
   // it shouldn't compete with the app-shell size budgets those exist to
   // protect. Printed on its own line below instead.
-  const exportSize = writeText(join(OUT_DIR, "export", "corpus.csv"), corpusExportCsv);
+  // Written OUTSIDE public/ so it never reaches the deployed site. At 37.5 MB
+  // it is a third of the export's bytes, it breaches Cloudflare Pages'
+  // 25 MiB per-asset cap at every tier, and it is a bulk download a handful
+  // of visitors ever take -- not app payload. It is published as a release
+  // asset instead; see the About page and EXPORT_DIR below.
+  const exportSize = writeText(join(EXPORT_DIR, "corpus.csv"), corpusExportCsv);
   console.log(
-    `\nexport/corpus.csv          raw ${(exportSize.rawBytes / 1024 / 1024).toFixed(2)} MB  gz ${(exportSize.gzBytes / 1024 / 1024).toFixed(2)} MB (not counted toward the size budgets above)`,
+    `\ndist/export/corpus.csv     raw ${(exportSize.rawBytes / 1024 / 1024).toFixed(2)} MB  gz ${(exportSize.gzBytes / 1024 / 1024).toFixed(2)} MB` +
+      `\n  (not deployed -- upload to a GitHub release and set NEXT_PUBLIC_CORPUS_EXPORT_URL)`,
   );
 
   const surahSizes = [...surahFiles.entries()]
@@ -520,11 +646,18 @@ async function main() {
 
   report.print();
 
-  if (report.totalRaw() > TOTAL_RAW_BUDGET) {
-    fail(`Total public/data/v1 size exceeds budget: ${report.totalRaw()} > ${TOTAL_RAW_BUDGET} bytes (raw)`);
-  }
-  if (report.totalGz() > TOTAL_GZ_BUDGET) {
-    fail(`Total public/data/v1 gzipped size exceeds budget: ${report.totalGz()} > ${TOTAL_GZ_BUDGET} bytes (gz)`);
+  // Per-file budgets are already enforced at each writeJSON call site
+  // above (so the build fails as early as possible); this re-checks them
+  // plus the two whole-output totals through the same function --check
+  // uses, so the two modes can never diverge again.
+  const violations = checkSizeBudgets({
+    entries: report.all(),
+    perFileRawBudgets: BUDGETS_RAW_BYTES,
+    totalRawBudget: TOTAL_RAW_BUDGET,
+    totalGzBudget: TOTAL_GZ_BUDGET,
+  });
+  if (violations.length > 0) {
+    fail(`Size budget exceeded:\n  ${violations.map(formatBudgetViolation).join("\n  ")}`);
   }
 
   console.log(`\n✓ Wrote data to ${OUT_DIR}`);
@@ -534,12 +667,14 @@ async function main() {
 }
 
 function printSizeEstimate(data: {
+  surahFiles: Map<number, unknown>;
   meta: unknown;
   indexRoots: unknown;
   indexLemmas: unknown;
   formsEntries: unknown;
   enIndex: unknown;
   verseRoots: unknown;
+  syntaxIndex: unknown;
   arIndex: unknown;
   occurrenceIndex: unknown;
   insights: unknown;
@@ -557,10 +692,14 @@ function printSizeEstimate(data: {
   lemmaFiles: Map<string, unknown>;
   manifest: unknown;
 }) {
+  // Serializes and gzips exactly as writeJSON() does, so --check's figures
+  // are the real ones rather than an uncompressed-only estimate. Costs a
+  // second or two of gzip over the whole output; worth it for a mode whose
+  // entire purpose is to catch a regression before the files are written.
   const report = new SizeReport();
   const rec = (label: string, obj: unknown) => {
     const json = JSON.stringify(obj);
-    report.record(label, Buffer.byteLength(json, "utf8"), 0);
+    report.record(label, Buffer.byteLength(json, "utf8"), gzipSync(Buffer.from(json, "utf8")).length);
   };
   rec("manifest.json", data.manifest);
   rec("meta.json", data.meta);
@@ -568,6 +707,7 @@ function printSizeEstimate(data: {
   rec("forms.json", data.formsEntries);
   rec("en-index.json", data.enIndex);
   rec("verse-roots.json", data.verseRoots);
+  rec("syntax.json", data.syntaxIndex);
   rec("ar-index.json", data.arIndex);
   rec("occurrences.json", data.occurrenceIndex);
   rec("insights.json", data.insights);
@@ -580,10 +720,47 @@ function printSizeEstimate(data: {
   rec("formulas.json", data.formulas);
   rec("verse-similarity.json", data.verseSimilarity);
   rec("divine-name-pairs.json", data.divineNamePairs);
-  report.record("export/corpus.csv (est., not budget-counted)", data.corpusExportBytes, 0);
-  rec("roots/*.json (est.)", [...data.rootFiles.values()]);
-  rec("lemmas/*.json (est.)", [...data.lemmaFiles.values()]);
+  // The real build writes one file per surah/root/lemma; --check has no
+  // files to measure, so it sizes the same payloads in aggregate. surahs/
+  // was previously missing entirely, which hid ~3.3 MB raw from the total.
+  // Sized per member and summed, NOT as one concatenated array: the real
+  // build writes 114 + 1,651 + 4,783 separate files, and gzip does far
+  // better on one big array than on thousands of small documents. Sizing
+  // the array understated the real gzipped total by ~560 KB (16%), which
+  // is most of the gz budget's headroom -- so a gz regression could have
+  // passed --check and still failed the real build.
+  const recGroup = (label: string, objs: Iterable<unknown>) => {
+    let raw = 0;
+    let gz = 0;
+    for (const obj of objs) {
+      const json = JSON.stringify(obj);
+      raw += Buffer.byteLength(json, "utf8");
+      gz += gzipSync(Buffer.from(json, "utf8")).length;
+    }
+    report.record(label, raw, gz);
+  };
+  recGroup("surahs/*.json (est.)", data.surahFiles.values());
+  recGroup("roots/*.json (est.)", data.rootFiles.values());
+  recGroup("lemmas/*.json (est.)", data.lemmaFiles.values());
   report.print();
+
+  // corpus.csv is a bulk download, not part of the app payload -- the real
+  // build excludes it from the budget totals, so --check must too. Reported
+  // after print() precisely so it cannot leak into the report's totals.
+  console.log(
+    `\ndist/export/corpus.csv     raw ${(data.corpusExportBytes / 1024 / 1024).toFixed(2)} MB (not deployed; see the About page)`,
+  );
+
+  const violations = checkSizeBudgets({
+    entries: report.all(),
+    perFileRawBudgets: BUDGETS_RAW_BYTES,
+    totalRawBudget: TOTAL_RAW_BUDGET,
+    totalGzBudget: TOTAL_GZ_BUDGET,
+  });
+  if (violations.length > 0) {
+    fail(`Size budget exceeded:\n  ${violations.map(formatBudgetViolation).join("\n  ")}`);
+  }
+  console.log("\n\u2713 All size budgets satisfied.");
 }
 
 main().catch((err) => {

@@ -39,6 +39,7 @@ export interface Dict {
     topics: string;
     names: string;
     insights: string;
+    syntax: string;
     saved: string;
     about: string;
   };
@@ -226,6 +227,10 @@ export interface Dict {
     advancedSearchLinkLabel: string;
   };
   advancedSearchPage: {
+    wordSyntaxLabel: string;
+    wordSyntaxHint: string;
+    verseSyntaxLabel: string;
+    verseSyntaxHint: string;
     title: string;
     subtitle: string;
     loading: string;
@@ -347,6 +352,27 @@ export interface Dict {
     phrasePlaceholder: string;
     labelLabel: string;
     labelPlaceholder: string;
+  };
+  readings: {
+    toggle: string;
+    loading: string;
+    failed: string;
+    hafsLabel: string;
+    baseTextNote: string;
+    viaQari: (qari: string) => string;
+    scopeNote: string;
+    numberingNote: string;
+  };
+  syntaxPage: {
+    heading: string;
+    intro: string;
+    totalSegments: (n: number) => string;
+    pickTag: string;
+    occurrencesIn: (tag: string) => string;
+    loading: string;
+    noneSelected: string;
+    methodologyNote: string;
+    passiveNote: string;
   };
   insightsPage: {
     title: string;
@@ -495,6 +521,7 @@ export interface Dict {
     viewMoreInInsights: string;
   };
   surahPage: {
+    readingNote: (transmission: string, numbering: string) => string;
     previous: string;
     next: string;
     meccan: string;
@@ -602,6 +629,9 @@ export interface Dict {
     title: string;
     heading: string;
     intro: string;
+    readingHeading: string;
+    readingBody: (transmission: string, edition: string, numbering: string) => string;
+    readingWhyItMatters: string;
     howCountsComputedHeading: string;
     howCountsComputedBody: string;
     insightsMethodologyHeading: string;
@@ -642,5 +672,7 @@ export interface Dict {
     corpusExportHeading: string;
     corpusExportBody: string;
     corpusExportDownload: (size: string) => string;
+    corpusExportReleases: string;
+    corpusExportNotPublished: (size: string) => string;
   };
 }

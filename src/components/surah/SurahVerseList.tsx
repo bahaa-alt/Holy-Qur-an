@@ -6,6 +6,7 @@ import { AyahActions } from "@/components/ayah/AyahActions";
 import { HighlightedVerse } from "@/components/ayah/HighlightedVerse";
 import { InterlinearVerse } from "@/components/ayah/InterlinearVerse";
 import { RelatedVerses } from "@/components/ayah/RelatedVerses";
+import { ReadingsPanel } from "@/components/readings/ReadingsPanel";
 import { SaveButton } from "@/components/notes/SaveButton";
 import { useT } from "@/lib/i18n/LanguageContext";
 import { useInterlinearMode } from "@/lib/surah/ReadingModeContext";
@@ -75,6 +76,7 @@ export function SurahVerseList({ surahMeta, verses }: { surahMeta: SurahMeta; ve
                   href={`/surah/${surahMeta.n}/?ayah=${verse.a}`}
                 />
               </div>
+              <ReadingsPanel s={surahMeta.n} a={verse.a} hafsText={verse.w.join(" ")} />
               <RelatedVerses s={surahMeta.n} a={verse.a} />
             </div>
           </div>

@@ -5,15 +5,17 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLanguage, useT } from "@/lib/i18n/LanguageContext";
 import { InterlinearToggle } from "./InterlinearToggle";
-import type { SurahMeta } from "@/lib/data/types";
+import type { ManifestReading, SurahMeta } from "@/lib/data/types";
 
 export function SurahPageChrome({
   n,
   surahMeta,
+  reading,
   children,
 }: {
   n: number;
   surahMeta: SurahMeta;
+  reading: ManifestReading;
   children: ReactNode;
 }) {
   const t = useT();
@@ -60,6 +62,14 @@ export function SurahPageChrome({
         <h1 className="arabic-ui mt-1 text-3xl font-semibold text-ink">{surahMeta.nameAr}</h1>
         <p className="text-sm text-muted">
           {surahMeta.translit} — {surahMeta.nameEn}
+        </p>
+        {/* Named on the page that actually shows the text, not only on
+            /about/ -- a reader citing a verse from here should be able to
+            see which reading they are citing without leaving the page. */}
+        <p className="mt-1 text-xs text-muted">
+          <Link href="/about/" className="hover:text-accent">
+            {t.surahPage.readingNote(reading.transmission, reading.verseNumbering)}
+          </Link>
         </p>
         <div className="mt-2">
           <InterlinearToggle />
