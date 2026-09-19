@@ -78,6 +78,14 @@ export function LanePanel({ root }: { root: string }) {
             </p>
           ) : (
             <>
+              {/* Lane defines in English; there is no Arabic edition to swap
+                  in. Saying so beats dropping an Arabic-mode reader into
+                  English prose with no explanation. */}
+              {t.lane.englishWork !== "" && (
+                <p className="mb-3 rounded-md border border-border/70 bg-bg/40 p-2 text-xs leading-relaxed text-muted">
+                  {t.lane.englishWork}
+                </p>
+              )}
               {state.file.laneRoot !== root && (
                 <p className="mb-3 text-xs text-muted">
                   {t.lane.underSpelling}{" "}

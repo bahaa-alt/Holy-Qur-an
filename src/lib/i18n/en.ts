@@ -96,7 +96,8 @@ export const en: Dict = {
   },
   quran: {
     title: "The Qur'an",
-    subtitle: "All 114 surahs, in mus'haf order. Open any surah to read the full Uthmani text with translation, word by word.",
+    subtitle:
+      "All 114 surahs, in mus'haf order. Open any surah to read the full Uthmani text with translation, word by word.",
     filterPlaceholder: "Filter surahs by name or number…",
     noMatch: (query) => `No surahs match "${query}".`,
     meccan: "Meccan",
@@ -143,7 +144,8 @@ export const en: Dict = {
   },
   conjugationTable: {
     heading: "Verb conjugation",
-    subtitle: "Attested forms by verb Form, aspect, and person/gender/number. Click a form to filter the explorer below.",
+    subtitle:
+      "Attested forms by verb Form, aspect, and person/gender/number. Click a form to filter the explorer below.",
     form: (verbForm) => `Form ${verbForm}`,
     occurrencesCount: (count) => `${count.toLocaleString()} occurrences`,
   },
@@ -152,11 +154,13 @@ export const en: Dict = {
     surahOrder: "Surah order",
     revelationOrder: "Revelation order",
     bySurahDescription: "Where this root's occurrences fall across the 114 surahs.",
-    byRevelationDescription: "The same occurrences, ordered by the conventional chronological (revelation) sequence instead.",
+    byRevelationDescription:
+      "The same occurrences, ordered by the conventional chronological (revelation) sequence instead.",
   },
   wordPositionStats: {
     heading: "Position within the verse",
-    description: "Where this word's occurrences fall in their verse -- the first word, the last word, or somewhere in between -- and the full breakdown by exact word position.",
+    description:
+      "Where this word's occurrences fall in their verse -- the first word, the last word, or somewhere in between -- and the full breakdown by exact word position.",
     startsVerse: "Starts the verse",
     endsVerse: "Ends the verse",
     withinVerse: "Within the verse",
@@ -175,7 +179,8 @@ export const en: Dict = {
   },
   compare: {
     title: "Compare roots",
-    subtitle: "Pick up to three roots to compare their occurrence counts and category breakdowns side by side.",
+    subtitle:
+      "Pick up to three roots to compare their occurrence counts and category breakdowns side by side.",
   },
   compareView: {
     loadingRoots: "Loading roots…",
@@ -218,7 +223,8 @@ export const en: Dict = {
   },
   searchHub: {
     title: "Search",
-    subtitle: "Three ways to search the corpus, side by side: exact phrases, root-pair patterns, and root comparisons.",
+    subtitle:
+      "Three ways to search the corpus, side by side: exact phrases, root-pair patterns, and root comparisons.",
     tabSearch: "Text Search",
     tabPhrases: "Phrase Patterns",
     tabCompare: "Compare Roots",
@@ -338,14 +344,14 @@ export const en: Dict = {
   },
   namePairsTab: {
     description:
-      "Pairs of these names that occur as immediately adjacent words somewhere in the Qur'an -- e.g. \"العليم الحكيم\" or \"الرحمن الرحيم\" -- found by matching each word's resolved root and lemma against the Names list itself, never by coincidental text. Recited Basmala headers preceding each surah aren't separate verses in this corpus, so they aren't counted here; only the six times \"الرحمن الرحيم\" occurs within a numbered verse are.",
+      'Pairs of these names that occur as immediately adjacent words somewhere in the Qur\'an -- e.g. "العليم الحكيم" or "الرحمن الرحيم" -- found by matching each word\'s resolved root and lemma against the Names list itself, never by coincidental text. Recited Basmala headers preceding each surah aren\'t separate verses in this corpus, so they aren\'t counted here; only the six times "الرحمن الرحيم" occurs within a numbered verse are.',
     loading: "Loading pairs…",
     occurrencesCount: (n) => `${n.toLocaleString()} verse${n === 1 ? "" : "s"}`,
     noResults: "No pairs found.",
   },
   namePhrasesTab: {
     description:
-      "Every verse containing one of these phrases anywhere in its text -- direct addresses to Allah, first/second-person references to Him as \"Lord,\" and a run of preposition + Allah/\"your Lord\" combinations. A curated starting point you can add to, edit, or remove from -- changes are saved on this device only.",
+      'Every verse containing one of these phrases anywhere in its text -- direct addresses to Allah, first/second-person references to Him as "Lord," and a run of preposition + Allah/"your Lord" combinations. A curated starting point you can add to, edit, or remove from -- changes are saved on this device only.',
     loading: "Loading verses…",
     versesCount: (n) => `${n.toLocaleString()} verse${n === 1 ? "" : "s"}`,
     noResults: "No verse contains this phrase.",
@@ -360,6 +366,15 @@ export const en: Dict = {
     phrasePlaceholder: "e.g. من ربكم",
     labelLabel: "English label",
     labelPlaceholder: "e.g. Min rabbikum (From your Lord)",
+  },
+  curiositiesPage: {
+    title: "Curiosities",
+    intro:
+      "Patterns in the text that are interesting to look at but are not linguistic evidence. They live here rather than alongside the corpus statistics so that the difference is visible.",
+    caveat:
+      "Abjad assigns each Arabic letter a number and sums them. The arithmetic here is exact and reproducible; what it means is not a question arithmetic can answer. Nothing on this page is used by, or affects, any count elsewhere in this app.",
+    backToInsights: "\u2190 Back to Insights",
+    linkFromInsights: "Abjad numerology has moved to Curiosities",
   },
   versePage: {
     words: "Words",
@@ -379,6 +394,9 @@ export const en: Dict = {
       `Lane has no article for this root. The lexicon covers ${covered.toLocaleString()} of this corpus's ${total.toLocaleString()} roots: Lane died in 1876 having published through roughly \u0642/\u0643, and the remainder was assembled from his notes and is much thinner. Nothing is shown from a similarly-spelled root, because a similar spelling is a different root.`,
     coverage: (covered: number, total: number) =>
       `Covers ${covered.toLocaleString()} of this corpus's ${total.toLocaleString()} roots.`,
+    // Empty in English: the work is already in the reader's language, so
+    // saying so would be noise.
+    englishWork: "",
   },
   tafsir: {
     toggle: "Commentary",
@@ -447,7 +465,8 @@ export const en: Dict = {
     rootsCoverageDescription:
       "Ranked by distinct-surah coverage, not raw frequency -- a root can occur often while clustering in a few surahs, or rarely while spreading everywhere.",
     lemmasCoverageHeading: "Words by how many surahs they appear in",
-    lemmasCoverageDescription: "Same ranking, one level more specific: exact words (lemmas), rooted or not.",
+    lemmasCoverageDescription:
+      "Same ranking, one level more specific: exact words (lemmas), rooted or not.",
     surahCoverage: (surahCount, total) => `${surahCount} / ${total} surahs`,
     everySurahBadge: "Every surah",
     longestVerseLabel: "Longest verse",
@@ -473,7 +492,8 @@ export const en: Dict = {
       "Classical Qur'anic rhetorical studies (fawāṣil/sajʿ) classify verse-endings by their final letter. Click one to see the verses that end with it.",
     rhymeLoading: "Loading verse endings…",
     rhymePickPrompt: "Pick an ending letter above to see matching verses.",
-    rhymeShowingCount: (shown, total) => `Showing ${shown.toLocaleString()} of ${total.toLocaleString()} verses`,
+    rhymeShowingCount: (shown, total) =>
+      `Showing ${shown.toLocaleString()} of ${total.toLocaleString()} verses`,
     vocabHeading: "Distinctive vocabulary",
     vocabDescription:
       "Which roots are over-represented in one surah relative to their corpus-wide average rate -- what makes this surah's word choice distinct, not just what's common everywhere.",
@@ -487,8 +507,10 @@ export const en: Dict = {
       "Which preposition typically follows a given verb root's occurrences -- a real question in Arabic grammar (a verb's sense can shift with the preposition it takes, e.g. آمن بـ vs آمن لـ).",
     collocationsRootPlaceholder: "Type a verb root…",
     collocationsLoading: "Loading…",
-    collocationsNoResults: "This root was never immediately followed by one of the tracked prepositions.",
-    collocationsPickPrompt: "Pick a root above to see which prepositions follow its verb occurrences.",
+    collocationsNoResults:
+      "This root was never immediately followed by one of the tracked prepositions.",
+    collocationsPickPrompt:
+      "Pick a root above to see which prepositions follow its verb occurrences.",
     abjadHeading: "Abjad value (ḥisāb al-jummal)",
     abjadDescription:
       "The ancient Arabic letter-numeral system (أبجد هوز حطي...) used historically for chronograms and numerology. Every letter carries a fixed value; a word, verse, or larger passage's value is the sum of its letters.",
@@ -503,17 +525,21 @@ export const en: Dict = {
       "The classical chronogram tradition works in reverse: a target number, matched against a text's Abjad value. Enter a number to find every verse or whole surah whose total equals it exactly.",
     abjadLookupPlaceholder: "e.g. 786",
     abjadLookupInvalid: "Enter a positive whole number.",
-    abjadLookupSurahsFound: (n) => `${n.toLocaleString()} whole surah${n === 1 ? "" : "s"} match exactly`,
-    abjadLookupVersesFound: (shown, total) => `${total.toLocaleString()} verse${total === 1 ? "" : "s"} match exactly${total > shown ? ` (showing ${shown})` : ""}`,
+    abjadLookupSurahsFound: (n) =>
+      `${n.toLocaleString()} whole surah${n === 1 ? "" : "s"} match exactly`,
+    abjadLookupVersesFound: (shown, total) =>
+      `${total.toLocaleString()} verse${total === 1 ? "" : "s"} match exactly${total > shown ? ` (showing ${shown})` : ""}`,
     abjadLookupNoVerses: "No verse matches that value exactly.",
-    abjadLookupWordsFound: (n) => `${n.toLocaleString()} distinct word form${n === 1 ? "" : "s"} match exactly`,
+    abjadLookupWordsFound: (n) =>
+      `${n.toLocaleString()} distinct word form${n === 1 ? "" : "s"} match exactly`,
     abjadCommonValuesHeading: "Common values",
     abjadCommonValuesDescription:
       "Numerical values shared by more than one verse, surah, or exact word form -- pick one to see everything that matches it.",
     abjadCommonValuesVerses: (n) => `${n.toLocaleString()} verse${n === 1 ? "" : "s"}`,
     abjadCommonValuesSurahs: (n) => `${n.toLocaleString()} surah${n === 1 ? "" : "s"}`,
     abjadCommonValuesWords: (n) => `${n.toLocaleString()} word${n === 1 ? "" : "s"}`,
-    abjadCommonValuesShowingTop: (shown, total) => `Showing the ${shown.toLocaleString()} most shared of ${total.toLocaleString()} values`,
+    abjadCommonValuesShowingTop: (shown, total) =>
+      `Showing the ${shown.toLocaleString()} most shared of ${total.toLocaleString()} values`,
     abjadCommonValuesEmpty: "No value is shared by more than one verse, surah, or word yet.",
     cooccurrenceHeading: "Root co-occurrence network",
     cooccurrenceDescription:
@@ -540,7 +566,8 @@ export const en: Dict = {
     patternsRootsCount: (n) => `${n.toLocaleString()} root${n === 1 ? "" : "s"}`,
     patternsLemmasCount: (n) => `${n.toLocaleString()} root-lemma pair${n === 1 ? "" : "s"}`,
     patternsDrilldownHint: "Click a bar to see its matching occurrences in Advanced Search.",
-    patternsShapeRootsShown: (shown, total) => `Showing ${shown.toLocaleString()} of ${total.toLocaleString()} roots, by occurrence count`,
+    patternsShapeRootsShown: (shown, total) =>
+      `Showing ${shown.toLocaleString()} of ${total.toLocaleString()} roots, by occurrence count`,
     formulasHeading: "Recurring phrases (formulas)",
     formulasDescription:
       "Word sequences that recur often enough, in exactly the same words, to be candidate fixed expressions -- classical Qur'anic rhetorical studies call this takrar (repetition). Sliding windows of 3-6 consecutive words within a single verse, never crossing a verse boundary; shorter phrases need a higher repeat count to qualify, since they recur more often by grammatical chance alone.",
@@ -578,12 +605,14 @@ export const en: Dict = {
     viewMoreInInsights: "More corpus-wide research tools in Insights →",
   },
   surahPage: {
-    readingNote: (transmission: string, numbering: string) => `Text: ${transmission} \u00B7 ${numbering} numbering`,
+    readingNote: (transmission: string, numbering: string) =>
+      `Text: ${transmission} \u00B7 ${numbering} numbering`,
     previous: "Previous",
     next: "Next",
     meccan: "Meccan",
     medinan: "Medinan",
-    summary: (n, typeLabel, verses) => `Surah ${n} · ${typeLabel} · ${verses.toLocaleString()} verses`,
+    summary: (n, typeLabel, verses) =>
+      `Surah ${n} · ${typeLabel} · ${verses.toLocaleString()} verses`,
   },
   interlinearToggle: {
     show: "Show interlinear gloss",
@@ -622,7 +651,8 @@ export const en: Dict = {
   },
   wordInfoPanel: {
     loading: "Looking up this word…",
-    notRooted: "This is a particle, pronoun, or grammatical clitic -- it carries no root in this corpus.",
+    notRooted:
+      "This is a particle, pronoun, or grammatical clitic -- it carries no root in this corpus.",
     root: "Root",
     lemma: "Lemma",
     category: "Category",
@@ -664,13 +694,15 @@ export const en: Dict = {
   },
   savedPage: {
     title: "Saved",
-    subtitle: "Roots, words, and verses you've bookmarked, with room for your own notes. Stored only in this browser -- nothing is sent anywhere.",
+    subtitle:
+      "Roots, words, and verses you've bookmarked, with room for your own notes. Stored only in this browser -- nothing is sent anywhere.",
   },
   savedList: {
     rootsHeading: "Roots",
     wordsHeading: "Words",
     versesHeading: "Verses",
-    empty: 'Nothing saved yet. Use the "Save" button on a root, word, or verse page to bookmark it here.',
+    empty:
+      'Nothing saved yet. Use the "Save" button on a root, word, or verse page to bookmark it here.',
     removeAria: (label) => `Remove ${label}`,
     notePlaceholder: "Add a note…",
   },
@@ -734,7 +766,7 @@ export const en: Dict = {
       "For every verse, collects its distinct rooted-word roots. Candidate pairs are proposed only through roots occurring in 60 or fewer verses (a shared common root like أله is not a meaningful signal on its own), then every candidate is scored by full Jaccard similarity (shared roots ÷ the union of both verses' distinct roots) over each verse's complete root set. A pair needs at least 4 shared roots and 40% overlap to qualify; every pair clearing that bar is shown (around a thousand), not just a fixed top slice -- over 40% of them are a perfect (100%) match. This heuristic can miss a genuinely similar pair that shares only common roots -- it trades completeness for keeping the comparison corpus-wide rather than one hand-picked pair at a time.",
     dataSourcesHeading: "Data sources & licenses",
     laneLexiconNote:
-      'Root meanings are given as "after Lane\'s Lexicon" -- a summary drawn from that dataset, not a verbatim quotation of the original 19th-century lexicon. This project\'s own source code is licensed GPL-3.0, matching the copyleft terms of the morphology dataset it builds on.',
+      "Root meanings are given as \"after Lane's Lexicon\" -- a summary drawn from that dataset, not a verbatim quotation of the original 19th-century lexicon. This project's own source code is licensed GPL-3.0, matching the copyleft terms of the morphology dataset it builds on.",
     offlineHeading: "Offline & installation",
     offlineBody:
       'On a phone or desktop browser that supports it, use "Add to Home Screen" (or the install prompt this site shows after a couple of visits) to install it like a native app. Once installed, previously visited roots and surahs stay available offline, and the app can download the full corpus in the background for complete offline access.',
