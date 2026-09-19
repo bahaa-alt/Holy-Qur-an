@@ -11,7 +11,8 @@ import type { CompareRootRow } from "@/components/compare/RootPicker";
 
 type Tab = "search" | "phrases" | "compare";
 
-const TAB_CLASS = (active: boolean) => `rounded-md px-3 py-1.5 ${active ? "bg-accent text-accent-fg" : "text-muted"}`;
+const TAB_CLASS = (active: boolean) =>
+  `rounded-md px-3 py-1.5 ${active ? "bg-accent text-accent-fg" : "text-muted"}`;
 
 /**
  * Text search, phrase-pattern search, and root comparison used to be three
@@ -59,22 +60,39 @@ export function SearchHubContent({
       </div>
 
       <div className="flex w-fit rounded-lg border border-border p-0.5 text-sm">
-        <button type="button" onClick={() => setTab("search")} className={TAB_CLASS(tab === "search")}>
+        <button
+          type="button"
+          onClick={() => setTab("search")}
+          className={TAB_CLASS(tab === "search")}
+        >
           {t.searchHub.tabSearch}
         </button>
-        <button type="button" onClick={() => setTab("phrases")} className={TAB_CLASS(tab === "phrases")}>
+        <button
+          type="button"
+          onClick={() => setTab("phrases")}
+          className={TAB_CLASS(tab === "phrases")}
+        >
           {t.searchHub.tabPhrases}
         </button>
-        <button type="button" onClick={() => setTab("compare")} className={TAB_CLASS(tab === "compare")}>
+        <button
+          type="button"
+          onClick={() => setTab("compare")}
+          className={TAB_CLASS(tab === "compare")}
+        >
           {t.searchHub.tabCompare}
         </button>
       </div>
 
       {tab === "search" && (
         <div className="space-y-3">
-          <p className="text-sm">
+          <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
             <Link href="/search/advanced/" className="text-accent hover:text-accent-strong">
               {t.searchHub.advancedSearchLinkLabel}
+            </Link>
+            {/* The facets' open-ended successor: same indices, but the
+                researcher writes the question. */}
+            <Link href="/query/" className="text-accent hover:text-accent-strong">
+              {t.searchHub.queryLinkLabel}
             </Link>
           </p>
           <PhraseTextSearch />
