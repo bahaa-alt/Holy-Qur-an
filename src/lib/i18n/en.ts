@@ -225,6 +225,12 @@ export const en: Dict = {
     advancedSearchLinkLabel: "Looking for a grammatical pattern instead? Try Advanced Search →",
   },
   advancedSearchPage: {
+    wordSyntaxLabel: "This word is",
+    wordSyntaxHint:
+      "The matched word itself carries this function. Mostly passive verbs \u2014 the particles that carry the other functions have no root, so they are not occurrences and cannot be matched this way.",
+    verseSyntaxLabel: "Verse contains",
+    verseSyntaxHint:
+      "The function appears somewhere in the same verse, on any word. This is the one that composes: a root, filtered to where it sits inside a conditional or a restriction.",
     title: "Advanced search",
     subtitle:
       "Combine facets across the whole corpus -- category, verb Form, one or more roots, surah range, and Meccan/Medinan -- to find things no single root's own page can answer, like every Form VIII passive participle in the Medinan surahs, or every occurrence of either of two roots together.",

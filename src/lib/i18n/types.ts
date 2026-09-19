@@ -227,6 +227,10 @@ export interface Dict {
     advancedSearchLinkLabel: string;
   };
   advancedSearchPage: {
+    wordSyntaxLabel: string;
+    wordSyntaxHint: string;
+    verseSyntaxLabel: string;
+    verseSyntaxHint: string;
     title: string;
     subtitle: string;
     loading: string;

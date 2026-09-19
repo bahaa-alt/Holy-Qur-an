@@ -14,6 +14,10 @@ export interface AdvancedSearchQueryState {
   revelation: "all" | "meccan" | "medinan";
   /** roots' Arabic text, matched as OR (any occurrence of any of these roots) -- combines with every other facet as AND */
   rootArs: string[];
+  /** syntactic tags the occurrence's own word must carry (see SyntaxLookups) */
+  wordSyntaxTags: string[];
+  /** syntactic tags that must appear somewhere in the occurrence's verse */
+  verseSyntaxTags: string[];
   surahFrom: number;
   surahTo: number;
   page: number;
@@ -26,6 +30,8 @@ export function encodeAdvancedSearchQuery(state: AdvancedSearchQueryState): stri
   if (state.verbForms.length > 0) params.set("forms", state.verbForms.join(","));
   if (state.revelation !== "all") params.set("rev", state.revelation);
   if (state.rootArs.length > 0) params.set("roots", state.rootArs.join(","));
+  if (state.wordSyntaxTags.length > 0) params.set("wsyn", state.wordSyntaxTags.join(","));
+  if (state.verseSyntaxTags.length > 0) params.set("vsyn", state.verseSyntaxTags.join(","));
   if (state.surahFrom !== 1) params.set("from", String(state.surahFrom));
   if (state.surahTo !== 114) params.set("to", String(state.surahTo));
   if (state.page !== 0) params.set("page", String(state.page));
@@ -38,7 +44,11 @@ export function encodeAdvancedSearchQuery(state: AdvancedSearchQueryState): stri
  * throwing -- a hand-edited or stale URL should degrade to "no filter" on
  * that one facet, not break the page.
  */
-export function decodeAdvancedSearchQuery(search: string, validCats: ReadonlySet<Cat>): AdvancedSearchQueryState {
+export function decodeAdvancedSearchQuery(
+  search: string,
+  validCats: ReadonlySet<Cat>,
+  validSyntaxTags: ReadonlySet<string> = new Set(),
+): AdvancedSearchQueryState {
   const params = new URLSearchParams(search);
 
   const cats = (params.get("cats")?.split(",") ?? []).filter((c): c is Cat => validCats.has(c as Cat));
@@ -52,6 +62,14 @@ export function decodeAdvancedSearchQuery(search: string, validCats: ReadonlySet
 
   const rootArs = (params.get("roots")?.split(",") ?? []).filter((r) => r.length > 0);
 
+  // Validated against the real tag vocabulary for the same reason cats are:
+  // a stale or hand-edited tag should drop to "no filter on this facet"
+  // rather than silently match nothing and read as a genuine empty result.
+  const syntaxTags = (key: string) =>
+    (params.get(key)?.split(",") ?? []).filter((t) => validSyntaxTags.has(t));
+  const wordSyntaxTags = syntaxTags("wsyn");
+  const verseSyntaxTags = syntaxTags("vsyn");
+
   const fromRaw = Number(params.get("from"));
   const surahFrom = Number.isInteger(fromRaw) && fromRaw >= 1 && fromRaw <= 114 ? fromRaw : 1;
 
@@ -61,5 +79,5 @@ export function decodeAdvancedSearchQuery(search: string, validCats: ReadonlySet
   const pageRaw = Number(params.get("page"));
   const page = Number.isInteger(pageRaw) && pageRaw >= 0 ? pageRaw : 0;
 
-  return { cats, verbForms, revelation, rootArs, surahFrom, surahTo, page };
+  return { cats, verbForms, revelation, rootArs, wordSyntaxTags, verseSyntaxTags, surahFrom, surahTo, page };
 }

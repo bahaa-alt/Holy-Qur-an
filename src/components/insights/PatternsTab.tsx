@@ -19,6 +19,8 @@ function advancedSearchHref(partial: { cats?: Cat[]; verbForms?: number[] }): st
     verbForms: partial.verbForms ?? [],
     revelation: "all",
     rootArs: [],
+    wordSyntaxTags: [],
+    verseSyntaxTags: [],
     surahFrom: 1,
     surahTo: 114,
     page: 0,

@@ -2,18 +2,37 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, X } from "lucide-react";
-import { getIndex, getMeta, getOccurrenceIndex } from "@/lib/data/loader";
+import { getIndex, getMeta, getOccurrenceIndex, getSyntaxIndex } from "@/lib/data/loader";
 import { normalize } from "@/lib/arabic/normalize";
 import { CATEGORY_LABELS } from "@/lib/data/types";
 import { ROMAN_FORMS } from "@/lib/morphology/classify";
-import { filterOccurrences, type AdvancedSearchFilters, type AdvancedSearchRow } from "@/lib/search/advancedSearch";
+import {
+  buildSyntaxLookups,
+  filterOccurrences,
+  type AdvancedSearchFilters,
+  type AdvancedSearchRow,
+  type SyntaxLookups,
+} from "@/lib/search/advancedSearch";
 import { decodeAdvancedSearchQuery, encodeAdvancedSearchQuery } from "@/lib/search/advancedSearchQuery";
 import { AdvancedSearchResults } from "./AdvancedSearchResults";
+import { describeTag } from "@/lib/morphology/tagLabels";
 import { useT } from "@/lib/i18n/LanguageContext";
 import type { Cat, IndexFile, MetaFile, OccurrenceIndexFile } from "@/lib/data/types";
 
 const ALL_CATS = Object.keys(CATEGORY_LABELS) as Cat[];
 const ALL_FORMS = Array.from({ length: 11 }, (_, i) => i + 1);
+// Mirrors scripts/lib/build-syntax.ts's SYNTAX_TAGS. Duplicated rather than
+// imported because that module lives under scripts/ and pulls in the build
+// pipeline's types; the pipeline asserts the emitted vocabulary matches its
+// own list, and decodeAdvancedSearchQuery only uses this to reject stale
+// tags from a hand-edited URL, so a drift here degrades to "filter ignored",
+// never to a wrong result.
+const ALL_SYNTAX_TAGS: ReadonlySet<string> = new Set([
+  "ADDR", "AMD", "ANS", "ATT", "AVR", "CAUS", "CERT", "CIRC", "COM", "COND",
+  "EMPH", "EQ", "EXH", "EXL", "EXP", "FUT", "INC", "INT", "INTG", "NEG",
+  "PASS", "PREV", "PRO", "PRP", "REM", "RES", "RET", "RSLT", "SUB", "SUP",
+  "SUR", "T", "VOC",
+]);
 const PAGE_SIZE = 25;
 
 function toggle<T>(set: ReadonlySet<T>, value: T): Set<T> {
@@ -32,6 +51,10 @@ export function AdvancedSearchView() {
   const [revelation, setRevelation] = useState<"all" | "meccan" | "medinan">("all");
   const [rootQuery, setRootQuery] = useState("");
   const [rootFilters, setRootFilters] = useState<Set<string>>(new Set());
+  const [wordSyntax, setWordSyntax] = useState<Set<string>>(new Set());
+  const [verseSyntax, setVerseSyntax] = useState<Set<string>>(new Set());
+  const [syntax, setSyntax] = useState<SyntaxLookups | null>(null);
+  const [syntaxTags, setSyntaxTags] = useState<string[]>([]);
   const [surahFrom, setSurahFrom] = useState(1);
   const [surahTo, setSurahTo] = useState(114);
   const [page, setPage] = useState(0);
@@ -50,10 +73,28 @@ export function AdvancedSearchView() {
     );
   }, []);
 
+  // Fetched separately from the three above: the tag facets are the only
+  // thing that needs it, and it is the one index a session can finish
+  // without ever touching. Until it lands, filterOccurrences ignores the
+  // tag facets rather than matching nothing (see AdvancedSearchFilters).
+  useEffect(() => {
+    getSyntaxIndex().then((file) => {
+      setSyntax(buildSyntaxLookups(file));
+      const counts = new Map<string, number>();
+      for (const t of file.t) {
+        const tag = file.tags[t];
+        counts.set(tag, (counts.get(tag) ?? 0) + 1);
+      }
+      setSyntaxTags(
+        [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([tag]) => tag),
+      );
+    });
+  }, []);
+
   // One-time hydration from the URL so a shared/bookmarked link restores
   // its filters. Runs once on mount; see the `hydrated` comment above.
   useEffect(() => {
-    const decoded = decodeAdvancedSearchQuery(window.location.search, new Set(ALL_CATS));
+    const decoded = decodeAdvancedSearchQuery(window.location.search, new Set(ALL_CATS), ALL_SYNTAX_TAGS);
     if (decoded.cats.length > 0) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration from the URL, not a subscription; see the `hydrated` comment above.
       setCats(new Set(decoded.cats));
@@ -66,6 +107,12 @@ export function AdvancedSearchView() {
     }
     if (decoded.rootArs.length > 0) {
       setRootFilters(new Set(decoded.rootArs));
+    }
+    if (decoded.wordSyntaxTags.length > 0) {
+      setWordSyntax(new Set(decoded.wordSyntaxTags));
+    }
+    if (decoded.verseSyntaxTags.length > 0) {
+      setVerseSyntax(new Set(decoded.verseSyntaxTags));
     }
     if (decoded.surahFrom !== 1) {
       setSurahFrom(decoded.surahFrom);
@@ -91,13 +138,15 @@ export function AdvancedSearchView() {
       verbForms: [...forms],
       revelation,
       rootArs: [...rootFilters],
+      wordSyntaxTags: [...wordSyntax],
+      verseSyntaxTags: [...verseSyntax],
       surahFrom,
       surahTo,
       page,
     });
     const next = query ? `${window.location.pathname}?${query}` : window.location.pathname;
     window.history.replaceState(null, "", next);
-  }, [cats, forms, revelation, rootFilters, surahFrom, surahTo, page, hydrated]);
+  }, [cats, forms, revelation, rootFilters, wordSyntax, verseSyntax, surahFrom, surahTo, page, hydrated]);
 
   const rootMatches = useMemo(() => {
     if (!data) return [];
@@ -125,16 +174,27 @@ export function AdvancedSearchView() {
       rootIdxs,
       surahs,
       revelationType: revelation === "all" ? undefined : revelation,
+      wordSyntaxTags: wordSyntax.size > 0 ? wordSyntax : undefined,
+      verseSyntaxTags: verseSyntax.size > 0 ? verseSyntax : undefined,
+      syntax: syntax ?? undefined,
     };
     return filterOccurrences(data.occ, data.meta, filters);
-  }, [data, cats, forms, revelation, rootFilters, surahFrom, surahTo]);
+  }, [data, cats, forms, revelation, rootFilters, wordSyntax, verseSyntax, syntax, surahFrom, surahTo]);
 
   const pageCount = Math.max(1, Math.ceil(allRows.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount - 1);
   const pageRows = allRows.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
   const resultsKey = pageRows.map((r) => `${r.s}.${r.a}.${r.w}`).join("_") || `empty-${currentPage}`;
 
-  const hasFilters = cats.size > 0 || forms.size > 0 || revelation !== "all" || rootFilters.size > 0 || surahFrom !== 1 || surahTo !== 114;
+  const hasFilters =
+    cats.size > 0 ||
+    forms.size > 0 ||
+    revelation !== "all" ||
+    rootFilters.size > 0 ||
+    wordSyntax.size > 0 ||
+    verseSyntax.size > 0 ||
+    surahFrom !== 1 ||
+    surahTo !== 114;
 
   function clearFilters() {
     setCats(new Set());
@@ -142,6 +202,8 @@ export function AdvancedSearchView() {
     setRevelation("all");
     setRootFilters(new Set());
     setRootQuery("");
+    setWordSyntax(new Set());
+    setVerseSyntax(new Set());
     setSurahFrom(1);
     setSurahTo(114);
     setPage(0);
@@ -210,6 +272,62 @@ export function AdvancedSearchView() {
                 ))}
               </div>
             </div>
+
+            {syntaxTags.length > 0 && (
+              <>
+                <div>
+                  <h2 className="text-xs font-medium uppercase tracking-wide text-muted">
+                    {t.advancedSearchPage.wordSyntaxLabel}
+                  </h2>
+                  <p className="mt-1 text-xs text-muted">{t.advancedSearchPage.wordSyntaxHint}</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {syntaxTags.map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => {
+                          setWordSyntax((prev) => toggle(prev, tag));
+                          setPage(0);
+                        }}
+                        className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                          wordSyntax.has(tag)
+                            ? "border-accent bg-accent/10 text-accent"
+                            : "border-border text-ink hover:border-accent"
+                        }`}
+                      >
+                        {describeTag(tag).en}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h2 className="text-xs font-medium uppercase tracking-wide text-muted">
+                    {t.advancedSearchPage.verseSyntaxLabel}
+                  </h2>
+                  <p className="mt-1 text-xs text-muted">{t.advancedSearchPage.verseSyntaxHint}</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {syntaxTags.map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => {
+                          setVerseSyntax((prev) => toggle(prev, tag));
+                          setPage(0);
+                        }}
+                        className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                          verseSyntax.has(tag)
+                            ? "border-accent bg-accent/10 text-accent"
+                            : "border-border text-ink hover:border-accent"
+                        }`}
+                      >
+                        {describeTag(tag).en}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
 
             <div>
               <h2 className="text-xs font-medium uppercase tracking-wide text-muted">
