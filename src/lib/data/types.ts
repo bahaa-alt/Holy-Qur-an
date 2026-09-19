@@ -190,6 +190,56 @@ export interface OccurrenceIndexFile {
   rows: OccurrenceIndexRow[];
 }
 
+/**
+ * Every morphological segment in the corpus that carries a syntactic or
+ * rhetorical function tag -- the layer the corpus ships and the rest of
+ * this app throws away.
+ *
+ * WHY THIS IS A SEPARATE FILE, NOT MORE COLUMNS ON occurrences.json.
+ * This app defines an "occurrence" as a segment carrying a ROOT (see the
+ * About page and OccurrenceIndexFile), and every count it displays rests on
+ * that definition. But 15,413 of the 17,014 segments indexed here are
+ * ROOTLESS -- the particles carrying restriction (RES), condition (COND),
+ * circumstantial hal (CIRC), prohibition (PRO), resumption (REM) and the
+ * rest of the machinery of Qur'anic rhetoric. Folding them into the
+ * occurrence index would silently redefine "occurrence" and change every
+ * root count in the app. They are a parallel layer, not more occurrences.
+ *
+ * ONE TAG PER ROW, NOT A BITMASK. Verified against the real corpus: no
+ * segment carries more than one of these 33 tags, so a single tag id per
+ * row is exact rather than lossy, and needs no mask arithmetic at query
+ * time. scripts/lib/build-syntax.ts throws if that ever stops holding, so a
+ * future corpus fails the build instead of silently dropping a tag.
+ *
+ * COLUMNAR, NOT ROW OBJECTS. Measured over the real corpus: parallel arrays
+ * cost 214.8 KB raw / 33.6 KB gz against 268.9 KB / 60.1 KB for an array of
+ * [s,a,w,seg,tag] tuples -- runs of small integers compress far better kept
+ * in their own columns.
+ *
+ * PASSIVE VOICE LIVES HERE, NOT IN `Cat`. The 1,151 PASS-tagged segments are
+ * rooted, so unlike the rest of this file they DO also appear in
+ * occurrences.json -- but they are indexed here rather than promoted to a
+ * `Cat` value, because voice is orthogonal to aspect: a passive perfect verb
+ * is still a perfect verb. Adding "verb.passive" as a rival category would
+ * move 1,151 occurrences out of verb.perf/verb.impf and change every
+ * frequency chart, category tab and comparison in the app. Join on
+ * (s, a, w) to filter occurrences by voice.
+ */
+export interface SyntaxIndexFile {
+  /** the tag vocabulary; `t[i]` indexes into this */
+  tags: string[];
+  /** surah, one entry per indexed segment, in (s,a,w,seg) order */
+  s: number[];
+  /** ayah */
+  a: number[];
+  /** 1-based word index within the verse, matching Occurrence's `w` */
+  w: number[];
+  /** 1-based segment index within the word, matching Occurrence's `seg` */
+  g: number[];
+  /** index into `tags` */
+  t: number[];
+}
+
 export interface SurahVerse {
   /** ayah number, 1-based */
   a: number;

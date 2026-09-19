@@ -16,6 +16,8 @@ import { buildRoots, type RootsGlossMap } from "./lib/build-roots";
 import { buildEnIndex, type IndexableVerse } from "./lib/build-en-index";
 import { buildArIndex, type ArIndexableVerse } from "./lib/build-ar-index";
 import { buildVerseRoots } from "./lib/build-verse-roots";
+import { SYNTAX_TAGS, buildSyntax } from "./lib/build-syntax";
+import { describeTag } from "../src/lib/morphology/tagLabels";
 import { buildInsights } from "./lib/build-insights";
 import { buildRhyme } from "./lib/build-rhyme";
 import { buildDistinctiveVocab } from "./lib/build-distinctive-vocab";
@@ -89,6 +91,9 @@ const EXPECTED = {
   rootedLemmas: 4635,
   rootlessLemmas: 148,
   occurrences: 50269,
+  // Segments carrying one of SYNTAX_TAGS -- 15,413 rootless particles plus
+  // 1,601 rooted (1,151 of them PASS). See SyntaxIndexFile.
+  syntaxRows: 17014,
   rootCounts: { كتب: 319, رحم: 339, علم: 854 } as Record<string, number>,
   maxMismatches: 50,
 };
@@ -112,6 +117,9 @@ const BUDGETS_RAW_BYTES = {
   // One row per rooted occurrence (~50,269), fully numeric (s,a,w,rootIdx,
   // lemmaIdx,catIdx,verbForm) -- see OccurrenceIndexFile.
   "occurrences.json": 2000 * 1024,
+  // One row per syntactically-tagged segment (~17,014), columnar and fully
+  // numeric apart from the 33-entry tag vocabulary -- see SyntaxIndexFile.
+  "syntax.json": 400 * 1024,
 };
 const LARGEST_ROOT_BUDGET_RAW = 60 * 1024;
 // Raised from 9 MiB: adding Pickthall's translation to every verse grew
@@ -121,7 +129,13 @@ const LARGEST_ROOT_BUDGET_RAW = 60 * 1024;
 // Raised again for occurrences.json (cross-corpus faceted search index,
 // ~1.4 MB raw / ~350 KB gz measured) -- both budgets kept with headroom
 // above the current measured totals, not tight to them.
-const TOTAL_RAW_BUDGET = 12.5 * 1024 * 1024;
+// Raised a third time for syntax.json (the syntactic/rhetorical layer, ~215
+// KB raw / ~34 KB gz measured). Raw is again what needed the headroom: the
+// file is mostly small integers, which gzip collapses to almost nothing but
+// which cost ~4 bytes each uncompressed. Before this raise the total sat at
+// 12.45 of 12.5 MiB -- ~55 KiB of raw headroom, too tight to absorb any new
+// index at all, which is the real reason for the increase.
+const TOTAL_RAW_BUDGET = 14 * 1024 * 1024;
 const TOTAL_GZ_BUDGET = 3.5 * 1024 * 1024;
 
 function fail(message: string): never {
@@ -218,6 +232,9 @@ async function main() {
   // --- 5b. Build the global per-verse rooted-word index ---
   const verseRoots: VerseRootsFile = buildVerseRoots(words, rootTextToGlobalIdx, globalIdOf);
 
+  // --- 5b-ii. Build the corpus-wide syntactic / rhetorical index ---
+  const syntaxIndex = buildSyntax(words);
+
   // --- 5c. Build corpus-wide curiosities for /insights/ ---
   const insights = buildInsights(words, rootFiles, lemmaFiles, indexRoots, indexLemmas, meta.surahs.length);
   const rhyme = buildRhyme(surahFiles);
@@ -258,6 +275,21 @@ async function main() {
   const verseRootsEntryCount = verseRoots.reduce((sum, v) => sum + v.length, 0);
   assertEqual("verse-roots.json entry count", verseRootsEntryCount, EXPECTED.occurrences, errors);
   assertEqual("occurrences.json row count", occurrenceIndex.rows.length, EXPECTED.occurrences, errors);
+  assertEqual("syntax.json row count", syntaxIndex.t.length, EXPECTED.syntaxRows, errors);
+  assertEqual("syntax.json tag vocabulary size", syntaxIndex.tags.length, SYNTAX_TAGS.length, errors);
+  for (const column of ["s", "a", "w", "g"] as const) {
+    if (syntaxIndex[column].length !== syntaxIndex.t.length) {
+      errors.push(
+        `syntax.json column "${column}": expected ${syntaxIndex.t.length} entries, got ${syntaxIndex[column].length}`,
+      );
+    }
+  }
+  // describeTag() echoes the raw tag back when it knows no label, so an
+  // unlabelled tag is exactly one whose English label is the code itself.
+  // Checked here rather than in a unit test so a corpus change trips it too.
+  for (const tag of syntaxIndex.tags) {
+    if (describeTag(tag).en === tag) errors.push(`syntax.json tag "${tag}" has no label in tagLabels.ts`);
+  }
   if (verseRoots.length !== indexableVerses.length) {
     errors.push(
       `verse-roots.json length: expected ${indexableVerses.length} (one per verse), got ${verseRoots.length}`,
@@ -373,6 +405,7 @@ async function main() {
       formsEntries,
       enIndex,
       verseRoots,
+      syntaxIndex,
       arIndex,
       occurrenceIndex,
       insights,
@@ -434,6 +467,12 @@ async function main() {
     fail(
       `verse-roots.json exceeds its budget: ${verseRootsSize.rawBytes} > ${BUDGETS_RAW_BYTES["verse-roots.json"]} bytes`,
     );
+  }
+
+  const syntaxSize = writeJSON(join(OUT_DIR, "syntax.json"), syntaxIndex);
+  report.record("syntax.json", syntaxSize.rawBytes, syntaxSize.gzBytes);
+  if (syntaxSize.rawBytes > BUDGETS_RAW_BYTES["syntax.json"]) {
+    fail(`syntax.json exceeds its budget: ${syntaxSize.rawBytes} > ${BUDGETS_RAW_BYTES["syntax.json"]} bytes`);
   }
 
   const arIndexSize = writeJSON(join(OUT_DIR, "ar-index.json"), arIndex);
@@ -540,6 +579,7 @@ function printSizeEstimate(data: {
   formsEntries: unknown;
   enIndex: unknown;
   verseRoots: unknown;
+  syntaxIndex: unknown;
   arIndex: unknown;
   occurrenceIndex: unknown;
   insights: unknown;
@@ -568,6 +608,7 @@ function printSizeEstimate(data: {
   rec("forms.json", data.formsEntries);
   rec("en-index.json", data.enIndex);
   rec("verse-roots.json", data.verseRoots);
+  rec("syntax.json", data.syntaxIndex);
   rec("ar-index.json", data.arIndex);
   rec("occurrences.json", data.occurrenceIndex);
   rec("insights.json", data.insights);

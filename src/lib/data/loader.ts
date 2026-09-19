@@ -17,6 +17,7 @@ import type {
   RootFile,
   SurahFile,
   SurahVerse,
+  SyntaxIndexFile,
   VerseRootsFile,
   VerseSimilarityFile,
 } from "./types";
@@ -71,6 +72,14 @@ export function getEnIndex(): Promise<EnIndexFile> {
 
 export function getVerseRoots(): Promise<VerseRootsFile> {
   return cachedFetch(`${DATA_BASE}/verse-roots.json`);
+}
+
+/**
+ * The syntactic / rhetorical layer (see SyntaxIndexFile). Fetched lazily --
+ * only /syntax/ needs it, so most sessions never pay for its ~34 KB gz.
+ */
+export function getSyntaxIndex(): Promise<SyntaxIndexFile> {
+  return cachedFetch(`${DATA_BASE}/syntax.json`);
 }
 
 /**

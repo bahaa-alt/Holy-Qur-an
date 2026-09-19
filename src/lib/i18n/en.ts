@@ -33,6 +33,7 @@ export const en: Dict = {
     topics: "Topics",
     names: "Names",
     insights: "Insights",
+    syntax: "Syntax",
     saved: "Saved",
     about: "About",
   },
@@ -354,6 +355,20 @@ export const en: Dict = {
     labelLabel: "English label",
     labelPlaceholder: "e.g. Min rabbikum (From your Lord)",
   },
+  syntaxPage: {
+    heading: "Syntax & rhetoric",
+    intro:
+      "Every segment the corpus tags with a syntactic or rhetorical function \u2014 restriction, condition, circumstantial \u1E25\u0101l, prohibition, emphasis, passive voice and more. Most are particles, which carry no root and so appear in none of this app's root counts.",
+    totalSegments: (n: number) => `${n.toLocaleString()} tagged segments`,
+    pickTag: "Choose a function",
+    occurrencesIn: (tag: string) => `Every occurrence of: ${tag}`,
+    loading: "Loading\u2026",
+    noneSelected: "Pick a function above to see every place it occurs.",
+    methodologyNote:
+      "These are not \u201coccurrences\u201d in this app's usual sense. An occurrence is a segment carrying a root, and 15,413 of the 17,014 segments here are rootless particles. They are a parallel layer, counted separately, and they never affect a root's totals.",
+    passiveNote:
+      "Passive voice is listed here rather than as a grammatical category, because voice is independent of aspect \u2014 a passive perfect verb is still a perfect verb, and is still counted as one everywhere else in this app.",
+  },
   insightsPage: {
     title: "Insights",
     subtitle:
@@ -627,7 +642,7 @@ export const en: Dict = {
       "A free, open-source, account-less tool for researching Qur'anic Arabic roots and word forms. It runs entirely in your browser as a static site: no accounts, no login, no database server. All data ships as static files and works fully offline once installed.",
     howCountsComputedHeading: "How counts are computed",
     howCountsComputedBody:
-      'An "occurrence" of a root is a morphological segment tagged with that root in the underlying corpus. Particles, pronouns, and grammatical clitics (prefixes and suffixes such as the determiner "al-" or attached pronouns) never carry a root and are never counted toward one, even though they still appear in the verse text. This matches how the Quranic Arabic Corpus itself counts roots, which may differ from tools that count whole inflected words.',
+      'An "occurrence" of a root is a morphological segment tagged with that root in the underlying corpus. Particles, pronouns, and grammatical clitics (prefixes and suffixes such as the determiner "al-" or attached pronouns) never carry a root and are never counted toward one, even though they still appear in the verse text. This matches how the Quranic Arabic Corpus itself counts roots, which may differ from tools that count whole inflected words. Those uncounted particles are not discarded, though: the ones carrying a syntactic or rhetorical function \u2014 restriction, condition, circumstantial \u1E25\u0101l, prohibition, emphasis and the rest \u2014 are indexed separately and browsable under Syntax. That is a parallel layer with its own counts; it never changes a root\u2019s totals.',
     insightsMethodologyHeading: "How the Insights page's numbers are computed",
     insightsMethodologyIntro:
       "The Insights page (letter frequency, corpus facts, rhyme patterns, distinctive vocabulary, verb collocations, Abjad value) adds several metrics beyond simple occurrence counts. Each is documented here so a number can be cited and understood, not just displayed.",

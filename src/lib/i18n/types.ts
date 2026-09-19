@@ -39,6 +39,7 @@ export interface Dict {
     topics: string;
     names: string;
     insights: string;
+    syntax: string;
     saved: string;
     about: string;
   };
@@ -347,6 +348,17 @@ export interface Dict {
     phrasePlaceholder: string;
     labelLabel: string;
     labelPlaceholder: string;
+  };
+  syntaxPage: {
+    heading: string;
+    intro: string;
+    totalSegments: (n: number) => string;
+    pickTag: string;
+    occurrencesIn: (tag: string) => string;
+    loading: string;
+    noneSelected: string;
+    methodologyNote: string;
+    passiveNote: string;
   };
   insightsPage: {
     title: string;

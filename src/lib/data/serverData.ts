@@ -11,6 +11,7 @@ import type {
   RhymeFile,
   RootFile,
   SurahFile,
+  SyntaxIndexFile,
   VerseRootsFile,
 } from "./types";
 
@@ -87,6 +88,16 @@ export function readSurahFile(n: number): SurahFile {
 // process -- static export calls readVerseRoots() once per root page
 // (1,651+ times), so a plain readFileSync per call would reread the same
 // ~600KB file that often. Memoized per-worker-process instead.
+let syntaxIndexCache: SyntaxIndexFile | null = null;
+
+/** Memoized for the same reason as readVerseRoots below. */
+export function readSyntaxIndex(): SyntaxIndexFile {
+  if (!syntaxIndexCache) {
+    syntaxIndexCache = readDataFile<SyntaxIndexFile>("syntax.json");
+  }
+  return syntaxIndexCache;
+}
+
 let verseRootsCache: VerseRootsFile | null = null;
 
 export function readVerseRoots(): VerseRootsFile {
