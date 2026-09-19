@@ -18,7 +18,11 @@ import type {
   SurahFile,
   ReadingSurahFile,
   ReadingsMetaFile,
+  LaneMetaFile,
+  LaneRootFile,
   SurahVerse,
+  TafsirMetaFile,
+  TafsirSurahFile,
   SyntaxIndexFile,
   VerseRootsFile,
   VerseSimilarityFile,
@@ -97,6 +101,34 @@ export function getReadingsMeta(): Promise<ReadingsMetaFile> {
  */
 export function getReadingSurah(slug: string, n: number): Promise<ReadingSurahFile> {
   return cachedFetch(`${DATA_BASE}/readings/${slug}/${n}.json`);
+}
+
+/** Provenance and coverage for the bundled lexicon. */
+export function getLaneMeta(): Promise<LaneMetaFile> {
+  return cachedFetch(`${DATA_BASE}/lane/meta.json`);
+}
+
+/**
+ * One root's lexicon articles (~13 KB). Lazily fetched and not part of
+ * prefetchAll: the whole lexicon restricted to this corpus is ~24 MB, and a
+ * reader only ever wants the root in front of them.
+ */
+export function getLaneRoot(root: string): Promise<LaneRootFile> {
+  return cachedFetch(`${DATA_BASE}/lane/${encodeURIComponent(root)}.json`);
+}
+
+/** Provenance and coverage for a shipped commentary. */
+export function getTafsirMeta(slug: string): Promise<TafsirMetaFile> {
+  return cachedFetch(`${DATA_BASE}/tafsir/${slug}/meta.json`);
+}
+
+/**
+ * One surah's commentary. Lazily fetched and not part of prefetchAll, same
+ * as the alternative readings. Verses the commentary does not separately
+ * treat are absent from `entries` -- see buildTafsir.
+ */
+export function getTafsirSurah(slug: string, n: number): Promise<TafsirSurahFile> {
+  return cachedFetch(`${DATA_BASE}/tafsir/${slug}/${n}.json`);
 }
 
 /**

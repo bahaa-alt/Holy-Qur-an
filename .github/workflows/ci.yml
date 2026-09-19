@@ -1,8 +1,12 @@
 name: CI
 
 on:
+  # The default branch is claude/quranic-root-research-pwa-vhg2w3, not main,
+  # so the previous `branches: [main]` meant CI had never once run on a push
+  # -- only on pull requests. A direct commit to the default branch, or a
+  # merge, went unchecked.
   push:
-    branches: [main]
+    branches: [claude/quranic-root-research-pwa-vhg2w3]
   pull_request:
 
 jobs:
