@@ -22,6 +22,7 @@
  */
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { fetchTextWithRetry } from "./lib/download";
 
 // Source: https://github.com/spa5k/tafsir_api (MIT-licensed packaging;
 // mirrors https://qul.tarteel.ai's tafsir resources), served from
@@ -81,11 +82,10 @@ function printList() {
 
 async function fetchSurah(slug: string, n: number): Promise<unknown> {
   const url = `${SOURCE_BASE}/${slug}/${n}.json`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`);
-  }
-  return res.json();
+  // Retried like every other download in this repo: a 114-surah run is
+  // long enough that one dropped connection near the end would otherwise
+  // throw away the whole thing.
+  return JSON.parse(await fetchTextWithRetry(url, { label: `${slug} surah ${n}` }));
 }
 
 async function fetchTafsir(slug: string): Promise<void> {
@@ -98,7 +98,9 @@ async function fetchTafsir(slug: string): Promise<void> {
 
   const dir = join(OUT_DIR, slug);
   mkdirSync(dir, { recursive: true });
-  console.log(`Fetching ${candidate.titleEn} (~${candidate.estimatedTotalMB} MB, ${SURAH_COUNT} surahs)...`);
+  console.log(
+    `Fetching ${candidate.titleEn} (~${candidate.estimatedTotalMB} MB, ${SURAH_COUNT} surahs)...`,
+  );
 
   let fetched = 0;
   let skipped = 0;
