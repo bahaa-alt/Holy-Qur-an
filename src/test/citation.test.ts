@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCitation } from "@/lib/citation/buildCitation";
+import { buildCitation, datasetLabel } from "@/lib/citation/buildCitation";
 import { CONCEPT_DOI, VERSION_DOI } from "@/lib/citation/doi";
 import type { ManifestFile } from "@/lib/data/types";
 
@@ -17,7 +17,36 @@ const manifest: Pick<ManifestFile, "version" | "builtAt" | "hash" | "reading"> =
 };
 const accessedOn = new Date("2026-09-09T12:00:00.000Z");
 
+describe("datasetLabel", () => {
+  it("does not double the v that manifest.json already carries", () => {
+    // Regression: every citation the app produced read "Dataset vv1",
+    // because manifest.version is "v1" and the citation prefixed a "v".
+    expect(datasetLabel("v1")).toBe("v1");
+    expect(datasetLabel("V2")).toBe("v2");
+    expect(datasetLabel("1.3.0")).toBe("v1.3.0");
+  });
+});
+
 describe("buildCitation", () => {
+  it("prints the dataset version once, whether or not it starts with v", () => {
+    expect(
+      buildCitation(
+        { kind: "root", label: "كتب" },
+        { ...manifest, version: "v1" },
+        "https://x/",
+        accessedOn,
+      ),
+    ).toContain("Dataset v1 (built");
+  });
+
+  it("labels the newer citation subjects", () => {
+    const cite = (kind: Parameters<typeof buildCitation>[0]["kind"], label: string) =>
+      buildCitation({ kind, label }, manifest, "https://x/", accessedOn);
+    expect(cite("query", "[PASS]")).toContain("Query [PASS].");
+    expect(cite("keyness", "medinan")).toContain("Keyness medinan.");
+    expect(cite("grammar", "Jussive")).toContain("Grammar filter Jussive.");
+  });
+
   it("formats a root citation", () => {
     expect(
       buildCitation(

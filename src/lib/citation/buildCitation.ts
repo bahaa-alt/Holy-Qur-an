@@ -3,8 +3,39 @@ import { VERSION_DOI } from "./doi";
 
 export const APP_NAME = "Qur'anic Root & Word Research";
 
+/**
+ * The dataset version, without a duplicated "v".
+ *
+ * manifest.json writes its version as "v1", and this citation printed
+ * `Dataset v${version}` -- so every citation copied from a root or word
+ * page has been reading "Dataset vv1". Normalized here rather than at
+ * each call site, and exported so the exporters print the same string.
+ */
+export function datasetLabel(version: string): string {
+  return `v${version.replace(/^v/i, "")}`;
+}
+
+/**
+ * What is being cited. Beyond a root or a word, a researcher needs to
+ * cite the VIEW that produced a number -- a query, a grammar filter, a
+ * keyness table -- because that is what another reader has to reproduce.
+ */
+export type CitationKind =
+  "root" | "word" | "verse" | "surah" | "topic" | "query" | "grammar" | "keyness";
+
+const SUBJECT_LABEL: Record<CitationKind, string> = {
+  root: "Root",
+  word: "Word",
+  verse: "Verse",
+  surah: "Surah",
+  topic: "Topic",
+  query: "Query",
+  grammar: "Grammar filter",
+  keyness: "Keyness",
+};
+
 export interface CitationSubject {
-  kind: "root" | "word";
+  kind: CitationKind;
   label: string;
 }
 
@@ -26,7 +57,7 @@ export function buildCitation(
   url: string,
   accessedOn: Date = new Date(),
 ): string {
-  const subjectLabel = subject.kind === "root" ? "Root" : "Word";
+  const subjectLabel = SUBJECT_LABEL[subject.kind];
   const builtDate = new Date(manifest.builtAt).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
@@ -47,7 +78,7 @@ export function buildCitation(
   return (
     `${APP_NAME}. ${subjectLabel} ${subject.label}. ` +
     `Text: ${reading}. ` +
-    `Dataset v${manifest.version} (built ${builtDate}, hash ${manifest.hash}). ` +
+    `Dataset ${datasetLabel(manifest.version)} (built ${builtDate}, hash ${manifest.hash}). ` +
     `DOI ${VERSION_DOI}. ` +
     `Accessed ${accessedDate}. ${url}`
   );

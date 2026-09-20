@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Download, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { getIndex, getVerseRoots } from "@/lib/data/loader";
 import { useT } from "@/lib/i18n/LanguageContext";
 import { compareScope, corpusDispersion, type CompareRow } from "@/lib/insights/compare";
@@ -15,6 +15,9 @@ import {
 import { bonferroniAlpha, DEFAULT_MIN_COUNT } from "@/lib/stats/keyness";
 import { JUZ_COUNT } from "@/lib/quran/juz";
 import { DispersionTable, KeynessTable, sigBucket } from "./CompareTables";
+import { ExportButton } from "@/components/export/ExportButton";
+import { SaveButton } from "@/components/notes/SaveButton";
+import type { ExportTable } from "@/lib/export/table";
 import type { IndexFile, MetaFile, VerseRootsFile } from "@/lib/data/types";
 
 const SCOPE_PARAM = "scope";
@@ -124,23 +127,36 @@ export function CompareTab({ meta }: { meta: MetaFile }) {
         ? `[root=${rootAr}]`
         : `[root=${rootAr}] :: ${scopeFilter}`;
 
-  function exportCsv() {
-    const isDispersion = scope.kind === "quran" && dispersionRows;
-    const header = isDispersion
-      ? ["root", "count", "surahs", "dp", "dp_norm"]
-      : [
-          "root",
-          "count_in_scope",
-          "count_elsewhere",
-          "per_10k_in_scope",
-          "per_10k_elsewhere",
-          "log_ratio",
-          "log_ratio_estimated",
-          "log_likelihood_g2",
-          "p_value",
-        ];
-    const body = isDispersion
-      ? dispersionRows
+  /**
+   * The visible table as a portable, self-describing export.
+   *
+   * Built through the shared exporter rather than the bespoke CSV this
+   * tool shipped with, so a keyness table carries the same provenance
+   * header -- query, scope, dataset hash, citation -- as every other
+   * export in the app, and there is one answer to "what does an export
+   * from this app look like".
+   */
+  function buildTable(): ExportTable {
+    const scopeLabel = scopeToParam(scope);
+    if (scope.kind === "quran" && dispersionRows) {
+      return {
+        slug: "dispersion-quran",
+        meta: {
+          title: c.dispersionHeading,
+          provenance: [
+            { label: "measure", value: "Gries DP over 114 surahs" },
+            { label: "minimum occurrences", value: String(dispersionMin) },
+            { label: "sorted by", value: spread === "even" ? "most even" : "most concentrated" },
+          ],
+        },
+        columns: [
+          { key: "root", label: "root" },
+          { key: "count", label: "count" },
+          { key: "surahs", label: "surahs" },
+          { key: "dp", label: "dp" },
+          { key: "dp_norm", label: "dp_norm" },
+        ],
+        rows: dispersionRows
           .slice(0, ROWS_SHOWN)
           .map((r) => [
             rootNames[r.rootIdx],
@@ -148,28 +164,46 @@ export function CompareTab({ meta }: { meta: MetaFile }) {
             r.dispersion.range,
             r.dispersion.dp.toFixed(4),
             r.dispersion.dpNorm.toFixed(4),
-          ])
-      : shownRows.map((r) => [
-          rootNames[r.rootIdx],
-          r.count,
-          r.referenceCount,
-          r.keyness.rate.toFixed(2),
-          r.keyness.referenceRate.toFixed(2),
-          r.keyness.logRatio.toFixed(4),
-          r.keyness.logRatioEstimated ? "yes" : "no",
-          r.keyness.g2.toFixed(3),
-          r.keyness.p.toExponential(3),
-        ]);
-    const csv = [header, ...body].map((cells) => cells.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `quran-${isDispersion ? "dispersion" : "keyness"}-${scopeToParam(scope).replace(":", "-")}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+          ]),
+      };
+    }
+    return {
+      slug: `keyness-${scopeLabel.replace(":", "-")}`,
+      meta: {
+        title: `${direction === "over" ? c.keynessHeadingOver : c.keynessHeadingUnder}`,
+        provenance: [
+          { label: "scope", value: scopeLabel },
+          { label: "reference", value: "the rest of the Qur'an" },
+          { label: "measures", value: "log-likelihood G² (Dunning 1993), log ratio (Hardie 2014)" },
+          { label: "minimum occurrences", value: String(minCount) },
+          { label: "roots tested", value: String(result?.tested ?? 0) },
+          { label: "scope tokens", value: String(result?.scopeTokens ?? 0) },
+          { label: "reference tokens", value: String(result?.referenceTokens ?? 0) },
+        ],
+      },
+      columns: [
+        { key: "root", label: "root" },
+        { key: "count_in_scope", label: "count_in_scope" },
+        { key: "count_elsewhere", label: "count_elsewhere" },
+        { key: "per_10k_in_scope", label: "per_10k_in_scope" },
+        { key: "per_10k_elsewhere", label: "per_10k_elsewhere" },
+        { key: "log_ratio", label: "log_ratio" },
+        { key: "log_ratio_estimated", label: "log_ratio_estimated" },
+        { key: "log_likelihood_g2", label: "log_likelihood_g2" },
+        { key: "p_value", label: "p_value" },
+      ],
+      rows: shownRows.map((r) => [
+        rootNames[r.rootIdx],
+        r.count,
+        r.referenceCount,
+        r.keyness.rate.toFixed(2),
+        r.keyness.referenceRate.toFixed(2),
+        r.keyness.logRatio.toFixed(4),
+        r.keyness.logRatioEstimated ? "yes" : "no",
+        r.keyness.g2.toFixed(3),
+        r.keyness.p.toExponential(3),
+      ]),
+    };
   }
 
   const c = t.insightsPage.compare;
@@ -359,14 +393,21 @@ export function CompareTab({ meta }: { meta: MetaFile }) {
             </div>
           )}
 
-          <button
-            type="button"
-            onClick={exportCsv}
-            disabled={!data}
-            className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 hover:border-accent hover:text-accent disabled:opacity-50"
-          >
-            <Download size={12} /> {c.exportCsv}
-          </button>
+          <SaveButton
+            id={`view:compare:${scopeToParam(scope)}`}
+            kind="view"
+            label={`${c.tab}: ${scopeToParam(scope)}`}
+            detail={c.heading}
+            href={`/insights/?${SCOPE_PARAM}=${scopeToParam(scope)}`}
+            compact
+          />
+          {data && (
+            <ExportButton
+              path={`/insights/?${SCOPE_PARAM}=${scopeToParam(scope)}`}
+              subject={{ kind: "keyness", label: scopeToParam(scope) }}
+              resolve={buildTable}
+            />
+          )}
         </div>
       </div>
 

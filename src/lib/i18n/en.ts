@@ -514,7 +514,6 @@ export const en: Dict = {
       showUnder: "Under-used here",
       sortEven: "Most evenly spread",
       sortConcentrated: "Most concentrated",
-      exportCsv: "CSV",
       loading: "Loading the corpus\u2026",
       noRows: "No root meets the minimum-occurrence floor in this scope. Lower it to see more.",
       keynessHeadingOver: "Roots over-used here, against the rest of the Qur'an",
@@ -817,6 +816,13 @@ export const en: Dict = {
     rootsHeading: "Roots",
     wordsHeading: "Words",
     versesHeading: "Verses",
+    queriesHeading: "Queries",
+    viewsHeading: "Views",
+    exportAll: "Export notebook",
+    importLabel: "Import",
+    importSummary: (added: number, updated: number, skipped: number) =>
+      `Imported: ${added} added, ${updated} updated, ${skipped} skipped.`,
+    importFailed: "That file is not a notebook exported from this app.",
     empty:
       'Nothing saved yet. Use the "Save" button on a root, word, or verse page to bookmark it here.',
     removeAria: (label) => `Remove ${label}`,

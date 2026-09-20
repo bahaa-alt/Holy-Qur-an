@@ -486,7 +486,6 @@ export interface Dict {
       showUnder: string;
       sortEven: string;
       sortConcentrated: string;
-      exportCsv: string;
       loading: string;
       noRows: string;
       keynessHeadingOver: string;
@@ -747,6 +746,12 @@ export interface Dict {
     rootsHeading: string;
     wordsHeading: string;
     versesHeading: string;
+    queriesHeading: string;
+    viewsHeading: string;
+    exportAll: string;
+    importLabel: string;
+    importSummary: (added: number, updated: number, skipped: number) => string;
+    importFailed: string;
     empty: string;
     removeAria: (label: string) => string;
     notePlaceholder: string;
