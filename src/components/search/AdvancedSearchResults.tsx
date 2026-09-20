@@ -53,6 +53,7 @@ export function AdvancedSearchResults({
 
   return (
     <div className="divide-y divide-border/60 rounded-xl border border-border bg-surface px-4">
+      <p className="pt-3 text-xs text-muted/70">{t.wordInfoPanel.tapHint}</p>
       {initialRows.map((row, i) => {
         const verse = verses.get(`${row.s}:${row.a}`);
         const rootRow = index.roots[row.rootIdx];
@@ -68,7 +69,10 @@ export function AdvancedSearchResults({
               </p>
             )}
             <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 ps-16 text-xs text-muted">
-              <Link href={rootHref(rootRow.ar)} className="arabic-ui text-accent hover:text-accent-strong">
+              <Link
+                href={rootHref(rootRow.ar)}
+                className="arabic-ui text-accent hover:text-accent-strong"
+              >
                 {rootRow.ar}
               </Link>
               <Link href={wordHref(row.lemmaIdx)} className="text-accent hover:text-accent-strong">
