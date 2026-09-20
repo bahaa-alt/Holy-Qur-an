@@ -1,5 +1,7 @@
 # Quranic Root & Word Research PWA
 
+[![DOI](https://zenodo.org/badge/1362755620.svg)](https://doi.org/10.5281/zenodo.22855797)
+
 A free, open-source, account-less tool for researching Qur'anic Arabic roots and word forms: every derivative, every occurrence, with the Uthmani text and an English translation highlighted in context. Runs 100% client-side as a Next.js static export — no accounts, no login, no database server — and installs as a PWA that keeps working fully offline.
 
 ## Features
@@ -12,15 +14,30 @@ A free, open-source, account-less tool for researching Qur'anic Arabic roots and
 - **Offline-first PWA**: installable to a home screen, works offline for anything visited, with a one-click "download everything" option.
 - **Light/dark theme**, obsidian/emerald palette, mobile-responsive throughout.
 
+## Citing this
+
+Archived on Zenodo. The **concept DOI** below always resolves to the newest
+release; cite it when referring to the tool in general.
+
+> [10.5281/zenodo.22855797](https://doi.org/10.5281/zenodo.22855797)
+
+For a result that has to be reproducible, cite the **version DOI** of the
+build you used instead — `v1.0.0` is
+[10.5281/zenodo.22855798](https://doi.org/10.5281/zenodo.22855798). Counts
+and references here are computed against one reading of the text and one
+corpus build, so only a specific snapshot makes a number checkable. The
+Cite button on any root or word page emits a citation that already carries
+the version DOI, the dataset hash and the reading.
+
 ## Data
 
 Built entirely from open datasets, downloaded and merged at build time (see [`/about`](./src/app/about) for the live provenance table and licenses):
 
-| Source | What it provides | License |
-|---|---|---|
-| [mustafa0x/quran-morphology](https://github.com/mustafa0x/quran-morphology) | Root/lemma/grammar tagging for every word (fork of the Quranic Arabic Corpus) | GPL |
-| [risan/quran-json](https://github.com/risan/quran-json) | Uthmani text, Saheeh International translation, surah metadata | CC-BY-SA 4.0 |
-| [R3GENESI5/quran-bil-quran](https://github.com/R3GENESI5/quran-bil-quran) | Root meanings, after Lane's Lexicon | MIT |
+| Source                                                                      | What it provides                                                              | License      |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------ |
+| [mustafa0x/quran-morphology](https://github.com/mustafa0x/quran-morphology) | Root/lemma/grammar tagging for every word (fork of the Quranic Arabic Corpus) | GPL          |
+| [risan/quran-json](https://github.com/risan/quran-json)                     | Uthmani text, Saheeh International translation, surah metadata                | CC-BY-SA 4.0 |
+| [R3GENESI5/quran-bil-quran](https://github.com/R3GENESI5/quran-bil-quran)   | Root meanings, after Lane's Lexicon                                           | MIT          |
 
 An "occurrence" of a root is a morphological segment tagged with that root — particles, pronouns, and grammatical clitics never count toward one, matching how the underlying corpus itself counts roots.
 

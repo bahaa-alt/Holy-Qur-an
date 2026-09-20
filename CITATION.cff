@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+title: "Qur'anic Root & Word Research"
+message: >-
+  If you use this tool in research, please cite it. Prefer the version DOI
+  of the build you actually used: counts and references here are computed
+  against one reading of the text and one corpus build, and only that
+  snapshot makes a result reproducible.
+type: software
+authors:
+  - given-names: Bahaa
+    alias: bahaa-alt
+repository-code: "https://github.com/bahaa-alt/Holy-Qur-an"
+url: "https://bahaa-alt.github.io/Holy-Qur-an/"
+abstract: >-
+  A free, open-source, account-less tool for researching Qur'anic Arabic
+  roots and word forms. Every derivative and every occurrence, with the
+  Uthmani text, two English translations, Tafsir al-Jalalayn, seven
+  alternative transmissions, Lane's Lexicon and three classical
+  Arabic-Arabic lexicons (Maqayis al-Lugha, al-Mufradat, al-Sihah), a
+  syntactic and rhetorical index over 17,014 tagged segments, and QCQL, a
+  query language over the corpus. Runs entirely client-side as a static
+  export and works offline.
+keywords:
+  - Quran
+  - Arabic
+  - corpus linguistics
+  - lexicography
+  - morphology
+  - digital humanities
+license: GPL-3.0
+# Concept DOI: always resolves to the newest archived version. Cite this
+# when referring to the tool in general; cite the version DOI of a specific
+# release when a result has to be checkable.
+doi: 10.5281/zenodo.22855797
+version: 1.0.0
+date-released: "2026-09-20"

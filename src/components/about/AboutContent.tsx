@@ -3,11 +3,18 @@
 import { useT } from "@/lib/i18n/LanguageContext";
 import { OfflineDownload } from "@/components/layout/OfflineDownload";
 import type { ManifestFile } from "@/lib/data/types";
+import { CONCEPT_DOI, VERSION_DOI, VERSION_TAG, doiUrl } from "@/lib/citation/doi";
 
 /** Set once the CSV is uploaded to a release; see scripts/build-data.ts EXPORT_DIR. */
 const CORPUS_EXPORT_URL = process.env.NEXT_PUBLIC_CORPUS_EXPORT_URL ?? "";
 
-export function AboutContent({ manifest, rootNames }: { manifest: ManifestFile; rootNames: string[] }) {
+export function AboutContent({
+  manifest,
+  rootNames,
+}: {
+  manifest: ManifestFile;
+  rootNames: string[];
+}) {
   const t = useT();
 
   return (
@@ -99,7 +106,12 @@ export function AboutContent({ manifest, rootNames }: { manifest: ManifestFile; 
             <li key={s.url} className="rounded-lg border border-border p-3">
               <p className="font-medium">{s.name}</p>
               <p className="text-muted">
-                <a href={s.url} target="_blank" rel="noreferrer" className="text-accent hover:text-accent-strong">
+                <a
+                  href={s.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-accent hover:text-accent-strong"
+                >
                   {s.url}
                 </a>
                 {" · "}
@@ -148,6 +160,41 @@ export function AboutContent({ manifest, rootNames }: { manifest: ManifestFile; 
             </a>
           </>
         )}
+      </div>
+
+      <div>
+        <h2 className="text-lg font-semibold">{t.aboutPage.citeHeading}</h2>
+        <p className="mt-2 text-muted">{t.aboutPage.citeIntro}</p>
+        <dl className="mt-3 space-y-1.5 text-sm">
+          <div className="flex flex-wrap items-baseline gap-x-2">
+            <dt className="text-muted">{t.aboutPage.citeConceptLabel}:</dt>
+            <dd>
+              <a
+                href={doiUrl(CONCEPT_DOI)}
+                className="font-mono text-accent hover:text-accent-strong"
+                dir="ltr"
+              >
+                {CONCEPT_DOI}
+              </a>
+            </dd>
+          </div>
+          <div className="flex flex-wrap items-baseline gap-x-2">
+            <dt className="text-muted">
+              {t.aboutPage.citeVersionLabel} ({VERSION_TAG}):
+            </dt>
+            <dd>
+              <a
+                href={doiUrl(VERSION_DOI)}
+                className="font-mono text-accent hover:text-accent-strong"
+                dir="ltr"
+              >
+                {VERSION_DOI}
+              </a>
+            </dd>
+          </div>
+        </dl>
+        <p className="mt-3 text-sm leading-relaxed text-muted">{t.aboutPage.citeWhyVersion}</p>
+        <p className="mt-2 text-sm leading-relaxed text-muted/80">{t.aboutPage.citeButtonHint}</p>
       </div>
 
       <div>
