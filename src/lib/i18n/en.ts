@@ -494,11 +494,75 @@ export const en: Dict = {
     title: "Insights",
     subtitle:
       "Corpus-wide statistics and curiosities -- letter frequency across any scope, plus a set of facts computed once across the whole Qur'an that no single root or word page can answer on its own.",
+    compare: {
+      tab: "Compare",
+      heading: "What is characteristic of this part of the Qur'an?",
+      intro:
+        "Pick a scope \u2014 a surah, a juz', the Meccan or Medinan corpus, a window of the revelation order \u2014 and every root is measured against the rest of the Qur'an. A count on its own cannot answer a research question, because the question is always \u201Ccompared to what\u201D.",
+      scopeLabel: "Scope",
+      scopeQuran: "Whole Qur'an",
+      scopeMeccan: "Meccan",
+      scopeMedinan: "Medinan",
+      scopeSurah: "Surah",
+      scopeJuz: "Juz'",
+      scopeChrono: "Revelation order",
+      juzLabel: (n: number) => `Juz' ${n}`,
+      chronoTo: "to",
+      chronoHint: "(position in revelation order, 1\u2013114)",
+      minCount: "Minimum occurrences",
+      showOver: "Over-used here",
+      showUnder: "Under-used here",
+      sortEven: "Most evenly spread",
+      sortConcentrated: "Most concentrated",
+      exportCsv: "CSV",
+      loading: "Loading the corpus\u2026",
+      noRows: "No root meets the minimum-occurrence floor in this scope. Lower it to see more.",
+      keynessHeadingOver: "Roots over-used here, against the rest of the Qur'an",
+      keynessHeadingUnder: "Roots under-used here, against the rest of the Qur'an",
+      dispersionHeading: "How evenly is each root spread across the Qur'an?",
+      dispersionIntro:
+        "At whole-Qur'an scope there is nothing to compare against, so the question changes: is a root part of the book's ordinary vocabulary, or concentrated in a few passages? DP is 0 when a root is spread exactly in proportion to how much text each surah holds, and approaches 1 as it piles into one place. The minimum-occurrence floor matters more here than anywhere: a root occurring five times never had the chance to spread, so it is \u201Cconcentrated\u201D only because it is rare.",
+      summary: (verses: number, tokens: number, referenceTokens: number) =>
+        `${verses.toLocaleString()} verses \u00b7 ${tokens.toLocaleString()} rooted occurrences here, against ${referenceTokens.toLocaleString()} elsewhere`,
+      correctionNote: (tests: number, alpha: string) =>
+        `${tests.toLocaleString()} roots were tested, so \u201Ccorrected\u201D marks the rows that survive a Bonferroni threshold of p < ${alpha}. At a plain p < 0.05, about ${Math.round(tests * 0.05).toLocaleString()} roots would clear the bar by chance alone.`,
+      nsNote:
+        "Rows marked n.s. are not statistically significant; they are shown because absence of evidence is a result too.",
+      estimatedNote:
+        "The root does not occur at all on one side, so a count of 0 was floored to 0.5 to keep the effect size finite (Hardie 2014). The significance measure uses the real counts.",
+      openInQuery: "Open this row as a query",
+      colRoot: "Root",
+      colCount: "n",
+      colHere: "per 10k here",
+      colElsewhere: "per 10k elsewhere",
+      colLogRatio: "Log ratio",
+      colG2: "G\u00b2",
+      colSig: "Significance",
+      colRange: "Surahs",
+      colDp: "DP",
+      colSpread: "Concentration",
+      sig: {
+        corrected: "corrected",
+        p001: "p < 0.001",
+        p01: "p < 0.01",
+        p05: "p < 0.05",
+        ns: "n.s.",
+      },
+      methodsHeading: "How to read this",
+      methodsBasis:
+        "The unit is a rooted occurrence \u2014 a segment carrying a root, this app's definition of an occurrence throughout. Rates are per 10,000 rooted occurrences, computed on the same basis inside the scope and outside it. Particles and pronouns carry no root and are not counted on either side.",
+      methodsG2:
+        "G\u00b2 is log-likelihood (Dunning 1993): how surprising the difference is, given how much text is involved. It grows with the size of the corpus, so a large G\u00b2 on a tiny difference is real but may be uninteresting.",
+      methodsLogRatio:
+        "Log ratio (Hardie 2014) is the size of the difference, in doublings: +1 means twice as common here, +3 means eight times. It does not grow with corpus size, and it is unstable on small counts \u2014 which is what the minimum-occurrence floor is for.",
+      methodsDp:
+        "DP is Gries's deviation of proportions (2008): how far a root's distribution across the 114 surahs departs from what those surahs' sizes would predict. It separates a word used 300 times across eighty surahs from one used 300 times in a single passage \u2014 two facts this app previously reported identically.",
+      methodsLimits:
+        "The reference corpus is always the rest of the Qur'an, which is a small corpus by the standards of these measures: read a single row as a lead to follow, not a result to publish. Roots are the unit here; lemmas, grammatical features and collocation follow.",
+    },
     tabFacts: "Facts",
     tabLetters: "Letter frequency",
-    tabCoverage: "Vocabulary coverage",
     tabRhyme: "Rhyme patterns",
-    tabVocabulary: "Distinctive vocabulary",
     tabCollocations: "Verb collocations",
     tabAbjad: "Abjad value",
     tabCooccurrence: "Root network",
@@ -520,14 +584,7 @@ export const en: Dict = {
     factsHeading: "Interesting facts",
     factsDescription:
       "Computed once across the entire corpus at build time -- things no single root or word page can answer by itself.",
-    rootsCoverageHeading: "Roots by how many surahs they appear in",
-    rootsCoverageDescription:
-      "Ranked by distinct-surah coverage, not raw frequency -- a root can occur often while clustering in a few surahs, or rarely while spreading everywhere.",
-    lemmasCoverageHeading: "Words by how many surahs they appear in",
-    lemmasCoverageDescription:
-      "Same ranking, one level more specific: exact words (lemmas), rooted or not.",
     surahCoverage: (surahCount, total) => `${surahCount} / ${total} surahs`,
-    everySurahBadge: "Every surah",
     longestVerseLabel: "Longest verse",
     shortestVerseLabel: "Shortest verse",
     wordsCount: (n) => `${n.toLocaleString()} words`,
