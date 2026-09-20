@@ -25,6 +25,14 @@ export interface Facet {
   ar?: string;
   /** a syntax tag, when the label should come from describeTag */
   tag?: string;
+  /**
+   * The corpus's own code for this feature (3MS, MP, IV ...), shown on
+   * hover. The label a reader sees is a grammatical term in their own
+   * language; the code stays reachable for anyone working from the
+   * Quranic Arabic Corpus tagset, and is visible anyway in the QCQL the
+   * results header shows.
+   */
+  code?: string;
 }
 
 export interface FacetGroup {
@@ -52,6 +60,27 @@ export interface FacetSection {
 }
 
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI"] as const;
+
+/**
+ * The Arabic name of each Form: its wazn.
+ *
+ * Roman numerals are how Western Arabists number the derived forms, and
+ * they say nothing to an Arabic reader, who knows Form II as فَعَّلَ. Indexed
+ * I-XI, matching ROMAN.
+ */
+const WAZN = [
+  "فَعَلَ",
+  "فَعَّلَ",
+  "فَاعَلَ",
+  "أَفْعَلَ",
+  "تَفَعَّلَ",
+  "تَفَاعَلَ",
+  "اِنْفَعَلَ",
+  "اِفْتَعَلَ",
+  "اِفْعَلَّ",
+  "اِسْتَفْعَلَ",
+  "اِفْعَالَّ",
+] as const;
 
 const MOOD_EN: Record<string, string> = {
   IND: "Indicative",
@@ -83,7 +112,8 @@ const VERB_FORMS: Facet[] = Array.from({ length: 11 }, (_, i) => ({
   id: `vf${i + 1}`,
   q: `[vf=${i + 1}]`,
   en: ROMAN[i],
-  ar: ROMAN[i],
+  ar: WAZN[i],
+  code: `${ROMAN[i]} — ${WAZN[i]}`,
 }));
 
 /**
@@ -93,22 +123,28 @@ const VERB_FORMS: Facet[] = Array.from({ length: 11 }, (_, i) => ({
  *
  * These are the VERBAL ones. Every tag here is attested on a verb in this
  * corpus; the smallest, 2FD, occurs once.
+ *
+ * LABELLED AS PRONOUNS, not as the corpus's codes. "3MS" is a tagset code,
+ * and a reader who has not memorised the Quranic Arabic Corpus tagset
+ * cannot read it -- least of all in the Arabic interface, where it is also
+ * the wrong script. The pronoun IS the feature: a verb tagged 3MS agrees
+ * with هو. The code stays on hover and in the query the results show.
  */
-const PGN_PERSON = [
-  "3MS",
-  "3FS",
-  "3MD",
-  "3FD",
-  "3MP",
-  "3FP",
-  "2MS",
-  "2FS",
-  "2MD",
-  "2FD",
-  "2MP",
-  "2FP",
-  "1S",
-  "1P",
+const PGN_PERSON: { code: string; en: string; ar: string }[] = [
+  { code: "3MS", en: "he", ar: "هو" },
+  { code: "3FS", en: "she", ar: "هي" },
+  { code: "3MD", en: "they two (m.)", ar: "هما (مذكر)" },
+  { code: "3FD", en: "they two (f.)", ar: "هما (مؤنث)" },
+  { code: "3MP", en: "they (m.)", ar: "هم" },
+  { code: "3FP", en: "they (f.)", ar: "هنَّ" },
+  { code: "2MS", en: "you (m. sg.)", ar: "أنتَ" },
+  { code: "2FS", en: "you (f. sg.)", ar: "أنتِ" },
+  { code: "2MD", en: "you two (m.)", ar: "أنتما (مذكر)" },
+  { code: "2FD", en: "you two (f.)", ar: "أنتما (مؤنث)" },
+  { code: "2MP", en: "you (m. pl.)", ar: "أنتم" },
+  { code: "2FP", en: "you (f. pl.)", ar: "أنتنَّ" },
+  { code: "1S", en: "I", ar: "أنا" },
+  { code: "1P", en: "we", ar: "نحن" },
 ];
 
 /**
@@ -121,7 +157,16 @@ const PGN_PERSON = [
  * number wants those too: `[pgn=p]` finds 13,377 positions, of which only
  * 2,641 are nominals.
  */
-const PGN_AGREEMENT = ["MS", "FS", "MD", "FD", "MP", "FP", "D", "P"];
+const PGN_AGREEMENT: { code: string; en: string; ar: string }[] = [
+  { code: "MS", en: "masculine singular", ar: "مذكر مفرد" },
+  { code: "FS", en: "feminine singular", ar: "مؤنث مفرد" },
+  { code: "MD", en: "masculine dual", ar: "مذكر مثنى" },
+  { code: "FD", en: "feminine dual", ar: "مؤنث مثنى" },
+  { code: "MP", en: "masculine plural", ar: "جمع مذكر" },
+  { code: "FP", en: "feminine plural", ar: "جمع مؤنث" },
+  { code: "D", en: "dual", ar: "مثنى" },
+  { code: "P", en: "plural", ar: "جمع" },
+];
 
 export const GRAMMAR_GROUPS: FacetGroup[] = [
   {
@@ -157,16 +202,18 @@ export const GRAMMAR_GROUPS: FacetGroup[] = [
           q: `[mood=${m.toLowerCase()}]`,
           en: MOOD_EN[m],
           ar: MOOD_AR[m],
+          code: m,
         })),
       },
       {
         id: "person",
         labelKey: "person",
         facets: PGN_PERSON.map((p) => ({
-          id: `pgn-${p.toLowerCase()}`,
-          q: `[pgn=${p.toLowerCase()} & pos=V]`,
-          en: p,
-          ar: p,
+          id: `pgn-${p.code.toLowerCase()}`,
+          q: `[pgn=${p.code.toLowerCase()} & pos=V]`,
+          en: p.en,
+          ar: p.ar,
+          code: p.code,
         })),
       },
     ],
@@ -195,16 +242,18 @@ export const GRAMMAR_GROUPS: FacetGroup[] = [
           q: `[case=${c.toLowerCase()}]`,
           en: CASE_EN[c],
           ar: CASE_AR[c],
+          code: c,
         })),
       },
       {
         id: "agreement",
         labelKey: "agreement",
         facets: PGN_AGREEMENT.map((p) => ({
-          id: `pgn-${p.toLowerCase()}`,
-          q: `[pgn=${p.toLowerCase()}]`,
-          en: p,
-          ar: p,
+          id: `pgn-${p.code.toLowerCase()}`,
+          q: `[pgn=${p.code.toLowerCase()}]`,
+          en: p.en,
+          ar: p.ar,
+          code: p.code,
         })),
       },
       {
@@ -215,6 +264,7 @@ export const GRAMMAR_GROUPS: FacetGroup[] = [
           q: `[def=${d.toLowerCase()}]`,
           en: DEF_EN[d],
           ar: DEF_AR[d],
+          code: d,
         })),
       },
     ],
