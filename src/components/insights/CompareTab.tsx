@@ -1,0 +1,430 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { Download, Loader2 } from "lucide-react";
+import { getIndex, getVerseRoots } from "@/lib/data/loader";
+import { useT } from "@/lib/i18n/LanguageContext";
+import { compareScope, corpusDispersion, type CompareRow } from "@/lib/insights/compare";
+import {
+  buildVerseRefs,
+  scopeFromParam,
+  scopeToParam,
+  scopeToQcqlFilter,
+  type Scope,
+} from "@/lib/insights/scope";
+import { bonferroniAlpha, DEFAULT_MIN_COUNT } from "@/lib/stats/keyness";
+import { JUZ_COUNT } from "@/lib/quran/juz";
+import { DispersionTable, KeynessTable, sigBucket } from "./CompareTables";
+import type { IndexFile, MetaFile, VerseRootsFile } from "@/lib/data/types";
+
+const SCOPE_PARAM = "scope";
+const ROWS_SHOWN = 40;
+const MIN_COUNTS = [1, 3, 5, 10, 20] as const;
+/**
+ * Dispersion needs its own, higher floor. DP asks whether a word spread
+ * out, and a word occurring five times never had the chance: at the
+ * keyness floor the table fills with rare words that are "concentrated"
+ * only because they are rare. Frequency is the precondition for the
+ * question, so the control offers frequencies where it is meaningful.
+ */
+const DISPERSION_MIN_COUNTS = [10, 25, 50, 100] as const;
+
+const PILL = (active: boolean) =>
+  `rounded-md px-2.5 py-1 text-xs ${active ? "bg-accent text-accent-fg" : "text-muted hover:text-ink"}`;
+const SELECT =
+  "rounded-md border border-border bg-bg px-2 py-1 text-xs text-ink focus:border-accent focus:outline-none";
+
+/**
+ * Compare: what is characteristic of THIS part of the Qur'an?
+ *
+ * This replaces two of the old tabs -- "coverage" (a top-15 list of roots
+ * by how many surahs they touch) and "distinctive vocabulary" (per-surah,
+ * ranked by rate ratio). Both were fixed leaderboards over a fixed scope;
+ * neither could say whether a difference was bigger than chance.
+ *
+ * Here the reader picks the scope, everything is measured against the rest
+ * of the corpus, and each row carries a significance measure (G²), an
+ * effect size (log ratio) and a link to the evidence. See lib/stats for
+ * the measures and lib/insights for the engine -- both are computed in the
+ * browser from verse-roots.json, which the app already ships.
+ */
+export function CompareTab({ meta }: { meta: MetaFile }) {
+  const t = useT();
+  const [scope, setScope] = useState<Scope>({ kind: "revelation", value: "medinan" });
+  const [minCount, setMinCount] = useState<number>(DEFAULT_MIN_COUNT);
+  const [direction, setDirection] = useState<"over" | "under">("over");
+  const [spread, setSpread] = useState<"even" | "concentrated">("concentrated");
+  const [dispersionMin, setDispersionMin] = useState<number>(25);
+  const [data, setData] = useState<{ verseRoots: VerseRootsFile; index: IndexFile } | null>(null);
+
+  // Restore a shared scope before the first compute, so a link opens on
+  // the comparison it names rather than flashing the default.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    const fromUrl = scopeFromParam(new URLSearchParams(window.location.search).get(SCOPE_PARAM));
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration from the URL, not a subscription.
+    if (fromUrl) setScope(fromUrl);
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set(SCOPE_PARAM, scopeToParam(scope));
+    window.history.replaceState(null, "", url);
+  }, [scope, hydrated]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void Promise.all([getVerseRoots(), getIndex()]).then(([verseRoots, index]) => {
+      if (!cancelled) setData({ verseRoots, index });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const refs = useMemo(() => buildVerseRefs(meta), [meta]);
+  const rootNames = useMemo(() => data?.index.roots.map((r) => r.ar) ?? [], [data]);
+
+  const result = useMemo(
+    () =>
+      data ? compareScope(data.verseRoots, refs, scope, data.index.roots.length, minCount) : null,
+    [data, refs, scope, minCount],
+  );
+
+  // Only meaningful at whole-Qur'an scope, where there is no reference to
+  // compare against -- so the question becomes "how is this word spread"
+  // rather than "is it over-used here".
+  const dispersionRows = useMemo(() => {
+    if (!data || scope.kind !== "quran") return null;
+    const rows = corpusDispersion(data.verseRoots, refs, data.index.roots.length).filter(
+      (r) => r.dispersion.total >= dispersionMin,
+    );
+    rows.sort((a, b) =>
+      spread === "even" ? a.dispersion.dp - b.dispersion.dp : b.dispersion.dp - a.dispersion.dp,
+    );
+    return rows;
+  }, [data, refs, scope.kind, dispersionMin, spread]);
+
+  const shownRows: CompareRow[] = useMemo(() => {
+    if (!result) return [];
+    return result.rows
+      .filter((r) => (direction === "over" ? r.keyness.overused : !r.keyness.overused))
+      .slice(0, ROWS_SHOWN);
+  }, [result, direction]);
+
+  const correctedAlpha = bonferroniAlpha(result?.tested ?? 1);
+
+  const scopeFilter = scopeToQcqlFilter(scope);
+  const queryFor = (rootAr: string) =>
+    scopeFilter === null
+      ? null
+      : scopeFilter === ""
+        ? `[root=${rootAr}]`
+        : `[root=${rootAr}] :: ${scopeFilter}`;
+
+  function exportCsv() {
+    const isDispersion = scope.kind === "quran" && dispersionRows;
+    const header = isDispersion
+      ? ["root", "count", "surahs", "dp", "dp_norm"]
+      : [
+          "root",
+          "count_in_scope",
+          "count_elsewhere",
+          "per_10k_in_scope",
+          "per_10k_elsewhere",
+          "log_ratio",
+          "log_ratio_estimated",
+          "log_likelihood_g2",
+          "p_value",
+        ];
+    const body = isDispersion
+      ? dispersionRows
+          .slice(0, ROWS_SHOWN)
+          .map((r) => [
+            rootNames[r.rootIdx],
+            r.dispersion.total,
+            r.dispersion.range,
+            r.dispersion.dp.toFixed(4),
+            r.dispersion.dpNorm.toFixed(4),
+          ])
+      : shownRows.map((r) => [
+          rootNames[r.rootIdx],
+          r.count,
+          r.referenceCount,
+          r.keyness.rate.toFixed(2),
+          r.keyness.referenceRate.toFixed(2),
+          r.keyness.logRatio.toFixed(4),
+          r.keyness.logRatioEstimated ? "yes" : "no",
+          r.keyness.g2.toFixed(3),
+          r.keyness.p.toExponential(3),
+        ]);
+    const csv = [header, ...body].map((cells) => cells.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `quran-${isDispersion ? "dispersion" : "keyness"}-${scopeToParam(scope).replace(":", "-")}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  const c = t.insightsPage.compare;
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-2xl border border-border bg-surface p-6">
+        <h2 className="text-lg font-semibold text-ink">{c.heading}</h2>
+        <p className="mt-1 text-sm leading-relaxed text-muted">{c.intro}</p>
+
+        {/* --- scope --- */}
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="text-xs font-medium text-muted">{c.scopeLabel}</span>
+          <div className="flex flex-wrap rounded-lg border border-border p-0.5">
+            <button
+              type="button"
+              className={PILL(scope.kind === "quran")}
+              onClick={() => setScope({ kind: "quran" })}
+            >
+              {c.scopeQuran}
+            </button>
+            <button
+              type="button"
+              className={PILL(scope.kind === "revelation" && scope.value === "meccan")}
+              onClick={() => setScope({ kind: "revelation", value: "meccan" })}
+            >
+              {c.scopeMeccan}
+            </button>
+            <button
+              type="button"
+              className={PILL(scope.kind === "revelation" && scope.value === "medinan")}
+              onClick={() => setScope({ kind: "revelation", value: "medinan" })}
+            >
+              {c.scopeMedinan}
+            </button>
+            <button
+              type="button"
+              className={PILL(scope.kind === "surah")}
+              onClick={() => setScope({ kind: "surah", n: 12 })}
+            >
+              {c.scopeSurah}
+            </button>
+            <button
+              type="button"
+              className={PILL(scope.kind === "juz")}
+              onClick={() => setScope({ kind: "juz", n: 30 })}
+            >
+              {c.scopeJuz}
+            </button>
+            <button
+              type="button"
+              className={PILL(scope.kind === "chrono")}
+              onClick={() => setScope({ kind: "chrono", from: 1, to: 20 })}
+            >
+              {c.scopeChrono}
+            </button>
+          </div>
+
+          {scope.kind === "surah" && (
+            <select
+              className={SELECT}
+              value={scope.n}
+              onChange={(e) => setScope({ kind: "surah", n: Number(e.target.value) })}
+            >
+              {meta.surahs.map((s) => (
+                <option key={s.n} value={s.n}>
+                  {s.n}. {s.translit}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {scope.kind === "juz" && (
+            <select
+              className={SELECT}
+              value={scope.n}
+              onChange={(e) => setScope({ kind: "juz", n: Number(e.target.value) })}
+            >
+              {Array.from({ length: JUZ_COUNT }, (_, i) => i + 1).map((n) => (
+                <option key={n} value={n}>
+                  {c.juzLabel(n)}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {scope.kind === "chrono" && (
+            <span className="flex items-center gap-1.5 text-xs text-muted">
+              <input
+                type="number"
+                min={1}
+                max={114}
+                value={scope.from}
+                onChange={(e) =>
+                  setScope({
+                    kind: "chrono",
+                    from: Math.min(Math.max(1, Number(e.target.value)), scope.to),
+                    to: scope.to,
+                  })
+                }
+                className={`${SELECT} w-16`}
+              />
+              <span>{c.chronoTo}</span>
+              <input
+                type="number"
+                min={1}
+                max={114}
+                value={scope.to}
+                onChange={(e) =>
+                  setScope({
+                    kind: "chrono",
+                    from: scope.from,
+                    to: Math.max(Math.min(114, Number(e.target.value)), scope.from),
+                  })
+                }
+                className={`${SELECT} w-16`}
+              />
+              <span>{c.chronoHint}</span>
+            </span>
+          )}
+        </div>
+
+        {/* --- controls --- */}
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted">
+          <label className="flex items-center gap-1.5">
+            {c.minCount}
+            {scope.kind === "quran" ? (
+              <select
+                className={SELECT}
+                value={dispersionMin}
+                onChange={(e) => setDispersionMin(Number(e.target.value))}
+              >
+                {DISPERSION_MIN_COUNTS.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <select
+                className={SELECT}
+                value={minCount}
+                onChange={(e) => setMinCount(Number(e.target.value))}
+              >
+                {MIN_COUNTS.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            )}
+          </label>
+
+          {scope.kind === "quran" ? (
+            <div className="flex rounded-lg border border-border p-0.5">
+              <button
+                type="button"
+                className={PILL(spread === "concentrated")}
+                onClick={() => setSpread("concentrated")}
+              >
+                {c.sortConcentrated}
+              </button>
+              <button
+                type="button"
+                className={PILL(spread === "even")}
+                onClick={() => setSpread("even")}
+              >
+                {c.sortEven}
+              </button>
+            </div>
+          ) : (
+            <div className="flex rounded-lg border border-border p-0.5">
+              <button
+                type="button"
+                className={PILL(direction === "over")}
+                onClick={() => setDirection("over")}
+              >
+                {c.showOver}
+              </button>
+              <button
+                type="button"
+                className={PILL(direction === "under")}
+                onClick={() => setDirection("under")}
+              >
+                {c.showUnder}
+              </button>
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={exportCsv}
+            disabled={!data}
+            className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 hover:border-accent hover:text-accent disabled:opacity-50"
+          >
+            <Download size={12} /> {c.exportCsv}
+          </button>
+        </div>
+      </div>
+
+      {/* --- results --- */}
+      <div className="rounded-2xl border border-border bg-surface p-6">
+        {!data || !result ? (
+          <p className="flex items-center gap-2 text-sm text-muted">
+            <Loader2 size={14} className="animate-spin" />
+            {c.loading}
+          </p>
+        ) : scope.kind === "quran" && dispersionRows ? (
+          <>
+            <h3 className="text-sm font-medium text-ink">{c.dispersionHeading}</h3>
+            <p className="mt-1 text-xs leading-relaxed text-muted">{c.dispersionIntro}</p>
+            <div className="mt-3">
+              <DispersionTable rows={dispersionRows.slice(0, ROWS_SHOWN)} rootNames={rootNames} />
+            </div>
+          </>
+        ) : (
+          <>
+            <h3 className="text-sm font-medium text-ink">
+              {direction === "over" ? c.keynessHeadingOver : c.keynessHeadingUnder}
+            </h3>
+            <p className="mt-1 text-xs leading-relaxed text-muted">
+              {c.summary(result.scopeVerses, result.scopeTokens, result.referenceTokens)}
+            </p>
+            {shownRows.length === 0 ? (
+              <p className="mt-3 text-sm text-muted">{c.noRows}</p>
+            ) : (
+              <>
+                <div className="mt-3">
+                  <KeynessTable
+                    rows={shownRows}
+                    rootNames={rootNames}
+                    correctedAlpha={correctedAlpha}
+                    queryFor={queryFor}
+                  />
+                </div>
+                <p className="mt-3 text-xs text-muted">
+                  {c.correctionNote(result.tested, correctedAlpha.toExponential(1))}
+                  {shownRows.some((r) => sigBucket(r.keyness.p, correctedAlpha) === "ns") &&
+                    ` ${c.nsNote}`}
+                </p>
+              </>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* --- how to read it: the difference between a tool and a toy --- */}
+      <div className="space-y-2 rounded-2xl border border-border bg-surface p-6 text-xs leading-relaxed text-muted">
+        <h3 className="text-sm font-medium text-ink">{c.methodsHeading}</h3>
+        <p>{c.methodsBasis}</p>
+        <p>{c.methodsG2}</p>
+        <p>{c.methodsLogRatio}</p>
+        <p>{c.methodsDp}</p>
+        <p>{c.methodsLimits}</p>
+      </div>
+    </div>
+  );
+}

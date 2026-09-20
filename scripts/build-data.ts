@@ -31,6 +31,8 @@ import { buildSyntax } from "./lib/build-syntax";
 import { buildMorphology } from "./lib/build-morphology";
 import { SYNTAX_TAGS } from "../src/lib/morphology/syntaxTags";
 import { ALL_FACETS } from "../src/lib/grammar/facets";
+import { compareScope, corpusDispersion } from "../src/lib/insights/compare";
+import { buildVerseRefs } from "../src/lib/insights/scope";
 import { executeQcql } from "../src/lib/qcql/execute";
 import { parseQcql } from "../src/lib/qcql/parse";
 import { RIWAYAT, buildReadings, type RawEdition } from "./lib/build-readings";
@@ -695,6 +697,83 @@ async function main() {
       verbs,
       errors,
     );
+    // --- The comparison tool on /insights/ ---
+    // Keyness and dispersion are computed in the browser over a scope the
+    // reader picks, so no unit test can pin what they SAY about the
+    // Qur'an. These assertions do, over the real corpus: the measures are
+    // only worth shipping if they recover things independently known.
+    {
+      const refs = buildVerseRefs(meta);
+      const rootCount = indexRoots.length;
+      const nameOf = (rootIdx: number) => indexRoots[rootIdx]?.ar ?? "?";
+      const scopeOf = (scope: Parameters<typeof compareScope>[2]) =>
+        compareScope(verseRoots, refs, scope, rootCount, 5);
+
+      const medinan = scopeOf({ kind: "revelation", value: "medinan" });
+      const meccan = scopeOf({ kind: "revelation", value: "meccan" });
+
+      // The two revelation scopes partition every rooted occurrence: each
+      // is the other's reference, and nothing may fall between them.
+      assertEqual(
+        "keyness meccan + medinan = every occurrence",
+        meccan.scopeTokens + medinan.scopeTokens,
+        EXPECTED.occurrences,
+        errors,
+      );
+      assertEqual(
+        "keyness medinan's reference is the Meccan corpus",
+        medinan.referenceTokens,
+        meccan.scopeTokens,
+        errors,
+      );
+
+      // Over-used vocabulary that any student of the Qur'an would predict.
+      // Asserted as ordinal facts and floors rather than exact G² values,
+      // which would pin four decimal places of a float to no purpose.
+      const topOver = (r: ReturnType<typeof compareScope>, n: number) =>
+        r.rows.filter((row) => row.keyness.overused).slice(0, n).map((row) => nameOf(row.rootIdx));
+
+      const medinanTop = topOver(medinan, 8);
+      if (medinanTop[0] !== "\u0623\u0644\u0647") {
+        errors.push(`keyness: the top Medinan root should be أله, got ${medinanTop[0]}`);
+      }
+      for (const root of ["\u0646\u0641\u0642", "\u0642\u062a\u0644"]) {
+        if (!medinanTop.includes(root)) {
+          errors.push(`keyness: ${root} should be among the top Medinan roots (${medinanTop.join(" ")})`);
+        }
+      }
+      const meccanTop = topOver(meccan, 8);
+      if (meccanTop[0] !== "\u0631\u0628\u0628") {
+        errors.push(`keyness: the top Meccan root should be ربب, got ${meccanTop[0]}`);
+      }
+
+      // Surah 12 is one story, and the measure should recover its cast.
+      const yusuf = topOver(scopeOf({ kind: "surah", n: 12 }), 6);
+      for (const root of ["\u0623\u0628\u0648", "\u0633\u062c\u0646"]) {
+        if (!yusuf.includes(root)) {
+          errors.push(`keyness: ${root} should be key to surah 12 (${yusuf.join(" ")})`);
+        }
+      }
+
+      // Dispersion must separate general vocabulary from topic vocabulary.
+      const dispersionByRoot = new Map(
+        corpusDispersion(verseRoots, refs, rootCount, meta.surahs.length).map((row) => [
+          nameOf(row.rootIdx),
+          row.dispersion,
+        ]),
+      );
+      const spread = dispersionByRoot.get("\u0639\u0644\u0645"); // علم, everywhere
+      const clumped = dispersionByRoot.get("\u0646\u0633\u0648"); // نسو, one subject
+      if (!spread || !clumped) {
+        errors.push("dispersion: expected roots علم and نسو to be measurable");
+      } else {
+        if (!(spread.dp < 0.25)) errors.push(`dispersion: علم should be evenly spread, DP=${spread.dp}`);
+        if (!(clumped.dp > 0.5)) errors.push(`dispersion: نسو should be concentrated, DP=${clumped.dp}`);
+        if (!(clumped.dp > spread.dp)) errors.push("dispersion: نسو must be more concentrated than علم");
+      }
+      assertEqual("dispersion covers every root", dispersionByRoot.size, EXPECTED.roots, errors);
+    }
+
     const facetTotal = [...facetCounts.values()].reduce((sum, n) => sum + n, 0);
     if (facetTotal !== EXPECTED.grammarFacetTotal) {
       errors.push(

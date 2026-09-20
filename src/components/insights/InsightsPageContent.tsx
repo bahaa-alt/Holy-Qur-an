@@ -5,35 +5,21 @@ import { verseHref } from "@/lib/search/suggest";
 import { useState, type ReactNode } from "react";
 import { useT } from "@/lib/i18n/LanguageContext";
 import { LetterFrequencyExplorer } from "./LetterFrequencyExplorer";
-import { CoverageBarList } from "./CoverageBarList";
+import { CompareTab } from "./CompareTab";
 import { RhymeTab } from "./RhymeTab";
-import { DistinctiveVocabTab } from "./DistinctiveVocabTab";
 import { CollocationsTab } from "./CollocationsTab";
 import { CooccurrenceTab } from "./CooccurrenceTab";
 import { PatternsTab } from "./PatternsTab";
 import { FormulasTab } from "./FormulasTab";
 import { VerseSimilarityTab } from "./VerseSimilarityTab";
 import { HapaxList } from "./HapaxList";
-import type {
-  InsightsFile,
-  MetaFile,
-  SurahCoverageLemmaRow,
-  SurahCoverageRootRow,
-} from "@/lib/data/types";
-
-interface RootCoverageRow extends SurahCoverageRootRow {
-  href: string;
-}
-interface LemmaCoverageRow extends SurahCoverageLemmaRow {
-  href: string | null;
-}
+import type { InsightsFile, MetaFile } from "@/lib/data/types";
 
 type Tab =
+  | "compare"
   | "facts"
   | "letters"
-  | "coverage"
   | "rhyme"
-  | "vocabulary"
   | "collocations"
   | "cooccurrence"
   | "patterns"
@@ -67,20 +53,18 @@ function StatCard({ label, children, big }: { label: string; children: ReactNode
 export function InsightsPageContent({
   insights,
   meta,
-  rootsBySurahCoverage,
-  lemmasBySurahCoverage,
   mostDerivedRootHref,
   mostFormsRootHref,
 }: {
   insights: InsightsFile;
   meta: MetaFile;
-  rootsBySurahCoverage: RootCoverageRow[];
-  lemmasBySurahCoverage: LemmaCoverageRow[];
   mostDerivedRootHref: string;
   mostFormsRootHref: string;
 }) {
   const t = useT();
-  const [tab, setTab] = useState<Tab>("facts");
+  // Compare opens first: it is the only tab that answers a question of the
+  // reader's own rather than showing a number someone chose in advance.
+  const [tab, setTab] = useState<Tab>("compare");
   const [expandedHapax, setExpandedHapax] = useState<"root" | "lemma" | null>(null);
   const mostFrequentLetter = insights.letterFrequency[0];
   const leastFrequentLetter = insights.letterFrequency[insights.letterFrequency.length - 1];
@@ -93,6 +77,13 @@ export function InsightsPageContent({
       </div>
 
       <div className="flex flex-wrap rounded-lg border border-border p-0.5 text-sm">
+        <button
+          type="button"
+          onClick={() => setTab("compare")}
+          className={TAB_PILL_CLASS(tab === "compare")}
+        >
+          {t.insightsPage.compare.tab}
+        </button>
         <button
           type="button"
           onClick={() => setTab("facts")}
@@ -109,24 +100,10 @@ export function InsightsPageContent({
         </button>
         <button
           type="button"
-          onClick={() => setTab("coverage")}
-          className={TAB_PILL_CLASS(tab === "coverage")}
-        >
-          {t.insightsPage.tabCoverage}
-        </button>
-        <button
-          type="button"
           onClick={() => setTab("rhyme")}
           className={TAB_PILL_CLASS(tab === "rhyme")}
         >
           {t.insightsPage.tabRhyme}
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("vocabulary")}
-          className={TAB_PILL_CLASS(tab === "vocabulary")}
-        >
-          {t.insightsPage.tabVocabulary}
         </button>
         <button
           type="button"
@@ -296,42 +273,8 @@ export function InsightsPageContent({
         <LetterFrequencyExplorer meta={meta} wholeQuranFrequency={insights.letterFrequency} />
       )}
 
-      {tab === "coverage" && (
-        <div className="space-y-6">
-          <div className="rounded-2xl border border-border bg-surface p-6">
-            <h2 className="text-sm font-medium text-ink">{t.insightsPage.rootsCoverageHeading}</h2>
-            <p className="mt-1 text-xs text-muted">{t.insightsPage.rootsCoverageDescription}</p>
-            <CoverageBarList
-              rows={rootsBySurahCoverage.map((r) => ({
-                key: r.ar,
-                href: r.href,
-                label: r.ar,
-                surahCount: r.surahCount,
-              }))}
-              totalSurahs={insights.totalSurahs}
-              everySurahBadge={t.insightsPage.everySurahBadge}
-            />
-          </div>
-
-          <div className="rounded-2xl border border-border bg-surface p-6">
-            <h2 className="text-sm font-medium text-ink">{t.insightsPage.lemmasCoverageHeading}</h2>
-            <p className="mt-1 text-xs text-muted">{t.insightsPage.lemmasCoverageDescription}</p>
-            <CoverageBarList
-              rows={lemmasBySurahCoverage.map((r, i) => ({
-                key: String(i),
-                href: r.href,
-                label: r.lemma,
-                surahCount: r.surahCount,
-              }))}
-              totalSurahs={insights.totalSurahs}
-              everySurahBadge={t.insightsPage.everySurahBadge}
-            />
-          </div>
-        </div>
-      )}
-
+      {tab === "compare" && <CompareTab meta={meta} />}
       {tab === "rhyme" && <RhymeTab />}
-      {tab === "vocabulary" && <DistinctiveVocabTab meta={meta} />}
       {tab === "collocations" && <CollocationsTab />}
       {/* Abjad used to be a tab here. It is not corpus evidence, so it now
           lives on /curiosities/ -- linked, not hidden. */}
