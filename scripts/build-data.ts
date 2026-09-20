@@ -20,7 +20,7 @@ import { gzipSync } from "node:zlib";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 
-import { RAW_DIR, fetchCached, fetchCachedJSON } from "./lib/download";
+import { RAW_DIR, fetchBufferWithRetry, fetchCached, fetchCachedJSON } from "./lib/download";
 import { parseMorphologyTSV, type RawWord } from "./lib/parse-morphology";
 import { buildSurahs, type QuranJsonChapter } from "./lib/build-surahs";
 import { buildRoots, type RootsGlossMap } from "./lib/build-roots";
@@ -309,10 +309,9 @@ async function fetchLaneDb(): Promise<string> {
 
   const zipPath = join(RAW_DIR, "lexicon.sqlite.zip");
   if (!existsSync(zipPath) || FORCE) {
-    const res = await fetch(LANE_ZIP_URL);
-    if (!res.ok) fail(`Failed to download Lane's Lexicon: ${res.status} ${res.statusText}`);
+    const zip = await fetchBufferWithRetry(LANE_ZIP_URL, { label: "Lane's Lexicon" });
     mkdirSync(RAW_DIR, { recursive: true });
-    writeFileSync(zipPath, Buffer.from(await res.arrayBuffer()));
+    writeFileSync(zipPath, zip);
   }
   execFileSync("unzip", ["-o", "-j", zipPath, "lexicon.sqlite", "-d", RAW_DIR], { stdio: "pipe" });
   if (!existsSync(dbPath)) fail(`unzip did not produce ${dbPath}`);
@@ -350,10 +349,9 @@ async function fetchMujamDb(): Promise<string> {
 
   const zipPath = join(RAW_DIR, "mujam.sqlite.zip");
   if (!existsSync(zipPath) || FORCE) {
-    const res = await fetch(MUJAM_ZIP_URL);
-    if (!res.ok) fail(`Failed to download the Arabic lexicons: ${res.status} ${res.statusText}`);
+    const zip = await fetchBufferWithRetry(MUJAM_ZIP_URL, { label: "the Arabic lexicons" });
     mkdirSync(RAW_DIR, { recursive: true });
-    writeFileSync(zipPath, Buffer.from(await res.arrayBuffer()));
+    writeFileSync(zipPath, zip);
   }
   execFileSync("unzip", ["-o", "-j", zipPath, "db.sqlite", "-d", RAW_DIR], { stdio: "pipe" });
   const unzipped = join(RAW_DIR, "db.sqlite");
