@@ -842,6 +842,14 @@ export const ar: Dict = {
     downloading: (pct) => `جارٍ التنزيل… ${pct}٪`,
     downloadEverything: "تنزيل كل شيء للاستخدام بلا اتصال",
     dataBuildHeading: "بناء البيانات",
+    citeHeading: "الاستشهاد بهذا العمل",
+    citeIntro: "محفوظ في Zenodo، ليبقى المرجع قائمًا وإن تغيّر الرابط.",
+    citeConceptLabel: "جميع الإصدارات",
+    citeVersionLabel: "هذا الإصدار",
+    citeWhyVersion:
+      "استشهد بالإصدار بعينه لا بـ«جميع الإصدارات» إذا كان الرقم ممّا يُراجَع: فكل إحصاء هنا محسوب على قراءة واحدة للنص وبناء واحد للمدوّنة، و«جميع الإصدارات» سيؤدّي إلى بناء أحدث ممّا قرأت.",
+    citeButtonHint:
+      "زرّ «استشهاد» في صفحة الجذر أو الكلمة يُخرج هذا بالفعل، مع بصمة البيانات والقراءة.",
     dataBuildSummary: (date, words, roots, occurrences, verses) =>
       `بُني في ${date} · ${words.toLocaleString()} كلمة · ${roots.toLocaleString()} جذرًا · ${occurrences.toLocaleString()} موضع ورود جذر عبر ${verses.toLocaleString()} آية.`,
     corpusExportHeading: "تصدير المدونة كاملة",

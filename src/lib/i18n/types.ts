@@ -730,6 +730,12 @@ export interface Dict {
     downloading: (pct: number) => string;
     downloadEverything: string;
     dataBuildHeading: string;
+    citeHeading: string;
+    citeIntro: string;
+    citeConceptLabel: string;
+    citeVersionLabel: string;
+    citeWhyVersion: string;
+    citeButtonHint: string;
     dataBuildSummary: (
       date: string,
       words: number,

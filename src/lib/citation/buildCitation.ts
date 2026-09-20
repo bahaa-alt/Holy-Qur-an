@@ -1,4 +1,5 @@
 import type { ManifestFile } from "@/lib/data/types";
+import { VERSION_DOI } from "./doi";
 
 export const APP_NAME = "Qur'anic Root & Word Research";
 
@@ -11,6 +12,13 @@ export interface CitationSubject {
  * Builds a plain-text citation string for a root or word page. `url` and
  * `accessedOn` are injected by the caller (rather than read from
  * `window`/`Date.now()` here) so this stays a pure, deterministic function.
+ *
+ * Carries the VERSION DOI, not the concept one. A citation exists so a
+ * reader can check the claim, and a count is only checkable against the
+ * build that produced it -- the concept DOI would resolve to whatever is
+ * newest, which is the opposite of what a footnote needs. The dataset hash
+ * pins the data; the version DOI pins the code that derived it from that
+ * data. Both are needed, which is why both are here.
  */
 export function buildCitation(
   subject: CitationSubject,
@@ -40,6 +48,7 @@ export function buildCitation(
     `${APP_NAME}. ${subjectLabel} ${subject.label}. ` +
     `Text: ${reading}. ` +
     `Dataset v${manifest.version} (built ${builtDate}, hash ${manifest.hash}). ` +
+    `DOI ${VERSION_DOI}. ` +
     `Accessed ${accessedDate}. ${url}`
   );
 }

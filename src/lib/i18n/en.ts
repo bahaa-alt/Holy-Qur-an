@@ -807,6 +807,14 @@ export const en: Dict = {
     downloading: (pct) => `Downloading… ${pct}%`,
     downloadEverything: "Download everything for offline use",
     dataBuildHeading: "Data build",
+    citeHeading: "Citing this",
+    citeIntro: "Archived on Zenodo, so a reference to this tool survives the URL changing.",
+    citeConceptLabel: "All versions",
+    citeVersionLabel: "This release",
+    citeWhyVersion:
+      "Cite the release, not \u201call versions\u201d, when a number has to be checkable: every count here is computed against one reading of the text and one corpus build, and \u201call versions\u201d will resolve to a later build than the one you read.",
+    citeButtonHint:
+      "The Cite button on any root or word page already emits this, together with the dataset hash and the reading.",
     dataBuildSummary: (date, words, roots, occurrences, verses) =>
       `Built ${date} · ${words.toLocaleString()} words · ${roots.toLocaleString()} roots · ${occurrences.toLocaleString()} root occurrences across ${verses.toLocaleString()} verses.`,
     corpusExportHeading: "Bulk corpus export",
