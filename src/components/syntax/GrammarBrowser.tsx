@@ -11,6 +11,9 @@ import {
   getSyntaxIndex,
 } from "@/lib/data/loader";
 import { KwicRow } from "@/components/ayah/KwicRow";
+import { ExportButton } from "@/components/export/ExportButton";
+import { SaveButton } from "@/components/notes/SaveButton";
+import { buildMatchesTable } from "@/lib/export/matches";
 import { Pagination } from "@/components/ayah/Pagination";
 import { useLanguage, useT } from "@/lib/i18n/LanguageContext";
 import { GRAMMAR_GROUPS, type Facet } from "@/lib/grammar/facets";
@@ -219,6 +222,36 @@ export function GrammarBrowser({ surahs, counts }: { surahs: SurahMeta[]; counts
                 {active.q} →
               </Link>
             </div>
+
+            {/* The same three affordances every result in this app now
+                carries: keep it, take it away, cite it. */}
+            {!loading && !failed && shown.length > 0 && (
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <SaveButton
+                  id={`view:grammar:${active.id}`}
+                  kind="view"
+                  label={label(active)}
+                  detail={t.grammarPage.matchCount(shown.length)}
+                  href={`/syntax/?${FACET_PARAM}=${encodeURIComponent(active.id)}`}
+                  compact
+                />
+                <ExportButton
+                  path={`/syntax/?${FACET_PARAM}=${encodeURIComponent(active.id)}`}
+                  subject={{ kind: "grammar", label: `${label(active)} (${active.q})` }}
+                  resolve={() =>
+                    buildMatchesTable(shown, surahs, {
+                      slug: `grammar-${active.id}`,
+                      title: `${label(active)} — ${active.q}`,
+                      provenance: [
+                        { label: "facet", value: label(active) },
+                        { label: "query", value: active.q },
+                        { label: "matches", value: String(shown.length) },
+                      ],
+                    })
+                  }
+                />
+              </div>
+            )}
 
             {loading ? (
               <p className="mt-3 flex items-center gap-2 text-sm text-muted">

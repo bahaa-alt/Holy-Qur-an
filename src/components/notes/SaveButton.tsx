@@ -11,12 +11,15 @@ export function SaveButton({
   kind,
   label,
   href,
+  detail,
   compact,
 }: {
   id: string;
   kind: SavedKind;
   label: string;
   href: string;
+  /** a second line in the saved list: result count, scope, facet */
+  detail?: string;
   /** Icon-only, no "Save"/"Saved" text -- for dense lists (e.g. collocation chips). */
   compact?: boolean;
 }) {
@@ -41,7 +44,7 @@ export function SaveButton({
       removeItem(id);
       setSaved(false);
     } else {
-      saveItem({ id, kind, label, href, note: "" });
+      saveItem({ id, kind, label, href, detail, note: "" });
       setSaved(true);
     }
   }
@@ -51,7 +54,13 @@ export function SaveButton({
       type="button"
       onClick={toggle}
       aria-pressed={saved}
-      aria-label={compact ? (saved ? t.saveButton.removeAria(label) : t.saveButton.saveAria(label)) : undefined}
+      aria-label={
+        compact
+          ? saved
+            ? t.saveButton.removeAria(label)
+            : t.saveButton.saveAria(label)
+          : undefined
+      }
       className={
         compact
           ? "shrink-0 text-muted transition-colors hover:text-accent"

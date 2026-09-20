@@ -15,6 +15,9 @@ import { useT } from "@/lib/i18n/LanguageContext";
 import { executeQcql, type QcqlCorpus, type QcqlResult } from "@/lib/qcql/execute";
 import { parseQcql } from "@/lib/qcql/parse";
 import { needsMorphology, QcqlError } from "@/lib/qcql/types";
+import { ExportButton } from "@/components/export/ExportButton";
+import { SaveButton } from "@/components/notes/SaveButton";
+import { buildMatchesTable } from "@/lib/export/matches";
 import type { SurahFile, SurahMeta } from "@/lib/data/types";
 
 const PAGE_SIZE = 25;
@@ -246,9 +249,39 @@ export function QueryPageContent({ surahs }: { surahs: SurahMeta[] }) {
 
       {result !== null && (
         <div className="mt-6">
-          <p className="text-sm text-muted">
-            {t.queryPage.resultCount(result.matches.length, result.verseCount)}
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-muted">
+              {t.queryPage.resultCount(result.matches.length, result.verseCount)}
+            </p>
+            {/* A result a researcher cannot take away, cite or come back
+                to is a result they have to redo. */}
+            {result.matches.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+                <SaveButton
+                  id={`query:${ran}`}
+                  kind="query"
+                  label={ran}
+                  detail={t.queryPage.resultCount(result.matches.length, result.verseCount)}
+                  href={`/query/?${QUERY_PARAM}=${encodeURIComponent(ran)}`}
+                  compact
+                />
+                <ExportButton
+                  path={`/query/?${QUERY_PARAM}=${encodeURIComponent(ran)}`}
+                  subject={{ kind: "query", label: ran }}
+                  resolve={() =>
+                    buildMatchesTable(result.matches, surahs, {
+                      slug: "qcql-results",
+                      title: `QCQL: ${ran}`,
+                      provenance: [
+                        { label: "query", value: ran },
+                        { label: "matches", value: String(result.matches.length) },
+                      ],
+                    })
+                  }
+                />
+              </div>
+            )}
+          </div>
 
           {result.matches.length > 0 && (
             <>
