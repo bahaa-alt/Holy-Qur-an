@@ -192,8 +192,10 @@ const EXPECTED = {
   mujamCoveredRoots: 1595,
   // Segments carrying at least one of case / mood / definiteness / PGN.
   // Well under the 130,030 total, because most particles and prefixes carry
-  // none of the four and are deliberately not indexed.
-  morphologyRows: 102244,
+  // none of the four and are deliberately not indexed. Dropped by 12,992
+  // when the PGN reader stopped mistaking a preposition's repeated POS tag
+  // ("P") for the plural agreement tag of the same spelling.
+  morphologyRows: 89252,
   morphologyPgnTags: 24,
   // QCQL answers, asserted against the built corpus rather than in a unit
   // test: these are claims about the DATA, and a unit test that depended on
@@ -220,7 +222,7 @@ const EXPECTED = {
   // 85, as a drift detector: any corpus or tagging change that moves any
   // facet trips it, and the per-facet numbers are then printed by the
   // failure. Not independently meaningful -- facets overlap heavily.
-  grammarFacetTotal: 218120,
+  grammarFacetTotal: 205133,
   rootCounts: { كتب: 319, رحم: 339, علم: 854 } as Record<string, number>,
   maxMismatches: 50,
 };
@@ -731,7 +733,10 @@ async function main() {
       // Asserted as ordinal facts and floors rather than exact G² values,
       // which would pin four decimal places of a float to no purpose.
       const topOver = (r: ReturnType<typeof compareScope>, n: number) =>
-        r.rows.filter((row) => row.keyness.overused).slice(0, n).map((row) => nameOf(row.rootIdx));
+        r.rows
+          .filter((row) => row.keyness.overused)
+          .slice(0, n)
+          .map((row) => nameOf(row.rootIdx));
 
       const medinanTop = topOver(medinan, 8);
       if (medinanTop[0] !== "\u0623\u0644\u0647") {
@@ -739,7 +744,9 @@ async function main() {
       }
       for (const root of ["\u0646\u0641\u0642", "\u0642\u062a\u0644"]) {
         if (!medinanTop.includes(root)) {
-          errors.push(`keyness: ${root} should be among the top Medinan roots (${medinanTop.join(" ")})`);
+          errors.push(
+            `keyness: ${root} should be among the top Medinan roots (${medinanTop.join(" ")})`,
+          );
         }
       }
       const meccanTop = topOver(meccan, 8);
@@ -767,9 +774,12 @@ async function main() {
       if (!spread || !clumped) {
         errors.push("dispersion: expected roots علم and نسو to be measurable");
       } else {
-        if (!(spread.dp < 0.25)) errors.push(`dispersion: علم should be evenly spread, DP=${spread.dp}`);
-        if (!(clumped.dp > 0.5)) errors.push(`dispersion: نسو should be concentrated, DP=${clumped.dp}`);
-        if (!(clumped.dp > spread.dp)) errors.push("dispersion: نسو must be more concentrated than علم");
+        if (!(spread.dp < 0.25))
+          errors.push(`dispersion: علم should be evenly spread, DP=${spread.dp}`);
+        if (!(clumped.dp > 0.5))
+          errors.push(`dispersion: نسو should be concentrated, DP=${clumped.dp}`);
+        if (!(clumped.dp > spread.dp))
+          errors.push("dispersion: نسو must be more concentrated than علم");
       }
       assertEqual("dispersion covers every root", dispersionByRoot.size, EXPECTED.roots, errors);
     }

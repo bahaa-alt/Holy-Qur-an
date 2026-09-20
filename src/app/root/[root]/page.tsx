@@ -90,8 +90,12 @@ export default async function RootPage({ params }: { params: Promise<{ root: str
       <FrequencyChart byCategory={summary.byCategory} byLemma={summary.byLemma} />
       <FormsTable forms={file.forms} lemmas={file.lemmas} />
       {collocations.length > 0 && <Collocations rows={collocations} />}
-      <MujamPanel root={root} />
-      <LanePanel root={root} />
+      {/* Anchored so the word inspector's "read the full entry" lands on
+          the lexicons rather than the top of the page. */}
+      <div id="lexicon" className="scroll-mt-20 space-y-6">
+        <MujamPanel root={root} />
+        <LanePanel root={root} />
+      </div>
       {distribution.bySurah.length > 1 && (
         <SurahHeatmapStrip counts={buildSurahOccurrenceCounts(file)} />
       )}

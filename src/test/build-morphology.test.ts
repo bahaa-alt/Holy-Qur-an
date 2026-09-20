@@ -8,13 +8,21 @@ import {
 } from "@/lib/morphology/morphFeatures";
 import type { RawWord } from "../../scripts/lib/parse-morphology";
 
-const seg = (s: number, a: number, w: number, g: number, tags: string[], root: string | null = null) => ({
+const seg = (
+  s: number,
+  a: number,
+  w: number,
+  g: number,
+  tags: string[],
+  root: string | null = null,
+  pos = "N",
+) => ({
   s,
   a,
   w,
   seg: g,
   form: "x",
-  pos: "N",
+  pos,
   root,
   lemma: null,
   tags,
@@ -57,6 +65,29 @@ describe("buildMorphology", () => {
     expect(idx.m[0]).toBe(MORPH_MOODS.indexOf("JUS") + 1);
     expect(idx.d[0]).toBe(MORPH_DEFINITENESS.indexOf("INDEF") + 1);
     expect(idx.pgnTags[idx.p[0] - 1]).toBe("3MS");
+  });
+
+  it("does not read a segment's own part of speech as agreement", () => {
+    // The corpus repeats the POS inside the feats field, and a
+    // preposition's is written "P" -- the same spelling as the plural
+    // agreement tag. Reading it as agreement labelled 12,992 prepositions
+    // plural, against 390 genuinely plural nouns.
+    const preposition = buildMorphology([
+      word(1, 1, 1, [seg(1, 1, 1, 1, ["P", "PREF", "LEM:\u0628"], null, "P")]),
+    ]);
+    expect(preposition.p).toEqual([]);
+    expect(preposition.s).toEqual([]);
+
+    // A genuinely plural noun still gets it ...
+    const plural = buildMorphology([word(1, 1, 1, [seg(1, 1, 1, 1, ["P", "GEN"], null, "N")])]);
+    expect(plural.pgnTags[plural.p[0] - 1]).toBe("P");
+
+    // ... and so does an attached pronoun on a POS=P segment, which is
+    // how the corpus writes \u0643\u064f\u0645: tagged MP, not P.
+    const suffix = buildMorphology([
+      word(1, 1, 1, [seg(1, 1, 1, 3, ["ADDR", "SUFF", "MP"], null, "P")]),
+    ]);
+    expect(suffix.pgnTags[suffix.p[0] - 1]).toBe("MP");
   });
 
   it("uses 0 for a feature the segment does not carry", () => {
