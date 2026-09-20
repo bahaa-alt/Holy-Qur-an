@@ -2,13 +2,19 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, Play } from "lucide-react";
-import { getIndex, getOccurrenceIndex, getSurah, getSyntaxIndex } from "@/lib/data/loader";
+import {
+  getIndex,
+  getMorphologyIndex,
+  getOccurrenceIndex,
+  getSurah,
+  getSyntaxIndex,
+} from "@/lib/data/loader";
 import { KwicRow } from "@/components/ayah/KwicRow";
 import { Pagination } from "@/components/ayah/Pagination";
 import { useT } from "@/lib/i18n/LanguageContext";
 import { executeQcql, type QcqlCorpus, type QcqlResult } from "@/lib/qcql/execute";
 import { parseQcql } from "@/lib/qcql/parse";
-import { QcqlError } from "@/lib/qcql/types";
+import { needsMorphology, QcqlError } from "@/lib/qcql/types";
 import type { SurahFile, SurahMeta } from "@/lib/data/types";
 
 const PAGE_SIZE = 25;
@@ -28,14 +34,19 @@ const EXAMPLES: Example[] = [
   { q: "[pos=V & !PASS] :: meccan", labelKey: "activeVerbsMeccan" },
   { q: "[COND] :: chrono > 5", labelKey: "conditionalsLate" },
   { q: "[vf=4 & cat=verb.impf]", labelKey: "formFour" },
+  { q: "[mood=jus]", labelKey: "jussive" },
+  { q: "[case=acc & def=indef]", labelKey: "indefiniteAccusative" },
+  { q: "[pgn=2fp & cat=verb.impf]", labelKey: "secondFemininePlural" },
 ];
 
 /**
  * QCQL v1 — the query box, its results, and the permalink.
  *
  * The corpus indices are fetched once on first run and kept: occurrences
- * (~1.1 MB) and syntax (~215 KB) together answer every v1 query, and a
- * researcher runs many queries in a session. Nothing is fetched until a
+ * (~1.1 MB) and syntax (~215 KB) answer most v1 queries, and a researcher
+ * runs many queries in a session. The morphology index (~1.8 MB, 176 KB
+ * gzipped) is added the first time a query names case, mood, definiteness
+ * or person-gender-number, and not before. Nothing is fetched until a
  * query is actually run, so arriving at this page costs nothing.
  */
 export function QueryPageContent({ surahs }: { surahs: SurahMeta[] }) {
@@ -53,17 +64,21 @@ export function QueryPageContent({ surahs }: { surahs: SurahMeta[] }) {
 
   const surahByNum = useMemo(() => new Map(surahs.map((s) => [s.n, s])), [surahs]);
 
-  const load = useCallback(async (): Promise<QcqlCorpus> => {
-    if (corpus) return corpus;
-    const [occurrences, syntax, index] = await Promise.all([
-      getOccurrenceIndex(),
-      getSyntaxIndex(),
-      getIndex(),
-    ]);
-    const next: QcqlCorpus = { occurrences, syntax, index, surahs };
-    setCorpus(next);
-    return next;
-  }, [corpus, surahs]);
+  const load = useCallback(
+    async (wantMorphology: boolean): Promise<QcqlCorpus> => {
+      if (corpus && (!wantMorphology || corpus.morphology)) return corpus;
+      const [occurrences, syntax, index, morphology] = await Promise.all([
+        corpus?.occurrences ?? getOccurrenceIndex(),
+        corpus?.syntax ?? getSyntaxIndex(),
+        corpus?.index ?? getIndex(),
+        wantMorphology ? getMorphologyIndex() : Promise.resolve(corpus?.morphology),
+      ]);
+      const next: QcqlCorpus = { occurrences, syntax, index, surahs, morphology };
+      setCorpus(next);
+      return next;
+    },
+    [corpus, surahs],
+  );
 
   const run = useCallback(
     async (src: string) => {
@@ -75,7 +90,7 @@ export function QueryPageContent({ surahs }: { surahs: SurahMeta[] }) {
       try {
         // Parse before fetching: a typo should not cost a 1.1 MB download.
         const query = parseQcql(trimmed);
-        const loaded = await load();
+        const loaded = await load(needsMorphology(query));
         setResult(executeQcql(query, loaded));
         setRan(trimmed);
         setPage(0);

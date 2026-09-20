@@ -175,3 +175,50 @@ describe("parseQcql errors", () => {
     expect(fail("[PASS] :: chrono 5").message).toMatch(/Expected a comparison after chrono/);
   });
 });
+
+describe("morphology predicates", () => {
+  it("parses each feature, case-insensitively", () => {
+    expect(parseQcql("[case=acc]").term).toEqual({
+      kind: "pred",
+      pred: { kind: "case", value: "ACC" },
+    });
+    expect(parseQcql("[mood=JUS]").term).toEqual({
+      kind: "pred",
+      pred: { kind: "mood", value: "JUS" },
+    });
+    expect(parseQcql("[def=Indef]").term).toEqual({
+      kind: "pred",
+      pred: { kind: "def", value: "INDEF" },
+    });
+    expect(parseQcql("[pgn=2fp]").term).toEqual({
+      kind: "pred",
+      pred: { kind: "pgn", value: "2FP" },
+    });
+  });
+
+  it("accepts every person-gender-number shape the corpus writes", () => {
+    for (const v of ["3ms", "2fp", "1p", "mp", "fs", "d", "3fd"]) {
+      expect(() => parseQcql(`[pgn=${v}]`), v).not.toThrow();
+    }
+  });
+
+  it("names the alternatives when a value is wrong", () => {
+    expect(fail("[case=nominative]").message).toMatch(/nom, acc, gen/);
+    expect(fail("[mood=optative]").message).toMatch(/ind, subj, jus/);
+    expect(fail("[def=maybe]").message).toMatch(/det, indef/);
+  });
+
+  it("explains the shape of a person-gender-number rather than listing 24", () => {
+    const e = fail("[pgn=plural]");
+    expect(e.message).toMatch(/optional person/);
+    expect(e.message).toMatch(/3MS/);
+  });
+
+  it("lists the new fields when one is misspelled", () => {
+    expect(fail("[cse=acc]").message).toMatch(/case, mood, def, pgn/);
+  });
+
+  it("tells a bare field name from a tag", () => {
+    expect(fail("[case]").message).toMatch(/needs a value, as in case=/);
+  });
+});

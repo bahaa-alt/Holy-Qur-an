@@ -8,6 +8,8 @@ import type {
   InsightsFile,
   ManifestFile,
   MetaFile,
+  MorphologyIndexFile,
+  OccurrenceIndexFile,
   RhymeFile,
   RootFile,
   SurahFile,
@@ -96,6 +98,34 @@ export function readSyntaxIndex(): SyntaxIndexFile {
     syntaxIndexCache = readDataFile<SyntaxIndexFile>("syntax.json");
   }
   return syntaxIndexCache;
+}
+
+let morphologyIndexCache: MorphologyIndexFile | null = null;
+
+/**
+ * The inflectional-feature index (see MorphologyIndexFile). Memoized for
+ * the same reason readSyntaxIndex is: 1.8 MB parsed once per build, read by
+ * the grammar browser to count every facet.
+ */
+export function readMorphologyIndex(): MorphologyIndexFile {
+  if (!morphologyIndexCache) {
+    morphologyIndexCache = readDataFile<MorphologyIndexFile>("morphology.json");
+  }
+  return morphologyIndexCache;
+}
+
+let occurrenceIndexCache: OccurrenceIndexFile | null = null;
+
+/**
+ * The rooted-occurrence index. Memoized for the same reason
+ * readSyntaxIndex is: the grammar browser counts every facet at build
+ * time, and each count is a query over this file.
+ */
+export function readOccurrenceIndex(): OccurrenceIndexFile {
+  if (!occurrenceIndexCache) {
+    occurrenceIndexCache = readDataFile<OccurrenceIndexFile>("occurrences.json");
+  }
+  return occurrenceIndexCache;
 }
 
 let verseRootsCache: VerseRootsFile | null = null;

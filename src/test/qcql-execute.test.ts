@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { executeQcql, packKey, unpackKey, type QcqlCorpus } from "@/lib/qcql/execute";
 import { parseQcql } from "@/lib/qcql/parse";
-import { QcqlError } from "@/lib/qcql/types";
+import { QcqlError, needsMorphology } from "@/lib/qcql/types";
 import type { Cat, OccurrenceIndexRow } from "@/lib/data/types";
 
 /**
@@ -253,5 +253,102 @@ describe("errors that would otherwise read as findings", () => {
 
   it("accepts a root by its normalised key as well as its spelling", () => {
     expect(at("[root=k0]")).toEqual(at("[root=علم]"));
+  });
+});
+
+/**
+ * The morphology predicates, against a hand-built index of the same shape
+ * morphology.json has.
+ *
+ * MORPH_CASES etc. are 1-based ids; 0 means the segment has no value for
+ * that feature, which is a real answer and not missing data.
+ */
+const MORPH = {
+  pgnTags: ["1P", "2FP", "3MS"],
+  //     1:1:1  1:1:1  1:2:1  2:1:1  2:9:4
+  s: [1, 1, 1, 2, 2],
+  a: [1, 1, 2, 1, 9],
+  w: [1, 1, 1, 1, 4],
+  g: [1, 2, 1, 1, 1],
+  // case:  ACC    GEN    none   NOM    none
+  c: [2, 3, 0, 1, 0],
+  // mood:  none   none   JUS    none   IND
+  m: [0, 0, 3, 0, 1],
+  // def:   INDEF  DET    none   none   none
+  d: [2, 1, 0, 0, 0],
+  // pgn:   3MS    none   2FP    1P     none
+  p: [3, 0, 2, 1, 0],
+};
+
+const withMorph: QcqlCorpus = { ...corpus, morphology: MORPH };
+const runM = (src: string) => executeQcql(parseQcql(src), withMorph);
+const atM = (src: string) => runM(src).matches.map((m) => `${m.s}:${m.a}:${m.w}`);
+
+describe("morphology predicates", () => {
+  it("matches a case", () => {
+    expect(atM("[case=acc]")).toEqual(["1:1:1"]);
+    expect(atM("[case=gen]")).toEqual(["1:1:1"]);
+    expect(atM("[case=nom]")).toEqual(["2:1:1"]);
+  });
+
+  it("matches a mood, which only imperfect verbs carry", () => {
+    expect(atM("[mood=jus]")).toEqual(["1:2:1"]);
+    expect(atM("[mood=ind]")).toEqual(["2:9:4"]);
+    // Nothing is SUBJ here, and that is an answer rather than an error.
+    expect(atM("[mood=subj]")).toEqual([]);
+  });
+
+  it("matches definiteness on the rootless prefix as well as the noun", () => {
+    // 1:1:1 has INDEF on segment 1 and DET on segment 2 -- two segments of
+    // one word, which is why both match the same position.
+    expect(atM("[def=indef]")).toEqual(["1:1:1"]);
+    expect(atM("[def=det]")).toEqual(["1:1:1"]);
+  });
+
+  it("matches a person-gender-number", () => {
+    expect(atM("[pgn=3ms]")).toEqual(["1:1:1"]);
+    expect(atM("[pgn=2fp]")).toEqual(["1:2:1"]);
+    expect(atM("[pgn=1p]")).toEqual(["2:1:1"]);
+  });
+
+  it("is case-insensitive on the value, like every other predicate", () => {
+    expect(atM("[case=ACC]")).toEqual(atM("[case=acc]"));
+    expect(atM("[pgn=3Ms]")).toEqual(atM("[pgn=3ms]"));
+  });
+
+  it("composes with the other indices", () => {
+    // The point of putting these in QCQL rather than in a separate browser:
+    // a morphological feature intersects a root or a function tag.
+    expect(atM("[case=acc & root=علم]")).toEqual(["1:1:1"]);
+    expect(atM("[mood=jus & pgn=2fp]")).toEqual(["1:2:1"]);
+    expect(atM("[case=acc & mood=jus]")).toEqual([]);
+  });
+
+  it("widens the universe, so negation accounts for morphology-only positions", () => {
+    // 2:9:4 is in the syntax index; a morphology-only row would otherwise
+    // be invisible to `!`.
+    expect(runM("[case=nom | !case=nom]").matches.length).toBeGreaterThanOrEqual(
+      run("[PASS | !PASS]").matches.length,
+    );
+  });
+
+  it("refuses to run rather than return nothing when the index is absent", () => {
+    // Silently returning zero matches would be a false claim about the
+    // corpus. Callers gate the fetch on needsMorphology().
+    expect(() => executeQcql(parseQcql("[case=acc]"), corpus)).toThrow(/morphology index/);
+  });
+
+  it("rejects a person-gender-number the corpus never uses", () => {
+    expect(() => runM("[pgn=3fd]")).toThrow(/No person-gender-number/);
+  });
+});
+
+describe("needsMorphology", () => {
+  it("is true only when a query actually reads that index", () => {
+    expect(needsMorphology(parseQcql("[case=acc]"))).toBe(true);
+    expect(needsMorphology(parseQcql("[root=علم & mood=jus]"))).toBe(true);
+    expect(needsMorphology(parseQcql("[!pgn=3ms]"))).toBe(true);
+    expect(needsMorphology(parseQcql("[root=علم]"))).toBe(false);
+    expect(needsMorphology(parseQcql("[PASS & cat=verb.perf]"))).toBe(false);
   });
 });

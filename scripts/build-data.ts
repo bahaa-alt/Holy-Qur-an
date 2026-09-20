@@ -28,7 +28,9 @@ import { buildEnIndex, type IndexableVerse } from "./lib/build-en-index";
 import { buildArIndex, type ArIndexableVerse } from "./lib/build-ar-index";
 import { buildVerseRoots } from "./lib/build-verse-roots";
 import { buildSyntax } from "./lib/build-syntax";
+import { buildMorphology } from "./lib/build-morphology";
 import { SYNTAX_TAGS } from "../src/lib/morphology/syntaxTags";
+import { ALL_FACETS } from "../src/lib/grammar/facets";
 import { executeQcql } from "../src/lib/qcql/execute";
 import { parseQcql } from "../src/lib/qcql/parse";
 import { RIWAYAT, buildReadings, type RawEdition } from "./lib/build-readings";
@@ -186,6 +188,11 @@ const EXPECTED = {
   // spread is real, Mufradat being a lexicon of Qur'anic vocabulary rather
   // than of the language at large.
   mujamCoveredRoots: 1595,
+  // Segments carrying at least one of case / mood / definiteness / PGN.
+  // Well under the 130,030 total, because most particles and prefixes carry
+  // none of the four and are deliberately not indexed.
+  morphologyRows: 102244,
+  morphologyPgnTags: 24,
   // QCQL answers, asserted against the built corpus rather than in a unit
   // test: these are claims about the DATA, and a unit test that depended on
   // public/data/v1 having been built would not run on a fresh clone. Each
@@ -201,6 +208,17 @@ const EXPECTED = {
   // language's semantics need re-examining -- hence an assertion, not a
   // comment.
   qcqlTwoRootedWords: 1,
+  // Word positions carrying a verb. The three aspect facets and the two
+  // voice facets each partition exactly this set, which is asserted below:
+  // if a corpus change made a word both perfect and imperfect, or a verb
+  // neither active nor passive, the grammar page's chips would double-count
+  // or lose it silently.
+  qcqlVerbPositions: 19353,
+  // The sum of all 85 grammar-page facet counts. One number standing in for
+  // 85, as a drift detector: any corpus or tagging change that moves any
+  // facet trips it, and the per-facet numbers are then printed by the
+  // failure. Not independently meaningful -- facets overlap heavily.
+  grammarFacetTotal: 218120,
   rootCounts: { كتب: 319, رحم: 339, علم: 854 } as Record<string, number>,
   maxMismatches: 50,
 };
@@ -245,6 +263,7 @@ const BUDGETS_RAW_BYTES = {
   // One row per syntactically-tagged segment (~17,014), columnar and fully
   // numeric apart from the 33-entry tag vocabulary -- see SyntaxIndexFile.
   "syntax.json": 400 * 1024,
+  "morphology.json": 2400 * 1024,
 };
 const LARGEST_ROOT_BUDGET_RAW = 60 * 1024;
 // The seven alternative transmissions, sharded per surah (~1.6 MB per
@@ -513,6 +532,7 @@ async function main() {
 
   // --- 5b-ii. Build the corpus-wide syntactic / rhetorical index ---
   const syntaxIndex = buildSyntax(words);
+  const morphologyIndex = buildMorphology(words);
 
   // --- 5c. Build corpus-wide curiosities for /insights/ ---
   const insights = buildInsights(
@@ -572,6 +592,30 @@ async function main() {
     errors,
   );
   assertEqual("syntax.json row count", syntaxIndex.t.length, EXPECTED.syntaxRows, errors);
+  assertEqual(
+    "morphology.json row count",
+    morphologyIndex.s.length,
+    EXPECTED.morphologyRows,
+    errors,
+  );
+  assertEqual(
+    "morphology.json PGN vocabulary size",
+    morphologyIndex.pgnTags.length,
+    EXPECTED.morphologyPgnTags,
+    errors,
+  );
+  for (const column of ["a", "w", "g", "c", "m", "d", "p"] as const) {
+    if (morphologyIndex[column].length !== morphologyIndex.s.length) {
+      errors.push(
+        `morphology.json column "${column}": expected ${morphologyIndex.s.length} entries, got ${morphologyIndex[column].length}`,
+      );
+    }
+  }
+  if (
+    [...morphologyIndex.pgnTags].sort().join("\u0000") !== morphologyIndex.pgnTags.join("\u0000")
+  ) {
+    errors.push("morphology.json pgnTags must be sorted, or its ids are not stable across builds");
+  }
 
   // --- QCQL, run against the corpus it will actually query ---
   // The language's own grammar and set algebra are unit-tested hermetically
@@ -583,6 +627,7 @@ async function main() {
       syntax: syntaxIndex,
       index: { roots: indexRoots, lemmas: indexLemmas },
       surahs: meta.surahs,
+      morphology: morphologyIndex,
     };
     const ask = (src: string) => executeQcql(parseQcql(src), qcqlCorpus).matches;
 
@@ -621,6 +666,46 @@ async function main() {
     );
     if (twoRooted.size === 1 && !twoRooted.has((20 * 1000 + 94) * 1000 + 2)) {
       errors.push("the one two-rooted word is no longer 20:94:2; QCQL's docs name it");
+    }
+
+    // --- The grammar page's facets ---
+    // Every chip on /syntax/ is a QCQL query (src/lib/grammar/facets.ts),
+    // and its count is computed by running that query at build time. A
+    // facet that returns nothing is a bug in the facet, not a finding about
+    // the Qur'an, so an empty one fails the build here rather than showing
+    // a reader a confident zero.
+    const facetCounts = new Map<string, number>();
+    for (const facet of ALL_FACETS) facetCounts.set(facet.id, ask(facet.q).length);
+
+    const emptyFacets = [...facetCounts].filter(([, n]) => n === 0).map(([id]) => id);
+    if (emptyFacets.length > 0) {
+      errors.push(`grammar facets returning nothing: ${emptyFacets.join(", ")}`);
+    }
+
+    const facet = (id: string) => facetCounts.get(id) ?? -1;
+    const verbs = ask("[pos=V]").length;
+    assertEqual("qcql [pos=V]", verbs, EXPECTED.qcqlVerbPositions, errors);
+    assertEqual(
+      "grammar aspect facets partition the verbs",
+      facet("perf") + facet("impf") + facet("impv"),
+      verbs,
+      errors,
+    );
+    assertEqual(
+      "grammar voice facets partition the verbs",
+      facet("active") + facet("passive"),
+      verbs,
+      errors,
+    );
+    const facetTotal = [...facetCounts.values()].reduce((sum, n) => sum + n, 0);
+    if (facetTotal !== EXPECTED.grammarFacetTotal) {
+      errors.push(
+        `grammar facet total: expected ${EXPECTED.grammarFacetTotal}, got ${facetTotal} (${[
+          ...facetCounts,
+        ]
+          .map(([id, n]) => `${id}=${n}`)
+          .join(" ")})`,
+      );
     }
   }
   assertEqual(
@@ -795,6 +880,7 @@ async function main() {
       enIndex,
       verseRoots,
       syntaxIndex,
+      morphologyIndex,
       arIndex,
       occurrenceIndex,
       insights,
@@ -934,6 +1020,20 @@ async function main() {
     );
   }
 
+  // Recorded but NOT counted toward the core totals, unlike syntax.json.
+  // At 1.8 MB raw it is eight times that file's size, and it is opened only
+  // by the grammar browser and by a QCQL query that names one of its
+  // features -- counting it would put 174 KB gzipped on every visitor's
+  // offline download for an index most never touch. Same treatment as
+  // lane/, tafsir/ and readings/, and the same reason.
+  const morphologySize = writeJSON(join(OUT_DIR, "morphology.json"), morphologyIndex);
+  report.record("morphology.json", morphologySize.rawBytes, morphologySize.gzBytes, false);
+  if (morphologySize.rawBytes > BUDGETS_RAW_BYTES["morphology.json"]) {
+    fail(
+      `morphology.json exceeds its budget: ${morphologySize.rawBytes} > ${BUDGETS_RAW_BYTES["morphology.json"]} bytes`,
+    );
+  }
+
   const arIndexSize = writeJSON(join(OUT_DIR, "ar-index.json"), arIndex);
   report.record("ar-index.json", arIndexSize.rawBytes, arIndexSize.gzBytes);
   if (arIndexSize.rawBytes > BUDGETS_RAW_BYTES["ar-index.json"]) {
@@ -1065,6 +1165,7 @@ function printSizeEstimate(data: {
   enIndex: unknown;
   verseRoots: unknown;
   syntaxIndex: unknown;
+  morphologyIndex: unknown;
   arIndex: unknown;
   occurrenceIndex: unknown;
   insights: unknown;
@@ -1087,12 +1188,13 @@ function printSizeEstimate(data: {
   // second or two of gzip over the whole output; worth it for a mode whose
   // entire purpose is to catch a regression before the files are written.
   const report = new SizeReport();
-  const rec = (label: string, obj: unknown) => {
+  const rec = (label: string, obj: unknown, counted = true) => {
     const json = JSON.stringify(obj);
     report.record(
       label,
       Buffer.byteLength(json, "utf8"),
       gzipSync(Buffer.from(json, "utf8")).length,
+      counted,
     );
   };
   rec("manifest.json", data.manifest);
@@ -1102,6 +1204,10 @@ function printSizeEstimate(data: {
   rec("en-index.json", data.enIndex);
   rec("verse-roots.json", data.verseRoots);
   rec("syntax.json", data.syntaxIndex);
+  // Uncounted, exactly as the real build records it -- but sized here all
+  // the same, so --check enforces its per-file budget and prints it. The
+  // two modes diverging is the bug this function's comments are about.
+  rec("morphology.json", data.morphologyIndex, false);
   rec("ar-index.json", data.arIndex);
   rec("occurrences.json", data.occurrenceIndex);
   rec("insights.json", data.insights);
@@ -1151,6 +1257,19 @@ function printSizeEstimate(data: {
     totalRawBudget: TOTAL_RAW_BUDGET,
     totalGzBudget: TOTAL_GZ_BUDGET,
   });
+  // report.all() holds only the counted entries, so an uncounted file's own
+  // per-file budget needs a second pass -- through the same function, with
+  // the whole-output budgets lifted, because by definition these do not
+  // consume them. The write path enforces the same budget at its writeJSON
+  // call site.
+  violations.push(
+    ...checkSizeBudgets({
+      entries: report.allIncludingUncounted().filter((e) => !e.counted),
+      perFileRawBudgets: BUDGETS_RAW_BYTES,
+      totalRawBudget: Infinity,
+      totalGzBudget: Infinity,
+    }),
+  );
   if (violations.length > 0) {
     fail(`Size budget exceeded:\n  ${violations.map(formatBudgetViolation).join("\n  ")}`);
   }

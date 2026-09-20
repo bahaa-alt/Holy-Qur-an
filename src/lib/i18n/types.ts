@@ -270,6 +270,9 @@ export interface Dict {
       activeVerbsMeccan: string;
       conditionalsLate: string;
       formFour: string;
+      jussive: string;
+      indefiniteAccusative: string;
+      secondFemininePlural: string;
     };
     resultCount: (matches: number, verses: number) => string;
     unexpectedError: string;
@@ -429,12 +432,36 @@ export interface Dict {
     heading: string;
     intro: string;
     totalSegments: (n: number) => string;
-    pickTag: string;
-    occurrencesIn: (tag: string) => string;
-    loading: string;
-    noneSelected: string;
     methodologyNote: string;
+    positionNote: string;
     passiveNote: string;
+  };
+  grammarPage: {
+    /** the three top-level groups of facets; see lib/grammar/facets.ts */
+    groups: {
+      verbs: string;
+      nouns: string;
+      function: string;
+    };
+    /** the sections within a group */
+    sections: {
+      aspect: string;
+      verbForm: string;
+      voice: string;
+      mood: string;
+      person: string;
+      agreement: string;
+      nounType: string;
+      case: string;
+      definiteness: string;
+      allTags: string;
+    };
+    noneSelected: string;
+    occurrencesIn: (facet: string) => string;
+    loading: string;
+    failed: string;
+    matchCount: (n: number) => string;
+    openInQuery: string;
   };
   insightsPage: {
     title: string;

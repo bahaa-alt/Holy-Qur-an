@@ -1,4 +1,5 @@
 import type { Cat } from "@/lib/data/types";
+import type { MorphCase, MorphDefiniteness, MorphMood } from "@/lib/morphology/morphFeatures";
 
 /**
  * QCQL v1 — a small query language over this corpus.
@@ -10,6 +11,9 @@ import type { Cat } from "@/lib/data/types";
  * browser -- no server, no new runtime dependency.
  *
  *   [root=علم & cat=verb.perf]        every perfect verb from علم
+ *   [mood=jus]                        every jussive
+ *   [case=acc & def=indef]            every accusative indefinite
+ *   [pgn=2fp & cat=verb.impf]         2nd-person feminine plural imperfect
  *   [root=علم & PASS]                 ...in the passive
  *   [RES]                             every restriction particle
  *   [pos=V & !PASS] :: meccan         active verbs in Meccan surahs
@@ -55,7 +59,12 @@ export type Predicate =
   | { kind: "cat"; value: Cat }
   | { kind: "pos"; value: Pos }
   | { kind: "vf"; value: number }
-  | { kind: "tag"; value: string };
+  | { kind: "tag"; value: string }
+  /** case, mood, definiteness and person-gender-number read morphology.json */
+  | { kind: "case"; value: MorphCase }
+  | { kind: "mood"; value: MorphMood }
+  | { kind: "def"; value: MorphDefiniteness }
+  | { kind: "pgn"; value: string };
 
 export type Expr =
   | { kind: "pred"; pred: Predicate }
@@ -115,4 +124,19 @@ export class QcqlError extends Error {
     super(message);
     this.name = "QcqlError";
   }
+}
+
+/** Whether a query reads morphology.json, so a caller can skip fetching it. */
+export function needsMorphology(query: Query): boolean {
+  const walk = (e: Expr): boolean => {
+    switch (e.kind) {
+      case "pred":
+        return ["case", "mood", "def", "pgn"].includes(e.pred.kind);
+      case "not":
+        return walk(e.expr);
+      default:
+        return walk(e.left) || walk(e.right);
+    }
+  };
+  return walk(query.term);
 }

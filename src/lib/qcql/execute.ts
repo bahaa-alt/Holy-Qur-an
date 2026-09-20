@@ -1,5 +1,12 @@
 import { CHRONOLOGICAL_ORDER_BY_SURAH } from "@/lib/data/chronologicalOrder";
-import type { IndexFile, OccurrenceIndexFile, SurahMeta, SyntaxIndexFile } from "@/lib/data/types";
+import type {
+  IndexFile,
+  MorphologyIndexFile,
+  OccurrenceIndexFile,
+  SurahMeta,
+  SyntaxIndexFile,
+} from "@/lib/data/types";
+import { MORPH_CASES, MORPH_DEFINITENESS, MORPH_MOODS } from "@/lib/morphology/morphFeatures";
 import {
   POS_CATS,
   QcqlError,
@@ -16,6 +23,13 @@ export interface QcqlCorpus {
   syntax: SyntaxIndexFile;
   index: IndexFile;
   surahs: SurahMeta[];
+  /**
+   * Optional, because it is 176 KB gzipped and most queries never touch it.
+   * A caller checks `needsMorphology(query)` and fetches only when the
+   * query names case, mood, definiteness or person-gender-number; the
+   * executor throws rather than silently returning nothing if it is absent.
+   */
+  morphology?: MorphologyIndexFile;
 }
 
 /**
@@ -54,6 +68,10 @@ function buildUniverse(corpus: QcqlCorpus): Set<number> {
   for (const row of corpus.occurrences.rows) universe.add(packKey(row[0], row[1], row[2]));
   const { s, a, w } = corpus.syntax;
   for (let i = 0; i < s.length; i++) universe.add(packKey(s[i], a[i], w[i]));
+  if (corpus.morphology) {
+    const m = corpus.morphology;
+    for (let i = 0; i < m.s.length; i++) universe.add(packKey(m.s[i], m.a[i], m.w[i]));
+  }
   return universe;
 }
 
@@ -117,6 +135,57 @@ function evalPredicate(
     const { s, a, w, t } = corpus.syntax;
     for (let i = 0; i < t.length; i++) {
       if (t[i] === want) out.add(packKey(s[i], a[i], w[i]));
+    }
+    return out;
+  }
+
+  if (pred.kind === "case" || pred.kind === "mood" || pred.kind === "def" || pred.kind === "pgn") {
+    const m = corpus.morphology;
+    if (!m) {
+      // A missing index must not read as "no matches" -- that would be a
+      // false claim about the corpus. Callers gate the fetch on
+      // needsMorphology(); reaching here means that gate was skipped.
+      throw new QcqlError(
+        `The query uses ${pred.kind}=, which needs the morphology index, and it was not loaded`,
+        0,
+        pred.kind,
+      );
+    }
+
+    let column: number[];
+    let want: number;
+    if (pred.kind === "pgn") {
+      column = m.p;
+      want = m.pgnTags.indexOf(pred.value) + 1;
+      if (want === 0) {
+        throw new QcqlError(
+          `No person-gender-number "${pred.value}" occurs in this corpus`,
+          0,
+          pred.value,
+        );
+      }
+    } else {
+      const vocab =
+        pred.kind === "case"
+          ? MORPH_CASES
+          : pred.kind === "mood"
+            ? MORPH_MOODS
+            : MORPH_DEFINITENESS;
+      column = pred.kind === "case" ? m.c : pred.kind === "mood" ? m.m : m.d;
+      // The parser validated the value against the same vocabulary, so a
+      // miss here means the shipped index and the vocabulary have diverged.
+      want = (vocab as readonly string[]).indexOf(pred.value) + 1;
+      if (want === 0) {
+        throw new QcqlError(
+          `"${pred.value}" is not in the shipped morphology vocabulary`,
+          0,
+          pred.value,
+        );
+      }
+    }
+
+    for (let i = 0; i < column.length; i++) {
+      if (column[i] === want) out.add(packKey(m.s[i], m.a[i], m.w[i]));
     }
     return out;
   }

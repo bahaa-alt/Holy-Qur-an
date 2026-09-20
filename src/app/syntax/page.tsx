@@ -1,6 +1,15 @@
-import { readMeta, readSyntaxIndex } from "@/lib/data/serverData";
-import { describeTag } from "@/lib/morphology/tagLabels";
+import {
+  readIndex,
+  readMeta,
+  readMorphologyIndex,
+  readOccurrenceIndex,
+  readSyntaxIndex,
+} from "@/lib/data/serverData";
 import { SyntaxPageContent } from "@/components/syntax/SyntaxPageContent";
+import type { FacetCounts } from "@/components/syntax/GrammarBrowser";
+import { ALL_FACETS } from "@/lib/grammar/facets";
+import { executeQcql, type QcqlCorpus } from "@/lib/qcql/execute";
+import { parseQcql } from "@/lib/qcql/parse";
 import { absoluteUrl } from "@/lib/site";
 
 export const metadata = {
@@ -12,18 +21,27 @@ export default function SyntaxPage() {
   const syntax = readSyntaxIndex();
   const meta = readMeta();
 
-  // Counted here (once, at build time) rather than in the client, so the
-  // tag picker renders with real numbers on first paint and without the
-  // ~215 KB index. The client fetches the index only once a tag is picked.
-  const counts = new Array<number>(syntax.tags.length).fill(0);
-  for (const t of syntax.t) counts[t] += 1;
+  // Every chip's count, computed here (once, at build time) by running the
+  // chip's own query -- the same parser and executor the client uses, so a
+  // count can never disagree with the list it heads. This costs ~0.3s at
+  // build and saves the reader the 176 KB morphology index on arrival: the
+  // client fetches an index only when a chip that needs it is clicked.
+  //
+  // A facet that throws or returns nothing is a bug, not a finding, so this
+  // does not swallow errors -- the build fails instead.
+  const corpus: QcqlCorpus = {
+    occurrences: readOccurrenceIndex(),
+    syntax,
+    index: readIndex(),
+    surahs: meta.surahs,
+    morphology: readMorphologyIndex(),
+  };
+  const counts: FacetCounts = {};
+  for (const facet of ALL_FACETS) {
+    counts[facet.id] = executeQcql(parseQcql(facet.q), corpus).matches.length;
+  }
 
-  const tags = syntax.tags
-    .map((tag, idx) => {
-      const label = describeTag(tag);
-      return { tag, idx, count: counts[idx], en: label.en, ar: label.ar };
-    })
-    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
-
-  return <SyntaxPageContent tags={tags} surahs={meta.surahs} total={syntax.t.length} />;
+  return (
+    <SyntaxPageContent surahs={meta.surahs} counts={counts} totalTaggedSegments={syntax.t.length} />
+  );
 }

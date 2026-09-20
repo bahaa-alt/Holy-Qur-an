@@ -20,6 +20,7 @@ import type {
   ReadingsMetaFile,
   LaneMetaFile,
   LaneRootFile,
+  MorphologyIndexFile,
   MujamMetaFile,
   MujamRootFile,
   SurahVerse,
@@ -117,6 +118,18 @@ export function getLaneMeta(): Promise<LaneMetaFile> {
  */
 export function getLaneRoot(root: string): Promise<LaneRootFile> {
   return cachedFetch(`${DATA_BASE}/lane/${encodeURIComponent(root)}.json`);
+}
+
+/**
+ * Case, mood, definiteness and person-gender-number for every segment that
+ * carries one (~174 KB gzipped).
+ *
+ * Lazily fetched and not part of prefetchAll: only the grammar browser and
+ * a QCQL query naming one of these features needs it, so it is not core
+ * payload. See MorphologyIndexFile.
+ */
+export function getMorphologyIndex(): Promise<MorphologyIndexFile> {
+  return cachedFetch(`${DATA_BASE}/morphology.json`);
 }
 
 /** Provenance, editions and coverage for the three Arabic lexicons. */

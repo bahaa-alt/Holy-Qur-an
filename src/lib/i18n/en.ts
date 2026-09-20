@@ -277,12 +277,15 @@ export const en: Dict = {
       activeVerbsMeccan: "active verbs in Meccan surahs",
       conditionalsLate: "conditionals, after the first five surahs revealed",
       formFour: "Form IV imperfect verbs",
+      jussive: "every jussive",
+      indefiniteAccusative: "indefinite accusatives",
+      secondFemininePlural: "2nd-person feminine plural imperfect verbs",
     },
     resultCount: (matches, verses) =>
       `${matches.toLocaleString()} ${matches === 1 ? "match" : "matches"} in ${verses.toLocaleString()} ${verses === 1 ? "verse" : "verses"}`,
     unexpectedError: "Something went wrong running that query.",
     scopeNote:
-      "A query matches word positions drawn from two indices: rooted occurrences, and segments carrying a syntactic or rhetorical tag. A word with neither \u2014 most pronouns, for one \u2014 is in neither index, so no query reaches it, and it never appears in a negated result either.",
+      "A query matches word positions drawn from three indices: rooted occurrences, segments carrying a syntactic or rhetorical tag, and segments carrying case, mood, definiteness or person\u2013gender\u2013number. A word in none of them \u2014 most pronouns, for one \u2014 is in neither index, so no query reaches it, and it never appears in a negated result either.",
   },
   phraseTextSearch: {
     label: "Phrase or sentence",
@@ -453,16 +456,39 @@ export const en: Dict = {
   syntaxPage: {
     heading: "Syntax & rhetoric",
     intro:
-      "Every segment the corpus tags with a syntactic or rhetorical function \u2014 restriction, condition, circumstantial \u1E25\u0101l, prohibition, emphasis, passive voice and more. Most are particles, which carry no root and so appear in none of this app's root counts.",
+      "Every grammatical feature the corpus marks \u2014 what a word IS (verb aspect and Form, voice, mood, kind of noun, case, definiteness, person\u2013gender\u2013number) and what a word DOES (restriction, condition, circumstantial \u1E25\u0101l, prohibition, emphasis, passive voice and the rest). Every chip is a query, and the query it runs is shown, so any filter here can be carried to the query page and taken further.",
     totalSegments: (n: number) => `${n.toLocaleString()} tagged segments`,
-    pickTag: "Choose a function",
-    occurrencesIn: (tag: string) => `Every occurrence of: ${tag}`,
-    loading: "Loading\u2026",
-    noneSelected: "Pick a function above to see every place it occurs.",
     methodologyNote:
-      "These are not \u201coccurrences\u201d in this app's usual sense. An occurrence is a segment carrying a root, and 15,413 of the 17,014 segments here are rootless particles. They are a parallel layer, counted separately, and they never affect a root's totals.",
+      "The function tags are not \u201Coccurrences\u201D in this app's usual sense. An occurrence is a segment carrying a root, and 15,413 of the 17,014 tagged segments here are rootless particles. They are a parallel layer, counted separately, and they never affect a root's totals.",
+    positionNote:
+      "Counts and results here are WORD POSITIONS, not segments. An Arabic word can be several segments \u2014 a prefixed l\u0101m of emphasis and the noun it attaches to are two \u2014 so a word carrying two tagged segments appears once. That is the same unit the query page uses, which is what lets one query combine a root with a grammatical feature.",
     passiveNote:
-      "Passive voice is listed here rather than as a grammatical category, because voice is independent of aspect \u2014 a passive perfect verb is still a perfect verb, and is still counted as one everywhere else in this app.",
+      "Passive voice is tagged in the syntactic layer rather than as a grammatical category, because voice is independent of aspect \u2014 a passive perfect verb is still a perfect verb, and is still counted as one everywhere else in this app.",
+  },
+  grammarPage: {
+    groups: {
+      verbs: "Verbs",
+      nouns: "Nouns & adjectives",
+      function: "Function & rhetoric",
+    },
+    sections: {
+      aspect: "Aspect",
+      verbForm: "Form",
+      voice: "Voice",
+      mood: "Mood",
+      person: "Person, gender, number",
+      agreement: "Gender & number",
+      nounType: "Kind",
+      case: "Case",
+      definiteness: "Definiteness",
+      allTags: "Every tagged function",
+    },
+    noneSelected: "Pick a feature above to see every place it occurs.",
+    occurrencesIn: (facet: string) => `Every occurrence of: ${facet}`,
+    loading: "Loading\u2026",
+    failed: "This filter could not be run.",
+    matchCount: (n: number) => `${n.toLocaleString()} word positions`,
+    openInQuery: "Open this query in the query page",
   },
   insightsPage: {
     title: "Insights",
