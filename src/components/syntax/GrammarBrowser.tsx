@@ -168,6 +168,9 @@ export function GrammarBrowser({ surahs, counts }: { surahs: SurahMeta[]; counts
                       key={facet.id}
                       type="button"
                       aria-pressed={on}
+                      // The corpus's own code, for a reader who works from
+                      // the tagset. The chip itself says it in words.
+                      title={facet.code}
                       onClick={() => void run(facet)}
                       className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
                         on
@@ -196,6 +199,14 @@ export function GrammarBrowser({ surahs, counts }: { surahs: SurahMeta[]; counts
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="text-sm font-medium text-ink">
                 {t.grammarPage.occurrencesIn(label(active))}
+                {/* The corpus's code beside the word for it, so a reader
+                    who arrived by clicking learns the tagset they will
+                    need to write their own queries. */}
+                {active.code && (
+                  <span className="ms-2 font-mono text-xs font-normal text-muted" dir="ltr">
+                    {active.code}
+                  </span>
+                )}
               </h2>
               {/* The query that produced this, and a way to keep going with
                   it. The chips are the tutorial; /query/ is the language. */}

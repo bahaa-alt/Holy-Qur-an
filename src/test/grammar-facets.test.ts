@@ -46,6 +46,32 @@ describe("grammar facets", () => {
     }
   });
 
+  it("labels every facet in words, not in the corpus's tagset codes", () => {
+    // What this pins: chips used to read "3MS", "MP", "IV" -- codes from
+    // the Quranic Arabic Corpus tagset, unreadable to anyone who has not
+    // memorised it, and in the Arabic interface in the wrong script too.
+    const CODE = /^(?:[123]?[MF]?[SDP]|NOM|ACC|GEN|IND|SUBJ|JUS|DET|INDEF)$/;
+    for (const facet of ALL_FACETS) {
+      if (facet.tag) continue;
+      // Verb Forms keep their Roman numerals in English, which is not a
+      // code but the standard name in Western Arabic scholarship. In
+      // Arabic they are the wazn, which is the standard name there.
+      if (!facet.id.startsWith("vf")) expect(facet.en, `${facet.id} en`).not.toMatch(CODE);
+      // Every Arabic label must actually be in Arabic script.
+      expect(facet.ar, `${facet.id} ar`).toMatch(/[\u0600-\u06FF]/);
+    }
+  });
+
+  it("keeps the corpus code reachable on the facets that had one as a label", () => {
+    // Replacing a code with a word should not lose the code: it is what a
+    // reader needs to write the query themselves, so it stays on hover.
+    for (const facet of ALL_FACETS) {
+      if (/^(pgn|case|mood|def|vf)/.test(facet.id)) {
+        expect(facet.code, facet.id).toBeTruthy();
+      }
+    }
+  });
+
   it("names a group and a section heading that both dictionaries have", () => {
     for (const group of GRAMMAR_GROUPS) {
       expect(en.grammarPage.groups[group.labelKey]).toBeTruthy();
