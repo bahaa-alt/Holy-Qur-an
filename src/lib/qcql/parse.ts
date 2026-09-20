@@ -1,5 +1,11 @@
 import { CATEGORY_LABELS, type Cat } from "@/lib/data/types";
 import { SYNTAX_TAGS } from "@/lib/morphology/syntaxTags";
+import {
+  MORPH_CASES,
+  MORPH_DEFINITENESS,
+  MORPH_MOODS,
+  PGN_PATTERN,
+} from "@/lib/morphology/morphFeatures";
 import { lex, type Token } from "./lex";
 import {
   QCQL_VERSION,
@@ -143,7 +149,7 @@ class Parser {
     if (SYNTAX_TAGS.includes(upper)) return { kind: "tag", value: upper };
 
     const key = tok.text.toLowerCase();
-    if (["root", "lemma", "cat", "pos", "vf"].includes(key)) {
+    if (["root", "lemma", "cat", "pos", "vf", "case", "mood", "def", "pgn"].includes(key)) {
       throw new QcqlError(`"${tok.text}" needs a value, as in ${key}=…`, tok.at, tok.text);
     }
     throw new QcqlError(
@@ -203,9 +209,31 @@ class Parser {
         return { kind: "vf", value: n };
       }
 
+      case "case":
+        return { kind: "case", value: oneOf(MORPH_CASES, value, valueTok, "case") };
+      case "mood":
+        return { kind: "mood", value: oneOf(MORPH_MOODS, value, valueTok, "mood") };
+      case "def":
+        return {
+          kind: "def",
+          value: oneOf(MORPH_DEFINITENESS, value, valueTok, "definiteness"),
+        };
+
+      case "pgn": {
+        const pgn = value.toUpperCase();
+        if (!PGN_PATTERN.test(pgn)) {
+          throw new QcqlError(
+            `"${value}" is not a person-gender-number. Write an optional person (1-3), an optional gender (M/F) and a number (S/D/P) -- for example 3MS, 2FP, 1P or MP.`,
+            valueTok.at,
+            value,
+          );
+        }
+        return { kind: "pgn", value: pgn };
+      }
+
       default:
         throw new QcqlError(
-          `Unknown field "${keyTok.text}". Fields are: root, lemma, cat, pos, vf — or a bare tag such as PASS.`,
+          `Unknown field "${keyTok.text}". Fields are: root, lemma, cat, pos, vf, case, mood, def, pgn — or a bare tag such as PASS.`,
           keyTok.at,
           keyTok.text,
         );
@@ -246,6 +274,30 @@ class Parser {
       tok.text,
     );
   }
+}
+
+/**
+ * Resolves a value against a closed vocabulary, case-insensitively.
+ *
+ * Names the alternatives on failure rather than saying "invalid": the
+ * vocabularies are short and a reader who mistypes `case=nominative` should
+ * be told it is `nom` rather than sent to read the source.
+ */
+function oneOf<T extends string>(
+  vocabulary: readonly T[],
+  value: string,
+  tok: Token,
+  what: string,
+): T {
+  const hit = vocabulary.find((v) => v.toLowerCase() === value.toLowerCase());
+  if (!hit) {
+    throw new QcqlError(
+      `Unknown ${what} "${value}". Values are: ${vocabulary.join(", ").toLowerCase()}`,
+      tok.at,
+      value,
+    );
+  }
+  return hit;
 }
 
 /** Parses QCQL source, throwing QcqlError with a source offset on failure. */

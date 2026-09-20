@@ -268,6 +268,46 @@ export interface SyntaxIndexFile {
   t: number[];
 }
 
+/**
+ * Every segment's inflectional features: case, mood, definiteness and
+ * person-gender-number.
+ *
+ * The companion to SyntaxIndexFile, and deliberately a different shape.
+ * That file answers "what does this segment DO" with one tag per row;
+ * this one answers "what IS it" with four feature columns per row, because
+ * a segment carries several of these at once (imperfect AND indicative AND
+ * 3MS) and a row per tag would triple the size to say the same thing.
+ *
+ * 0 MEANS THE SEGMENT HAS NO VALUE for that feature, and that is a real
+ * answer rather than missing data: a particle has no case, and a perfect
+ * verb has no mood -- the corpus does not mark one, so neither does this.
+ *
+ * Feature ids are 1-based positions in the vocabularies exported by
+ * src/lib/morphology/morphFeatures.ts; `p` indexes `pgnTags` the same way.
+ * Includes ROOTLESS segments, which is load-bearing: definiteness lives on
+ * the rootless ال prefix.
+ */
+export interface MorphologyIndexFile {
+  /** the person-gender-number vocabulary, sorted; `p[i] - 1` indexes it */
+  pgnTags: string[];
+  /** surah, one entry per indexed segment, in (s,a,w,seg) order */
+  s: number[];
+  /** ayah */
+  a: number[];
+  /** 1-based word index within the verse */
+  w: number[];
+  /** 1-based segment index within the word */
+  g: number[];
+  /** case: 0 none, else 1-based into MORPH_CASES */
+  c: number[];
+  /** mood: 0 none, else 1-based into MORPH_MOODS */
+  m: number[];
+  /** definiteness: 0 none, else 1-based into MORPH_DEFINITENESS */
+  d: number[];
+  /** person-gender-number: 0 none, else 1-based into `pgnTags` */
+  p: number[];
+}
+
 /** One non-Hafs transmission (riwaya) shipped alongside the base text. */
 export interface RiwayaMeta {
   /** directory name under readings/, and the source edition's own slug */
