@@ -7,6 +7,7 @@ describe("buildInterlinearGloss", () => {
     const result: WordLookupResult = {
       status: "found",
       info: {
+        rootIdx: 0,
         rootAr: "كتب",
         rootBw: "ktb",
         rootGlossShort: "to write",
@@ -20,7 +21,11 @@ describe("buildInterlinearGloss", () => {
         tagsJoined: "N|MS|GEN",
       },
     };
-    expect(buildInterlinearGloss(result, "Noun")).toEqual({ root: "كتب", lemma: "كِتاب", cat: "Noun" });
+    expect(buildInterlinearGloss(result, "Noun")).toEqual({
+      root: "كتب",
+      lemma: "كِتاب",
+      cat: "Noun",
+    });
   });
 
   it("returns all-null for a not-rooted word", () => {

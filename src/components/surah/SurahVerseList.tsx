@@ -37,6 +37,10 @@ export function SurahVerseList({
 
   return (
     <div className="space-y-4">
+      {/* Said once for the surah, not once per verse: hover is not an
+          affordance on a phone, and the inspector is the main way into
+          the corpus from the text. */}
+      <p className="text-xs text-muted/70">{t.wordInfoPanel.tapHint}</p>
       {verses.map((verse) => {
         const isFocused = verse.a === focusedAyah;
         return (

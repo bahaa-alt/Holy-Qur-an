@@ -1,3 +1,12 @@
+import {
+  CASE_LABELS,
+  DEFINITENESS_LABELS,
+  MOOD_LABELS,
+  PGN_AGREEMENT_LABELS,
+  PGN_AGREEMENT_ORDER,
+  PGN_PERSON_LABELS,
+  PGN_PERSON_ORDER,
+} from "@/lib/morphology/featureLabels";
 import { MORPH_CASES, MORPH_DEFINITENESS, MORPH_MOODS } from "@/lib/morphology/morphFeatures";
 import { SYNTAX_TAGS } from "@/lib/morphology/syntaxTags";
 
@@ -82,31 +91,6 @@ const WAZN = [
   "اِفْعَالَّ",
 ] as const;
 
-const MOOD_EN: Record<string, string> = {
-  IND: "Indicative",
-  SUBJ: "Subjunctive",
-  JUS: "Jussive",
-};
-const MOOD_AR: Record<string, string> = {
-  IND: "مرفوع",
-  SUBJ: "منصوب",
-  JUS: "مجزوم",
-};
-
-const CASE_EN: Record<string, string> = {
-  NOM: "Nominative",
-  ACC: "Accusative",
-  GEN: "Genitive",
-};
-const CASE_AR: Record<string, string> = {
-  NOM: "مرفوع",
-  ACC: "منصوب",
-  GEN: "مجرور",
-};
-
-const DEF_EN: Record<string, string> = { DET: "Definite", INDEF: "Indefinite" };
-const DEF_AR: Record<string, string> = { DET: "معرفة", INDEF: "نكرة" };
-
 /** Form I-XI, as the corpus marks them. */
 const VERB_FORMS: Facet[] = Array.from({ length: 11 }, (_, i) => ({
   id: `vf${i + 1}`,
@@ -130,22 +114,7 @@ const VERB_FORMS: Facet[] = Array.from({ length: 11 }, (_, i) => ({
  * the wrong script. The pronoun IS the feature: a verb tagged 3MS agrees
  * with هو. The code stays on hover and in the query the results show.
  */
-const PGN_PERSON: { code: string; en: string; ar: string }[] = [
-  { code: "3MS", en: "he", ar: "هو" },
-  { code: "3FS", en: "she", ar: "هي" },
-  { code: "3MD", en: "they two (m.)", ar: "هما (مذكر)" },
-  { code: "3FD", en: "they two (f.)", ar: "هما (مؤنث)" },
-  { code: "3MP", en: "they (m.)", ar: "هم" },
-  { code: "3FP", en: "they (f.)", ar: "هنَّ" },
-  { code: "2MS", en: "you (m. sg.)", ar: "أنتَ" },
-  { code: "2FS", en: "you (f. sg.)", ar: "أنتِ" },
-  { code: "2MD", en: "you two (m.)", ar: "أنتما (مذكر)" },
-  { code: "2FD", en: "you two (f.)", ar: "أنتما (مؤنث)" },
-  { code: "2MP", en: "you (m. pl.)", ar: "أنتم" },
-  { code: "2FP", en: "you (f. pl.)", ar: "أنتنَّ" },
-  { code: "1S", en: "I", ar: "أنا" },
-  { code: "1P", en: "we", ar: "نحن" },
-];
+const PGN_PERSON = PGN_PERSON_ORDER.map((code) => ({ code, ...PGN_PERSON_LABELS[code] }));
 
 /**
  * Person-less agreement: gender and number with no person.
@@ -154,19 +123,14 @@ const PGN_PERSON: { code: string; en: string; ar: string }[] = [
  * them to verbs returns nothing for seven of the eight (only MS scrapes 50
  * hits). They are queried unrestricted rather than with `pos=N`, because
  * pronouns carry the same agreement and a reader browsing gender and
- * number wants those too: `[pgn=p]` finds 13,377 positions, of which only
- * 2,641 are nominals.
+ * number wants those too.
+ *
+ * The bare number tags are rare and that is correct: `[pgn=p]` finds 390
+ * positions and `[pgn=d]` two. They were 13,377 and more until the build
+ * stopped reading a preposition's repeated POS tag ("P") as the plural
+ * agreement tag of the same spelling -- see build-morphology.
  */
-const PGN_AGREEMENT: { code: string; en: string; ar: string }[] = [
-  { code: "MS", en: "masculine singular", ar: "مذكر مفرد" },
-  { code: "FS", en: "feminine singular", ar: "مؤنث مفرد" },
-  { code: "MD", en: "masculine dual", ar: "مذكر مثنى" },
-  { code: "FD", en: "feminine dual", ar: "مؤنث مثنى" },
-  { code: "MP", en: "masculine plural", ar: "جمع مذكر" },
-  { code: "FP", en: "feminine plural", ar: "جمع مؤنث" },
-  { code: "D", en: "dual", ar: "مثنى" },
-  { code: "P", en: "plural", ar: "جمع" },
-];
+const PGN_AGREEMENT = PGN_AGREEMENT_ORDER.map((code) => ({ code, ...PGN_AGREEMENT_LABELS[code] }));
 
 export const GRAMMAR_GROUPS: FacetGroup[] = [
   {
@@ -200,8 +164,8 @@ export const GRAMMAR_GROUPS: FacetGroup[] = [
         facets: MORPH_MOODS.map((m) => ({
           id: `mood-${m.toLowerCase()}`,
           q: `[mood=${m.toLowerCase()}]`,
-          en: MOOD_EN[m],
-          ar: MOOD_AR[m],
+          en: MOOD_LABELS[m].en,
+          ar: MOOD_LABELS[m].ar,
           code: m,
         })),
       },
@@ -240,8 +204,8 @@ export const GRAMMAR_GROUPS: FacetGroup[] = [
         facets: MORPH_CASES.map((c) => ({
           id: `case-${c.toLowerCase()}`,
           q: `[case=${c.toLowerCase()}]`,
-          en: CASE_EN[c],
-          ar: CASE_AR[c],
+          en: CASE_LABELS[c].en,
+          ar: CASE_LABELS[c].ar,
           code: c,
         })),
       },
@@ -262,8 +226,8 @@ export const GRAMMAR_GROUPS: FacetGroup[] = [
         facets: MORPH_DEFINITENESS.map((d) => ({
           id: `def-${d.toLowerCase()}`,
           q: `[def=${d.toLowerCase()}]`,
-          en: DEF_EN[d],
-          ar: DEF_AR[d],
+          en: DEFINITENESS_LABELS[d].en,
+          ar: DEFINITENESS_LABELS[d].ar,
           code: d,
         })),
       },

@@ -698,11 +698,28 @@ export interface Dict {
   };
   wordInfoPanel: {
     loading: string;
+    tapHint: string;
     notRooted: string;
     root: string;
     lemma: string;
     category: string;
     grammar: string;
+    /** the deeper layers, loaded after the panel opens */
+    features: string;
+    segmentLabel: (g: number) => string;
+    caseLabel: string;
+    moodLabel: string;
+    definitenessLabel: string;
+    agreementLabel: string;
+    lexicons: string;
+    lexiconMore: string;
+    keynessHeading: string;
+    keynessOver: (times: string, g2: string) => string;
+    keynessUnder: (times: string, g2: string) => string;
+    keynessFlat: string;
+    keynessNotSignificant: string;
+    compareInInsights: string;
+    savedLabel: string;
     occurrencesOfRoot: (count: number) => string;
     occurrencesOfLemma: (count: number) => string;
     occurrencesOfForm: (count: number) => string;

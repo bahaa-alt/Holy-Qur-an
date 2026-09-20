@@ -8,7 +8,11 @@ import type { Cat, IndexFile, IndexRootRow, RootFile, VerseRootsFile } from "@/l
  * the About page's "How counts are computed" section for why those never
  * carry a root here).
  */
-export function findWordRootIdx(verseRoots: VerseRootsFile, globalId: number, w: number): number | null {
+export function findWordRootIdx(
+  verseRoots: VerseRootsFile,
+  globalId: number,
+  w: number,
+): number | null {
   const entries = verseRoots[globalId] ?? [];
   const match = entries.find(([, entryW]) => entryW === w);
   return match ? match[0] : null;
@@ -16,6 +20,8 @@ export function findWordRootIdx(verseRoots: VerseRootsFile, globalId: number, w:
 
 export interface WordInfo {
   rootAr: string;
+  /** index into IndexFile.roots, for measures that key on the root */
+  rootIdx: number;
   rootBw?: string;
   rootGlossShort: string;
   /** total occurrences of this root across the whole Qur'an */
@@ -58,10 +64,13 @@ export function resolveWordInfo(
   const lemma = rootFile.lemmas[form.lemmaIdx];
   if (!lemma) return null;
 
-  const globalLemmaIdx = index.lemmas.findIndex((l) => l.rootIdx === rootIdx && l.key === lemma.key);
+  const globalLemmaIdx = index.lemmas.findIndex(
+    (l) => l.rootIdx === rootIdx && l.key === lemma.key,
+  );
 
   return {
     rootAr: indexRootRow.ar,
+    rootIdx,
     rootBw: rootFile.bw,
     rootGlossShort: indexRootRow.glossShort,
     rootTotal: indexRootRow.count,

@@ -83,6 +83,9 @@ export function VersePageContent({
 
       <div className="mt-6 rounded-2xl border border-border bg-surface p-6">
         <HighlightedVerse s={s} a={a} tokens={verse.w} highlightIndices={[]} />
+        {/* Words have been tappable for a while and nothing said so:
+            hover is not an affordance on a phone. */}
+        <p className="mt-2 text-xs text-muted/70">{t.wordInfoPanel.tapHint}</p>
         <p className="mt-4 text-sm leading-relaxed text-muted">{verse.t}</p>
         {verse.pickthall && (
           <p className="mt-2 text-sm leading-relaxed text-muted/80">

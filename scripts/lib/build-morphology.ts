@@ -62,7 +62,15 @@ export function buildMorphology(words: readonly RawWord[]): MorphologyIndexFile 
       const m = firstOf(seg.tags, MORPH_MOODS, "MOOD:");
       const d = firstOf(seg.tags, MORPH_DEFINITENESS);
 
-      const pgnTag = seg.tags.find((t) => PGN_PATTERN.test(t));
+      // A feats field repeats the segment's own part of speech, and two
+      // of those repetitions are shaped exactly like agreement tags: a
+      // preposition is written `P|PREF|LEM:ب`, and a bare "P" is also how
+      // the corpus writes "plural". Taking it as agreement labelled 12,992
+      // prepositions plural -- against 390 genuinely plural nouns -- so
+      // the one tag that equals the POS is not a feature and is skipped.
+      // Real agreement on a POS=P segment survives, because an attached
+      // pronoun like كُم is tagged MP, not P.
+      const pgnTag = seg.tags.find((t) => t !== seg.pos && PGN_PATTERN.test(t));
       let p = 0;
       if (pgnTag !== undefined) {
         let at = pgnTags.indexOf(pgnTag);
