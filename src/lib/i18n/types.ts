@@ -637,6 +637,15 @@ export interface Dict {
     patternsLemmasCount: (n: number) => string;
     patternsDrilldownHint: string;
     patternsShapeRootsShown: (shown: number, total: number) => string;
+    /**
+     * Shown once a non-whole-Qur'an scope is chosen: verb-Form and
+     * category counts use each word-form's dominant category rather than
+     * this specific occurrence's own tag -- see lib/insights/patternsScope.ts
+     * for why (a participle/verbal noun carries the same Form tag its
+     * finite verb does, so category is what tells them apart here).
+     * Root shapes are untouched by this and need no caveat.
+     */
+    patternsScopedNote: string;
     formulasHeading: string;
     formulasDescription: string;
     formulasWordsLength: (n: number) => string;
