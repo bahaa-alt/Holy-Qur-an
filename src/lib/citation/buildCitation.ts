@@ -21,7 +21,16 @@ export function datasetLabel(version: string): string {
  * keyness table -- because that is what another reader has to reproduce.
  */
 export type CitationKind =
-  "root" | "word" | "verse" | "surah" | "topic" | "query" | "grammar" | "keyness";
+  | "root"
+  | "word"
+  | "verse"
+  | "surah"
+  | "topic"
+  | "query"
+  | "grammar"
+  | "keyness"
+  | "rhyme"
+  | "collocations";
 
 const SUBJECT_LABEL: Record<CitationKind, string> = {
   root: "Root",
@@ -32,6 +41,8 @@ const SUBJECT_LABEL: Record<CitationKind, string> = {
   query: "Query",
   grammar: "Grammar filter",
   keyness: "Keyness",
+  rhyme: "Rhyme",
+  collocations: "Collocations",
 };
 
 export interface CitationSubject {

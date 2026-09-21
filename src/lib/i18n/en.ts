@@ -494,6 +494,13 @@ export const en: Dict = {
     title: "Insights",
     subtitle:
       "Corpus-wide statistics and curiosities -- letter frequency across any scope, plus a set of facts computed once across the whole Qur'an that no single root or word page can answer on its own.",
+    groups: {
+      ask: "Ask",
+      wordsTogether: "Words together",
+      repetitionForm: "Repetition & form",
+      sound: "Sound",
+      facts: "Facts",
+    },
     compare: {
       tab: "Compare",
       heading: "What is characteristic of this part of the Qur'an?",
@@ -626,6 +633,8 @@ export const en: Dict = {
       "This root was never immediately followed by one of the tracked prepositions.",
     collocationsPickPrompt:
       "Pick a root above to see which prepositions follow its verb occurrences.",
+    collocationsScopedPmiNote:
+      "PMI is measured over the whole Qur'an and does not change with the scope above; the count and ranking below do.",
     abjadHeading: "Abjad value (ḥisāb al-jummal)",
     abjadDescription:
       "The ancient Arabic letter-numeral system (أبجد هوز حطي...) used historically for chronograms and numerology. Every letter carries a fixed value; a word, verse, or larger passage's value is the sum of its letters.",
