@@ -287,9 +287,9 @@ export function InsightsPageContent({
           </Link>
         </p>
       )}
-      {tab === "cooccurrence" && <CooccurrenceTab />}
+      {tab === "cooccurrence" && <CooccurrenceTab meta={meta} />}
       {tab === "patterns" && <PatternsTab />}
-      {tab === "formulas" && <FormulasTab />}
+      {tab === "formulas" && <FormulasTab meta={meta} />}
       {tab === "verseSimilarity" && <VerseSimilarityTab />}
     </div>
   );

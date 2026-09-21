@@ -30,7 +30,9 @@ export type CitationKind =
   | "grammar"
   | "keyness"
   | "rhyme"
-  | "collocations";
+  | "collocations"
+  | "cooccurrence"
+  | "formulas";
 
 const SUBJECT_LABEL: Record<CitationKind, string> = {
   root: "Root",
@@ -43,6 +45,8 @@ const SUBJECT_LABEL: Record<CitationKind, string> = {
   keyness: "Keyness",
   rhyme: "Rhyme",
   collocations: "Collocations",
+  cooccurrence: "Cooccurrence",
+  formulas: "Formulas",
 };
 
 export interface CitationSubject {

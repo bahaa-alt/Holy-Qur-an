@@ -587,8 +587,12 @@ export interface Dict {
     collocationsLoading: string;
     collocationsNoResults: string;
     collocationsPickPrompt: string;
-    /** shown once a non-whole-Qur'an scope is chosen: PMI cannot be recomputed per scope, only the count can (see lib/insights/collocationScope.ts) */
-    collocationsScopedPmiNote: string;
+    /**
+     * Shared by every scope-aware tool whose PMI cannot be recomputed per
+     * scope, only counted (see lib/insights/collocationScope.ts and
+     * cooccurrenceScope.ts): shown once a non-whole-Qur'an scope is chosen.
+     */
+    scopedPmiNote: string;
     abjadHeading: string;
     abjadDescription: string;
     abjadReferenceHeading: string;
@@ -639,6 +643,8 @@ export interface Dict {
     formulasLoading: string;
     formulasNoResults: string;
     formulasOccurrencesCount: (n: number) => string;
+    /** shown once a non-whole-Qur'an scope is chosen: the phrase list itself stays fixed to the whole Qur'an's top 25 per length; only the count/ranking below scope (see lib/insights/formulaScope.ts) */
+    formulasScopedNote: string;
     verseSimilarityHeading: string;
     verseSimilarityDescription: string;
     verseSimilarityLoading: string;

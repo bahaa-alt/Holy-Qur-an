@@ -236,7 +236,7 @@ export function CollocationsTab() {
                       </button>
                     </div>
                   ) : (
-                    <p className="text-xs text-muted">{t.insightsPage.collocationsScopedPmiNote}</p>
+                    <p className="text-xs text-muted">{t.insightsPage.scopedPmiNote}</p>
                   )}
                   <div className="flex items-center gap-2">
                     <SaveButton
