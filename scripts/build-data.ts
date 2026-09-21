@@ -554,6 +554,7 @@ async function main() {
     indexRoots,
     indexLemmas,
     meta.surahs.length,
+    surahFiles,
   );
   const rhyme = buildRhyme(surahFiles);
   const distinctiveVocab = buildDistinctiveVocab(words, rootFiles, indexRoots, meta.surahs.length);
