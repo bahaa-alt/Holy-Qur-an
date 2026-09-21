@@ -222,7 +222,17 @@ const EXPECTED = {
   // 85, as a drift detector: any corpus or tagging change that moves any
   // facet trips it, and the per-facet numbers are then printed by the
   // failure. Not independently meaningful -- facets overlap heavily.
-  grammarFacetTotal: 205133,
+  //
+  // Moved from 205133 to 205208 when build-roots.ts started reading each
+  // occurrence's own classify() result for occurrences.json's catIdx,
+  // instead of the word-form's (a homograph -- same rendered form text,
+  // different tags on different occurrences -- could carry the wrong
+  // category before). qcqlVerbPositions/qcqlPassive and every non-category
+  // facet (case, mood, def, vf1-11, tag-*) are unaffected -- that fix only
+  // ever moves an occurrence between two [cat=X] facets, or into/out of the
+  // person-agreement facets (pgn-3ms etc, verb-only) as its now-corrected
+  // category changes whether it belongs to a verb-conjugation facet at all.
+  grammarFacetTotal: 205208,
   rootCounts: { كتب: 319, رحم: 339, علم: 854 } as Record<string, number>,
   maxMismatches: 50,
 };

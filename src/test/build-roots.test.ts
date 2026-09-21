@@ -215,3 +215,26 @@ describe("buildRoots", () => {
     });
   });
 });
+
+describe("occurrenceIndex catIdx is per-occurrence, not per word-form", () => {
+  // Both rows render the identical form text رَّحِيمِ under the same root, but
+  // only the first carries ADJ. A word-form-keyed category (this file's old
+  // behavior: whichever occurrence first defined that exact form text locks
+  // in its cat for every later occurrence of the same text) would classify
+  // both "adj"; classify() must instead run on each occurrence's own tags.
+  const HOMOGRAPH_ROWS = [
+    "5:1:1:1\tرَّحِيمِ\tN\tROOT:رحم|LEM:رَحِيم|MS|GEN|ADJ",
+    "5:2:1:1\tرَّحِيمِ\tN\tROOT:رحم|LEM:رَحِيم|MS|GEN",
+  ].join("\n");
+
+  const result = buildRoots(parseMorphologyTSV(HOMOGRAPH_ROWS), {});
+
+  it("classifies each occurrence from its own tags", () => {
+    const catFor = (a: number) => {
+      const row = result.occurrenceIndex.rows.find(([, ayah]) => ayah === a)!;
+      return result.occurrenceIndex.cats[row[5]];
+    };
+    expect(catFor(1)).toBe("adj");
+    expect(catFor(2)).toBe("noun");
+  });
+});

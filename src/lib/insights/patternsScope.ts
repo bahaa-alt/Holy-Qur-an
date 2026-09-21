@@ -8,42 +8,26 @@ import type { Cat, OccurrenceIndexFile } from "@/lib/data/types";
  * with no per-occurrence refs, the same situation Cooccurrence was in --
  * so scoping this means recomputing it, from occurrences.json
  * (OccurrenceIndexFile), which carries every rooted occurrence's own
- * s/a/w/root/lemma/category/verbForm.
+ * s/a/w/root/lemma/category/verbForm. Since build-roots.ts started reading
+ * each occurrence's own classify() result for `catIdx` (previously the
+ * word-form's, which a homograph could get wrong -- see build-roots.ts),
+ * `catIdx` is exact, and cross-checking a scope window covering the entire
+ * Qur'an against the shipped whole-Qur'an figures reproduces every Form,
+ * category, and root shape count exactly, not approximately.
  *
- * TWO THINGS THAT LOOK LIKE THE OBVIOUS APPROACH AND AREN'T -- READ
- * BEFORE CHANGING THIS FILE, both found by cross-checking a scope window
- * covering the entire Qur'an against the shipped whole-Qur'an figures.
+ * ONE THING THAT LOOKS LIKE THE OBVIOUS APPROACH AND ISN'T -- READ BEFORE
+ * CHANGING THIS FILE, found the same way (the cross-check above).
  *
- * 1. verbForm > 0 does NOT mean "this occurrence is a verb". The
- *    corpus's VF: tag marks which Form (I-XI) a word DERIVES from, and
- *    that includes a Form's active/passive participle and verbal noun,
- *    not only its finite verb -- e.g. مُنذِر (a Form IV active
- *    participle) carries VF:4 the same as a Form IV verb does. Trusting
- *    verbForm alone (first attempt at this file) overcounted every Form
- *    by thousands of rows, pulling in participles and verbal nouns.
- *    build-patterns.ts avoids this by gating on `seg.pos === "V"` --
- *    finite verb or nothing -- before ever looking at Form.
- *
- * 2. occurrences.json's `catIdx` is NOT per-occurrence category, unlike
- *    verbForm. build-roots.ts assigns it from the occurrence's WORD-
- *    FORM's dominant category (the most common category among every
- *    occurrence of that root+form pair), not this specific occurrence's
- *    own tag -- different from patterns.json's own build, which
- *    classifies every occurrence directly from its tags. This is the
- *    closest per-occurrence "is this a verb" signal this file ships,
- *    though, so it is what gates verbForm here too (there is no raw POS
- *    column to gate on the way build-patterns.ts does).
- *
- * NET EFFECT: gating on `cat` being one of the three verb categories,
- * then reading verbForm (defaulting an untagged occurrence to Form I)
- * reproduces the shipped whole-Qur'an figures closely -- within 1% on
- * every Form in that cross-check -- because the dominant-category
- * approximation is usually right. `categories` inherits the same
- * approximation directly and less accurately (up to ~13% on one category
- * in that check, since there `cat` is the entire answer, not a yes/no
- * gate). Root shapes (root-text-based, untouched by category) are exact.
- * The caller documents this once scope narrows past "quran", where the
- * shipped exact figures are used as-is.
+ * verbForm > 0 does NOT mean "this occurrence is a verb". The corpus's
+ * VF: tag marks which Form (I-XI) a word DERIVES from, and that includes
+ * a Form's active/passive participle and verbal noun, not only its finite
+ * verb -- e.g. مُنذِر (a Form IV active participle) carries VF:4 the same
+ * as a Form IV verb does. Trusting verbForm alone (first attempt at this
+ * file) overcounted every Form by thousands of rows, pulling in
+ * participles and verbal nouns. build-patterns.ts avoids this by gating
+ * on `seg.pos === "V"` -- finite verb or nothing -- before ever looking
+ * at Form; this file gates on `cat` being one of the three verb
+ * categories instead, which is the same test now that `cat` is exact.
  */
 
 const VERB_CATS: ReadonlySet<Cat> = new Set(["verb.perf", "verb.impf", "verb.impv"]);
