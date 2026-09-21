@@ -3,53 +3,129 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Loader2, X } from "lucide-react";
-import { getCooccurrence, getIndex } from "@/lib/data/loader";
+import { getCooccurrence, getIndex, getVerseRoots } from "@/lib/data/loader";
 import { normalize } from "@/lib/arabic/normalize";
 import { rootHref } from "@/lib/search/suggest";
 import { metricBarPct } from "@/lib/insights/metricScale";
+import { scopedCooccurrencePartners, scopedTopPairs } from "@/lib/insights/cooccurrenceScope";
+import { buildVerseRefs, scopeFromParam, scopeToParam, type Scope } from "@/lib/insights/scope";
+import { ScopeSelector } from "./ScopeSelector";
+import { ExportButton } from "@/components/export/ExportButton";
+import { SaveButton } from "@/components/notes/SaveButton";
+import { useUrlParam } from "@/lib/hooks/useUrlParam";
 import { useT } from "@/lib/i18n/LanguageContext";
-import type { CooccurrenceFile, IndexFile, RootCooccurrencePartner } from "@/lib/data/types";
+import type { ExportTable } from "@/lib/export/table";
+import type { CooccurrenceFile, IndexFile, MetaFile, VerseRootsFile } from "@/lib/data/types";
 
 type SortMode = "count" | "pmi";
-const SORT_PILL_CLASS = (active: boolean) => `rounded-md px-3 py-1 text-xs ${active ? "bg-accent text-accent-fg" : "text-muted"}`;
+const SORT_PILL_CLASS = (active: boolean) =>
+  `rounded-md px-3 py-1 text-xs ${active ? "bg-accent text-accent-fg" : "text-muted"}`;
+/**
+ * The whole-Qur'an partner list was always ≤10 (byRoot's union of top 5 by
+ * count and top 5 by PMI, baked in at build time) -- a scope computed
+ * client-side has no such ceiling, and a common root in a broad scope can
+ * have dozens of one-shared-verse partners. Capped the same way the top
+ * pairs list already is, so a wide scope doesn't turn one bar chart into a
+ * hundred indistinguishable slivers.
+ */
+const PARTNERS_SHOWN = 15;
 
-function PartnerBar({ row, values, metric, pmiLabel }: { row: RootCooccurrencePartner; values: readonly number[]; metric: SortMode; pmiLabel: string }) {
-  const pct = metricBarPct(metric === "count" ? row.count : row.pmi, values);
+/** A shared-verse pair, PMI carried only when it means something (see cooccurrenceScope.ts). */
+interface TopPairRow {
+  rootA: string;
+  rootB: string;
+  count: number;
+  pmi?: number;
+}
+
+/** One root's co-occurrence partner, same optional-PMI shape as TopPairRow. */
+interface PartnerRow {
+  root: string;
+  count: number;
+  pmi?: number;
+}
+
+function PartnerBar({
+  row,
+  values,
+  metric,
+  pmiLabel,
+}: {
+  row: PartnerRow;
+  values: readonly number[];
+  metric: SortMode;
+  pmiLabel: string;
+}) {
+  const pct = metricBarPct(metric === "count" ? row.count : (row.pmi ?? 0), values);
   return (
     <div className="flex items-center gap-3 py-1.5">
-      <Link href={rootHref(row.root)} className="arabic-ui w-20 shrink-0 text-sm text-accent hover:text-accent-strong">
+      <Link
+        href={rootHref(row.root)}
+        className="arabic-ui w-20 shrink-0 text-sm text-accent hover:text-accent-strong"
+      >
         {row.root}
       </Link>
       <div className="relative h-5 flex-1 overflow-hidden rounded bg-bg">
         <div className="h-full rounded bg-accent/70" style={{ width: `${pct}%` }} />
       </div>
       <div className="w-36 shrink-0 text-end text-xs text-muted">
-        {row.count.toLocaleString()} · {pmiLabel}
+        {row.count.toLocaleString()}
+        {row.pmi !== undefined && ` · ${pmiLabel}`}
       </div>
     </div>
   );
 }
 
-export function CooccurrenceTab() {
+/**
+ * Root co-occurrence: which pairs of roots share the most verses, and
+ * which roots co-occur most with a given root.
+ *
+ * Was whole-Qur'an-only, like Collocations before it: the shipped
+ * cooccurrence.json is corpus-wide aggregates with no per-pair verse
+ * list, so scoping this had to be a real computation over
+ * verse-roots.json (see cooccurrenceScope.ts) rather than a filter over
+ * shipped refs -- there is nothing here to filter. At whole-Qur'an
+ * scope the original precomputed figures are used unchanged, PMI
+ * included; at any other scope, counts are recomputed and PMI is left
+ * out rather than approximated into a different, silently
+ * non-comparable quantity (same reasoning as Collocations).
+ */
+export function CooccurrenceTab({ meta }: { meta: MetaFile }) {
   const t = useT();
   const [cooccurrence, setCooccurrence] = useState<CooccurrenceFile | null>(null);
   const [index, setIndex] = useState<IndexFile | null>(null);
+  const [verseRoots, setVerseRoots] = useState<VerseRootsFile | null>(null);
   const [query, setQuery] = useState("");
-  const [selectedRoot, setSelectedRoot] = useState<string | null>(null);
+  const [selectedRoot, setSelectedRoot] = useUrlParam<string | null>(
+    "cooccurRoot",
+    null,
+    (raw) => raw,
+    (v) => v,
+  );
   const [sortMode, setSortMode] = useState<SortMode>("count");
+  const [scope, setScope] = useUrlParam<Scope>(
+    "cooccurScope",
+    { kind: "quran" },
+    scopeFromParam,
+    scopeToParam,
+  );
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([getCooccurrence(), getIndex()]).then(([c, i]) => {
+    Promise.all([getCooccurrence(), getIndex(), getVerseRoots()]).then(([c, i, vr]) => {
       if (!cancelled) {
         setCooccurrence(c);
         setIndex(i);
+        setVerseRoots(vr);
       }
     });
     return () => {
       cancelled = true;
     };
   }, []);
+
+  const refs = useMemo(() => buildVerseRefs(meta), [meta]);
+  const rootNames = useMemo(() => index?.roots.map((r) => r.ar) ?? [], [index]);
 
   const matches = useMemo(() => {
     if (!index) return [];
@@ -58,20 +134,102 @@ export function CooccurrenceTab() {
     return index.roots.filter((r) => r.key.includes(q)).slice(0, 8);
   }, [index, query]);
 
-  const topPairs = sortMode === "count" ? (cooccurrence?.topPairs ?? []) : (cooccurrence?.topPairsByPmi ?? []);
+  // PMI only means what it says at whole-Qur'an scope (see
+  // cooccurrenceScope.ts); a narrower scope always ranks by the recomputed
+  // count, whatever sortMode remembers from a previous quran-scope visit.
+  const effectiveSortMode: SortMode = scope.kind === "quran" ? sortMode : "count";
 
-  const partners = useMemo(() => {
-    const base = selectedRoot ? (cooccurrence?.byRoot[selectedRoot] ?? []) : [];
-    return sortMode === "count" ? [...base].sort((a, b) => b.count - a.count) : [...base].sort((a, b) => b.pmi - a.pmi);
-  }, [cooccurrence, selectedRoot, sortMode]);
-  const partnerMetricValues = partners.map((p) => (sortMode === "count" ? p.count : p.pmi));
+  const topPairs = useMemo<TopPairRow[]>(() => {
+    if (scope.kind === "quran") {
+      return (sortMode === "count" ? cooccurrence?.topPairs : cooccurrence?.topPairsByPmi) ?? [];
+    }
+    return verseRoots ? scopedTopPairs(verseRoots, refs, scope, rootNames) : [];
+  }, [cooccurrence, verseRoots, refs, scope, sortMode, rootNames]);
 
-  const loading = !cooccurrence || !index;
+  const partners = useMemo<PartnerRow[]>(() => {
+    if (!selectedRoot) return [];
+    if (scope.kind === "quran") {
+      const base = cooccurrence?.byRoot[selectedRoot] ?? [];
+      return effectiveSortMode === "count"
+        ? [...base].sort((a, b) => b.count - a.count)
+        : [...base].sort((a, b) => b.pmi - a.pmi);
+    }
+    if (!verseRoots) return [];
+    const targetIdx = rootNames.indexOf(selectedRoot);
+    if (targetIdx === -1) return [];
+    return scopedCooccurrencePartners(verseRoots, refs, scope, targetIdx, rootNames);
+  }, [cooccurrence, verseRoots, refs, scope, selectedRoot, effectiveSortMode, rootNames]);
+  const shownPartners = partners.slice(0, PARTNERS_SHOWN);
+  const partnerMetricValues = shownPartners.map((p) =>
+    effectiveSortMode === "count" ? p.count : (p.pmi ?? 0),
+  );
+
+  const loading = !cooccurrence || !index || !verseRoots;
+
+  function buildPairsTable(): ExportTable {
+    const scopeLabel = scopeToParam(scope);
+    return {
+      slug: `cooccurrence-pairs-${scopeLabel.replace(":", "-")}`,
+      meta: {
+        title: t.insightsPage.cooccurrenceTopPairsHeading,
+        provenance: [
+          { label: "scope", value: scopeLabel },
+          { label: "measure", value: "distinct shared verses" },
+        ],
+      },
+      columns: [
+        { key: "root_a", label: "root_a" },
+        { key: "root_b", label: "root_b" },
+        { key: "shared_verses", label: "shared_verses" },
+        { key: "pmi_whole_quran", label: "pmi_whole_quran" },
+      ],
+      rows: topPairs.map((p) => [
+        p.rootA,
+        p.rootB,
+        p.count,
+        p.pmi !== undefined ? p.pmi.toFixed(3) : "",
+      ]),
+    };
+  }
+
+  function buildPartnersTable(): ExportTable {
+    const scopeLabel = scopeToParam(scope);
+    return {
+      slug: `cooccurrence-${selectedRoot ?? "root"}-${scopeLabel.replace(":", "-")}`,
+      meta: {
+        title: `${t.insightsPage.cooccurrenceHeading}: ${selectedRoot ?? ""}`,
+        provenance: [
+          { label: "root", value: selectedRoot ?? "" },
+          { label: "scope", value: scopeLabel },
+          { label: "pmi", value: "measured over the whole Qur'an; does not vary with scope" },
+        ],
+      },
+      columns: [
+        { key: "partner_root", label: "partner_root" },
+        { key: "shared_verses", label: "shared_verses" },
+        { key: "pmi_whole_quran", label: "pmi_whole_quran" },
+      ],
+      rows: shownPartners.map((p) => [
+        p.root,
+        p.count,
+        p.pmi !== undefined ? p.pmi.toFixed(3) : "",
+      ]),
+    };
+  }
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
       <h2 className="text-lg font-semibold text-ink">{t.insightsPage.cooccurrenceHeading}</h2>
       <p className="mt-1 text-sm text-muted">{t.insightsPage.cooccurrenceDescription}</p>
+
+      <div className="mt-4">
+        <ScopeSelector
+          scope={scope}
+          onChange={setScope}
+          meta={meta}
+          labels={t.insightsPage.compare}
+        />
+      </div>
 
       {loading ? (
         <p className="mt-4 flex items-center gap-2 text-sm text-muted">
@@ -79,37 +237,73 @@ export function CooccurrenceTab() {
         </p>
       ) : (
         <>
-          <div className="mt-4 flex items-center justify-between gap-3">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
             <h3 className="text-xs font-medium uppercase tracking-wide text-muted">
               {t.insightsPage.cooccurrenceTopPairsHeading}
             </h3>
-            <div className="flex w-fit shrink-0 rounded-lg border border-border p-0.5">
-              <button type="button" onClick={() => setSortMode("count")} className={SORT_PILL_CLASS(sortMode === "count")}>
-                {t.insightsPage.sortByFrequency}
-              </button>
-              <button type="button" onClick={() => setSortMode("pmi")} className={SORT_PILL_CLASS(sortMode === "pmi")}>
-                {t.insightsPage.sortByPmi}
-              </button>
-            </div>
+            {scope.kind === "quran" ? (
+              <div className="flex w-fit shrink-0 rounded-lg border border-border p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setSortMode("count")}
+                  className={SORT_PILL_CLASS(sortMode === "count")}
+                >
+                  {t.insightsPage.sortByFrequency}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSortMode("pmi")}
+                  className={SORT_PILL_CLASS(sortMode === "pmi")}
+                >
+                  {t.insightsPage.sortByPmi}
+                </button>
+              </div>
+            ) : (
+              <p className="text-xs text-muted">{t.insightsPage.scopedPmiNote}</p>
+            )}
           </div>
-          {sortMode === "pmi" && <p className="mt-1.5 text-xs text-muted">{t.insightsPage.pmiExplanation}</p>}
+          {effectiveSortMode === "pmi" && (
+            <p className="mt-1.5 text-xs text-muted">{t.insightsPage.pmiExplanation}</p>
+          )}
           <div className="mt-2 divide-y divide-border/60">
             {topPairs.slice(0, 15).map((pair, i) => (
               <div key={i} className="flex items-center justify-between gap-3 py-1.5 text-sm">
                 <span className="flex items-center gap-2">
-                  <Link href={rootHref(pair.rootA)} className="arabic-ui text-accent hover:text-accent-strong">
+                  <Link
+                    href={rootHref(pair.rootA)}
+                    className="arabic-ui text-accent hover:text-accent-strong"
+                  >
                     {pair.rootA}
                   </Link>
                   <span className="text-muted">+</span>
-                  <Link href={rootHref(pair.rootB)} className="arabic-ui text-accent hover:text-accent-strong">
+                  <Link
+                    href={rootHref(pair.rootB)}
+                    className="arabic-ui text-accent hover:text-accent-strong"
+                  >
                     {pair.rootB}
                   </Link>
                 </span>
                 <span className="text-xs text-muted">
-                  {t.insightsPage.cooccurrenceSharedVerses(pair.count)} · {t.insightsPage.pmiLabel(pair.pmi.toFixed(2))}
+                  {t.insightsPage.cooccurrenceSharedVerses(pair.count)}
+                  {pair.pmi !== undefined && ` · ${t.insightsPage.pmiLabel(pair.pmi.toFixed(2))}`}
                 </span>
               </div>
             ))}
+          </div>
+          <div className="mt-2 flex items-center gap-2">
+            <SaveButton
+              id={`view:cooccurrence:pairs:${scopeToParam(scope)}`}
+              kind="view"
+              label={`${t.insightsPage.cooccurrenceTopPairsHeading}: ${scopeToParam(scope)}`}
+              detail={t.insightsPage.cooccurrenceHeading}
+              href={`/insights/?tab=cooccurrence&cooccurScope=${scopeToParam(scope)}`}
+              compact
+            />
+            <ExportButton
+              path={`/insights/?tab=cooccurrence&cooccurScope=${scopeToParam(scope)}`}
+              subject={{ kind: "cooccurrence", label: scopeToParam(scope) }}
+              resolve={buildPairsTable}
+            />
           </div>
 
           <div className="mt-6 border-t border-border pt-4">
@@ -163,16 +357,34 @@ export function CooccurrenceTab() {
                 <p className="text-sm text-muted">{t.insightsPage.cooccurrenceNoResults}</p>
               ) : (
                 <>
-                  {partners.map((p) => (
+                  <div className="mb-2 flex justify-end gap-2">
+                    <SaveButton
+                      id={`view:cooccurrence:${selectedRoot}:${scopeToParam(scope)}`}
+                      kind="view"
+                      label={`${t.insightsPage.cooccurrenceHeading}: ${selectedRoot}`}
+                      detail={scopeToParam(scope)}
+                      href={`/insights/?tab=cooccurrence&cooccurRoot=${encodeURIComponent(selectedRoot)}&cooccurScope=${scopeToParam(scope)}`}
+                      compact
+                    />
+                    <ExportButton
+                      path={`/insights/?tab=cooccurrence&cooccurRoot=${encodeURIComponent(selectedRoot)}&cooccurScope=${scopeToParam(scope)}`}
+                      subject={{ kind: "cooccurrence", label: selectedRoot }}
+                      resolve={buildPartnersTable}
+                    />
+                  </div>
+                  {shownPartners.map((p) => (
                     <PartnerBar
                       key={p.root}
                       row={p}
                       values={partnerMetricValues}
-                      metric={sortMode}
-                      pmiLabel={t.insightsPage.pmiLabel(p.pmi.toFixed(2))}
+                      metric={effectiveSortMode}
+                      pmiLabel={t.insightsPage.pmiLabel((p.pmi ?? 0).toFixed(2))}
                     />
                   ))}
-                  <Link href={rootHref(selectedRoot)} className="mt-2 inline-block text-xs text-accent hover:text-accent-strong">
+                  <Link
+                    href={rootHref(selectedRoot)}
+                    className="mt-2 inline-block text-xs text-accent hover:text-accent-strong"
+                  >
                     {selectedRoot} →
                   </Link>
                 </>

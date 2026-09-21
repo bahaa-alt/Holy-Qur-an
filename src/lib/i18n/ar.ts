@@ -670,7 +670,7 @@ export const ar: Dict = {
     collocationsLoading: "جارٍ التحميل…",
     collocationsNoResults: "لم يُتبع هذا الجذر مباشرةً بأحد حروف الجر المرصودة قط.",
     collocationsPickPrompt: "اختر جذرًا أعلاه لرؤية حروف الجر التي تتبع ورودات فعله.",
-    collocationsScopedPmiNote:
+    scopedPmiNote:
       "يُحسب PMI عبر القرآن كله ولا يتغيّر بتغيير النطاق أعلاه؛ أما العدد والترتيب أدناه فيتبعان النطاق المختار.",
     abjadHeading: "حساب الجُمَّل (القيمة العددية للحروف)",
     abjadDescription:
@@ -703,7 +703,7 @@ export const ar: Dict = {
     cooccurrenceHeading: "شبكة تلازم الجذور",
     cooccurrenceDescription:
       'أي أزواج من الجذور ترد معًا في الآية نفسها بأكثر تكرار، عبر القرآن كاملاً -- بخلاف "تلازم الأفعال" (ما يظهر في آيات جذر واحد)، تُظهر هذه الميزة أكثر الأزواج تلازمًا واصطلاحًا على مستوى المدونة كاملة. الأزواج التي تشترك في أقل من 3 آيات تُستبعد باعتبارها ضجيجًا.',
-    cooccurrenceTopPairsHeading: "أكثر الأزواج تكرارًا في المدونة كاملة",
+    cooccurrenceTopPairsHeading: "أكثر الأزواج تكرارًا",
     cooccurrenceRootPlaceholder: "اكتب جذرًا لرؤية أكثر شركائه تلازمًا…",
     cooccurrenceLoading: "جارٍ التحميل…",
     cooccurrenceNoResults: "هذا الجذر لا يشترك في 3 آيات أو أكثر مع أي جذر آخر.",

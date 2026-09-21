@@ -47,6 +47,7 @@ describe("buildCitation", () => {
     expect(cite("grammar", "Jussive")).toContain("Grammar filter Jussive.");
     expect(cite("rhyme", "quran")).toContain("Rhyme quran.");
     expect(cite("collocations", "أمن")).toContain("Collocations أمن.");
+    expect(cite("cooccurrence", "أمن")).toContain("Cooccurrence أمن.");
   });
 
   it("formats a root citation", () => {

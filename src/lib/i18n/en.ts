@@ -633,7 +633,7 @@ export const en: Dict = {
       "This root was never immediately followed by one of the tracked prepositions.",
     collocationsPickPrompt:
       "Pick a root above to see which prepositions follow its verb occurrences.",
-    collocationsScopedPmiNote:
+    scopedPmiNote:
       "PMI is measured over the whole Qur'an and does not change with the scope above; the count and ranking below do.",
     abjadHeading: "Abjad value (ḥisāb al-jummal)",
     abjadDescription:
@@ -668,7 +668,7 @@ export const en: Dict = {
     cooccurrenceHeading: "Root co-occurrence network",
     cooccurrenceDescription:
       "Which pairs of roots occur together in the same verse most often, across the whole Qur'an -- unlike Collocations (what else appears in one root's own verses), this surfaces the most formulaic/idiomatic pairings corpus-wide. Pairs sharing fewer than 3 verses are excluded as noise.",
-    cooccurrenceTopPairsHeading: "Most frequent pairs, corpus-wide",
+    cooccurrenceTopPairsHeading: "Most frequent pairs",
     cooccurrenceRootPlaceholder: "Type a root to see its top co-occurring partners…",
     cooccurrenceLoading: "Loading…",
     cooccurrenceNoResults: "This root shares fewer than 3 verses with any other root.",
