@@ -643,6 +643,8 @@ export interface Dict {
     formulasLoading: string;
     formulasNoResults: string;
     formulasOccurrencesCount: (n: number) => string;
+    /** shown once a non-whole-Qur'an scope is chosen: the phrase list itself stays fixed to the whole Qur'an's top 25 per length; only the count/ranking below scope (see lib/insights/formulaScope.ts) */
+    formulasScopedNote: string;
     verseSimilarityHeading: string;
     verseSimilarityDescription: string;
     verseSimilarityLoading: string;

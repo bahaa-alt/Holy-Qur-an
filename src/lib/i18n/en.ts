@@ -699,6 +699,8 @@ export const en: Dict = {
     formulasLoading: "Loading phrases…",
     formulasNoResults: "No phrase of this length recurs often enough to qualify.",
     formulasOccurrencesCount: (n) => `${n.toLocaleString()} occurrences`,
+    formulasScopedNote:
+      "This list is fixed to the whole Qur'an's top 25 phrases of this length; the count and ranking below reflect your chosen scope, but a phrase common only within it won't appear unless it also ranks among the whole Qur'an's top 25.",
     verseSimilarityHeading: "Similar verses",
     verseSimilarityDescription:
       "Verse pairs sharing an unusually high proportion of their distinct roots, even when the exact wording differs -- unlike Formulas (exact repeated phrases), this catches thematically or structurally parallel verses, like a repeated list or a shared narrative pattern across different stories.",
