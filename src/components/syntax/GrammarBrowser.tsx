@@ -263,7 +263,8 @@ export function GrammarBrowser({ surahs, counts }: { surahs: SurahMeta[]; counts
             ) : (
               <>
                 <p className="mt-1 text-xs text-muted">{t.grammarPage.matchCount(shown.length)}</p>
-                <div className="mt-3">
+                <p className="mt-3 text-xs text-muted/70">{t.wordInfoPanel.tapHint}</p>
+                <div className="mt-2">
                   {pageMatches.map((m) => {
                     const surahMeta = surahByNum.get(m.s);
                     const verse = verses.get(m.s)?.verses.find((v) => v.a === m.a);
