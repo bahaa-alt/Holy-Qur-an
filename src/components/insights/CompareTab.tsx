@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { getIndex, getVerseRoots } from "@/lib/data/loader";
+import { useUrlParam } from "@/lib/hooks/useUrlParam";
 import { useT } from "@/lib/i18n/LanguageContext";
 import { compareScope, corpusDispersion, type CompareRow } from "@/lib/insights/compare";
 import {
@@ -13,8 +14,8 @@ import {
   type Scope,
 } from "@/lib/insights/scope";
 import { bonferroniAlpha, DEFAULT_MIN_COUNT } from "@/lib/stats/keyness";
-import { JUZ_COUNT } from "@/lib/quran/juz";
 import { DispersionTable, KeynessTable, sigBucket } from "./CompareTables";
+import { ScopeSelector } from "./ScopeSelector";
 import { ExportButton } from "@/components/export/ExportButton";
 import { SaveButton } from "@/components/notes/SaveButton";
 import type { ExportTable } from "@/lib/export/table";
@@ -53,29 +54,21 @@ const SELECT =
  */
 export function CompareTab({ meta }: { meta: MetaFile }) {
   const t = useT();
-  const [scope, setScope] = useState<Scope>({ kind: "revelation", value: "medinan" });
+  // Restore a shared scope before the first compute, so a link opens on
+  // the comparison it names rather than flashing the default -- the
+  // pattern this tool introduced, now shared as useUrlParam so Rhyme and
+  // Collocations' own scope (and the page's own tab) do not reinvent it.
+  const [scope, setScope] = useUrlParam<Scope>(
+    SCOPE_PARAM,
+    { kind: "revelation", value: "medinan" },
+    scopeFromParam,
+    scopeToParam,
+  );
   const [minCount, setMinCount] = useState<number>(DEFAULT_MIN_COUNT);
   const [direction, setDirection] = useState<"over" | "under">("over");
   const [spread, setSpread] = useState<"even" | "concentrated">("concentrated");
   const [dispersionMin, setDispersionMin] = useState<number>(25);
   const [data, setData] = useState<{ verseRoots: VerseRootsFile; index: IndexFile } | null>(null);
-
-  // Restore a shared scope before the first compute, so a link opens on
-  // the comparison it names rather than flashing the default.
-  const [hydrated, setHydrated] = useState(false);
-  useEffect(() => {
-    const fromUrl = scopeFromParam(new URLSearchParams(window.location.search).get(SCOPE_PARAM));
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration from the URL, not a subscription.
-    if (fromUrl) setScope(fromUrl);
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    const url = new URL(window.location.href);
-    url.searchParams.set(SCOPE_PARAM, scopeToParam(scope));
-    window.history.replaceState(null, "", url);
-  }, [scope, hydrated]);
 
   useEffect(() => {
     let cancelled = false;
@@ -215,115 +208,8 @@ export function CompareTab({ meta }: { meta: MetaFile }) {
         <p className="mt-1 text-sm leading-relaxed text-muted">{c.intro}</p>
 
         {/* --- scope --- */}
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <span className="text-xs font-medium text-muted">{c.scopeLabel}</span>
-          <div className="flex flex-wrap rounded-lg border border-border p-0.5">
-            <button
-              type="button"
-              className={PILL(scope.kind === "quran")}
-              onClick={() => setScope({ kind: "quran" })}
-            >
-              {c.scopeQuran}
-            </button>
-            <button
-              type="button"
-              className={PILL(scope.kind === "revelation" && scope.value === "meccan")}
-              onClick={() => setScope({ kind: "revelation", value: "meccan" })}
-            >
-              {c.scopeMeccan}
-            </button>
-            <button
-              type="button"
-              className={PILL(scope.kind === "revelation" && scope.value === "medinan")}
-              onClick={() => setScope({ kind: "revelation", value: "medinan" })}
-            >
-              {c.scopeMedinan}
-            </button>
-            <button
-              type="button"
-              className={PILL(scope.kind === "surah")}
-              onClick={() => setScope({ kind: "surah", n: 12 })}
-            >
-              {c.scopeSurah}
-            </button>
-            <button
-              type="button"
-              className={PILL(scope.kind === "juz")}
-              onClick={() => setScope({ kind: "juz", n: 30 })}
-            >
-              {c.scopeJuz}
-            </button>
-            <button
-              type="button"
-              className={PILL(scope.kind === "chrono")}
-              onClick={() => setScope({ kind: "chrono", from: 1, to: 20 })}
-            >
-              {c.scopeChrono}
-            </button>
-          </div>
-
-          {scope.kind === "surah" && (
-            <select
-              className={SELECT}
-              value={scope.n}
-              onChange={(e) => setScope({ kind: "surah", n: Number(e.target.value) })}
-            >
-              {meta.surahs.map((s) => (
-                <option key={s.n} value={s.n}>
-                  {s.n}. {s.translit}
-                </option>
-              ))}
-            </select>
-          )}
-
-          {scope.kind === "juz" && (
-            <select
-              className={SELECT}
-              value={scope.n}
-              onChange={(e) => setScope({ kind: "juz", n: Number(e.target.value) })}
-            >
-              {Array.from({ length: JUZ_COUNT }, (_, i) => i + 1).map((n) => (
-                <option key={n} value={n}>
-                  {c.juzLabel(n)}
-                </option>
-              ))}
-            </select>
-          )}
-
-          {scope.kind === "chrono" && (
-            <span className="flex items-center gap-1.5 text-xs text-muted">
-              <input
-                type="number"
-                min={1}
-                max={114}
-                value={scope.from}
-                onChange={(e) =>
-                  setScope({
-                    kind: "chrono",
-                    from: Math.min(Math.max(1, Number(e.target.value)), scope.to),
-                    to: scope.to,
-                  })
-                }
-                className={`${SELECT} w-16`}
-              />
-              <span>{c.chronoTo}</span>
-              <input
-                type="number"
-                min={1}
-                max={114}
-                value={scope.to}
-                onChange={(e) =>
-                  setScope({
-                    kind: "chrono",
-                    from: scope.from,
-                    to: Math.max(Math.min(114, Number(e.target.value)), scope.from),
-                  })
-                }
-                className={`${SELECT} w-16`}
-              />
-              <span>{c.chronoHint}</span>
-            </span>
-          )}
+        <div className="mt-4">
+          <ScopeSelector scope={scope} onChange={setScope} meta={meta} labels={c} />
         </div>
 
         {/* --- controls --- */}

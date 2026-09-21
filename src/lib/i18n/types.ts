@@ -466,6 +466,19 @@ export interface Dict {
   insightsPage: {
     title: string;
     subtitle: string;
+    /**
+     * The tab bar's cluster headings -- five research questions instead of
+     * nine unrelated technique names a first-time reader had to already
+     * know (what is "cooccurrence" versus "collocations"?). See
+     * InsightsPageContent's TAB_GROUPS for which tab lands in which group.
+     */
+    groups: {
+      ask: string;
+      wordsTogether: string;
+      repetitionForm: string;
+      sound: string;
+      facts: string;
+    };
     /** the comparison tool: keyness and dispersion over a chosen scope */
     compare: {
       tab: string;
@@ -574,6 +587,8 @@ export interface Dict {
     collocationsLoading: string;
     collocationsNoResults: string;
     collocationsPickPrompt: string;
+    /** shown once a non-whole-Qur'an scope is chosen: PMI cannot be recomputed per scope, only the count can (see lib/insights/collocationScope.ts) */
+    collocationsScopedPmiNote: string;
     abjadHeading: string;
     abjadDescription: string;
     abjadReferenceHeading: string;

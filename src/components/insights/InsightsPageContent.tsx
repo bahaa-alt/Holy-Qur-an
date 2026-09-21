@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { verseHref } from "@/lib/search/suggest";
 import { useState, type ReactNode } from "react";
+import { useUrlParam } from "@/lib/hooks/useUrlParam";
 import { useT } from "@/lib/i18n/LanguageContext";
 import { LetterFrequencyExplorer } from "./LetterFrequencyExplorer";
 import { CompareTab } from "./CompareTab";
@@ -25,6 +26,22 @@ type Tab =
   | "patterns"
   | "formulas"
   | "verseSimilarity";
+
+const ALL_TABS: readonly Tab[] = [
+  "compare",
+  "facts",
+  "letters",
+  "rhyme",
+  "collocations",
+  "cooccurrence",
+  "patterns",
+  "formulas",
+  "verseSimilarity",
+];
+function parseTab(raw: string | null): Tab | null {
+  return raw !== null && (ALL_TABS as readonly string[]).includes(raw) ? (raw as Tab) : null;
+}
+
 const TAB_PILL_CLASS = (active: boolean) =>
   `rounded-md px-3 py-1.5 ${active ? "bg-accent text-accent-fg" : "text-muted"}`;
 
@@ -64,10 +81,39 @@ export function InsightsPageContent({
   const t = useT();
   // Compare opens first: it is the only tab that answers a question of the
   // reader's own rather than showing a number someone chose in advance.
-  const [tab, setTab] = useState<Tab>("compare");
+  // Persisted to ?tab= so a link (and a tool's own Save/Export button, one
+  // level down) can reopen on the tab it names -- see useUrlParam.
+  const [tab, setTab] = useUrlParam<Tab>("tab", "compare", parseTab, (v) => v);
   const [expandedHapax, setExpandedHapax] = useState<"root" | "lemma" | null>(null);
   const mostFrequentLetter = insights.letterFrequency[0];
   const leastFrequentLetter = insights.letterFrequency[insights.letterFrequency.length - 1];
+
+  const tabLabel: Record<Tab, string> = {
+    compare: t.insightsPage.compare.tab,
+    facts: t.insightsPage.tabFacts,
+    letters: t.insightsPage.tabLetters,
+    rhyme: t.insightsPage.tabRhyme,
+    collocations: t.insightsPage.tabCollocations,
+    cooccurrence: t.insightsPage.tabCooccurrence,
+    patterns: t.insightsPage.tabPatterns,
+    formulas: t.insightsPage.tabFormulas,
+    verseSimilarity: t.insightsPage.tabVerseSimilarity,
+  };
+  // Five research questions instead of nine technique names a first-time
+  // reader had to already know the meaning of -- "cooccurrence" and
+  // "collocations" read as synonyms until you know which asks about verb
+  // government and which asks about root pairs. See groups' doc comment
+  // in i18n/types.ts.
+  const groups: { label: string; tabs: Tab[] }[] = [
+    { label: t.insightsPage.groups.ask, tabs: ["compare"] },
+    { label: t.insightsPage.groups.wordsTogether, tabs: ["collocations", "cooccurrence"] },
+    {
+      label: t.insightsPage.groups.repetitionForm,
+      tabs: ["formulas", "verseSimilarity", "patterns"],
+    },
+    { label: t.insightsPage.groups.sound, tabs: ["letters", "rhyme"] },
+    { label: t.insightsPage.groups.facts, tabs: ["facts"] },
+  ];
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
@@ -76,70 +122,26 @@ export function InsightsPageContent({
         <p className="mt-1 text-sm text-muted">{t.insightsPage.subtitle}</p>
       </div>
 
-      <div className="flex flex-wrap rounded-lg border border-border p-0.5 text-sm">
-        <button
-          type="button"
-          onClick={() => setTab("compare")}
-          className={TAB_PILL_CLASS(tab === "compare")}
-        >
-          {t.insightsPage.compare.tab}
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("facts")}
-          className={TAB_PILL_CLASS(tab === "facts")}
-        >
-          {t.insightsPage.tabFacts}
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("letters")}
-          className={TAB_PILL_CLASS(tab === "letters")}
-        >
-          {t.insightsPage.tabLetters}
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("rhyme")}
-          className={TAB_PILL_CLASS(tab === "rhyme")}
-        >
-          {t.insightsPage.tabRhyme}
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("collocations")}
-          className={TAB_PILL_CLASS(tab === "collocations")}
-        >
-          {t.insightsPage.tabCollocations}
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("cooccurrence")}
-          className={TAB_PILL_CLASS(tab === "cooccurrence")}
-        >
-          {t.insightsPage.tabCooccurrence}
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("patterns")}
-          className={TAB_PILL_CLASS(tab === "patterns")}
-        >
-          {t.insightsPage.tabPatterns}
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("formulas")}
-          className={TAB_PILL_CLASS(tab === "formulas")}
-        >
-          {t.insightsPage.tabFormulas}
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("verseSimilarity")}
-          className={TAB_PILL_CLASS(tab === "verseSimilarity")}
-        >
-          {t.insightsPage.tabVerseSimilarity}
-        </button>
+      <div className="space-y-1.5 text-sm">
+        {groups.map((g) => (
+          <div key={g.label} className="flex flex-wrap items-center gap-1.5">
+            <span className="min-w-[6.5rem] text-[10px] font-medium uppercase tracking-wide text-muted/70">
+              {g.label}
+            </span>
+            <div className="flex flex-wrap rounded-lg border border-border p-0.5">
+              {g.tabs.map((tabName) => (
+                <button
+                  key={tabName}
+                  type="button"
+                  onClick={() => setTab(tabName)}
+                  className={TAB_PILL_CLASS(tab === tabName)}
+                >
+                  {tabLabel[tabName]}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
 
       {tab === "facts" && (
@@ -274,7 +276,7 @@ export function InsightsPageContent({
       )}
 
       {tab === "compare" && <CompareTab meta={meta} />}
-      {tab === "rhyme" && <RhymeTab />}
+      {tab === "rhyme" && <RhymeTab meta={meta} />}
       {tab === "collocations" && <CollocationsTab />}
       {/* Abjad used to be a tab here. It is not corpus evidence, so it now
           lives on /curiosities/ -- linked, not hidden. */}
