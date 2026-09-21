@@ -743,6 +743,11 @@ export const ar: Dict = {
     verseSimilaritySharedRoots: (n) => `${n} جذرًا مشتركًا`,
     verseSimilarityJaccard: (pct) => `${pct}٪ تداخل`,
     verseSimilarityPickPrompt: "اختر زوجًا أعلاه لمقارنة الآيتين.",
+    verseSimilarityModeBoth: "الآيتان معًا داخل النطاق",
+    verseSimilarityModeEither: "إحدى الآيتين داخل النطاق",
+    verseSimilarityModeHint:
+      '"معًا" يكشف مقطعًا يردّد نفسه؛ "إحداهما" يكشف صدى هذا النطاق في أي موضع آخر من القرآن.',
+    verseSimilarityNoResults: "لا زوج يبلغ حد التشابه في هذا النطاق والنمط.",
     sortByFrequency: "التكرار",
     sortByPmi: "القوة الإحصائية (PMI)",
     pmiExplanation:

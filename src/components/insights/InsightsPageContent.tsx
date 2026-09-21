@@ -290,7 +290,7 @@ export function InsightsPageContent({
       {tab === "cooccurrence" && <CooccurrenceTab meta={meta} />}
       {tab === "patterns" && <PatternsTab />}
       {tab === "formulas" && <FormulasTab meta={meta} />}
-      {tab === "verseSimilarity" && <VerseSimilarityTab />}
+      {tab === "verseSimilarity" && <VerseSimilarityTab meta={meta} />}
     </div>
   );
 }

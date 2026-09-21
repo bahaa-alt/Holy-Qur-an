@@ -49,6 +49,7 @@ describe("buildCitation", () => {
     expect(cite("collocations", "أمن")).toContain("Collocations أمن.");
     expect(cite("cooccurrence", "أمن")).toContain("Cooccurrence أمن.");
     expect(cite("formulas", "quran")).toContain("Formulas quran.");
+    expect(cite("verseSimilarity", "quran")).toContain("Verse similarity quran.");
   });
 
   it("formats a root citation", () => {

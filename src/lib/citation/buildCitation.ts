@@ -32,7 +32,8 @@ export type CitationKind =
   | "rhyme"
   | "collocations"
   | "cooccurrence"
-  | "formulas";
+  | "formulas"
+  | "verseSimilarity";
 
 const SUBJECT_LABEL: Record<CitationKind, string> = {
   root: "Root",
@@ -46,6 +47,7 @@ const SUBJECT_LABEL: Record<CitationKind, string> = {
   rhyme: "Rhyme",
   collocations: "Collocations",
   cooccurrence: "Cooccurrence",
+  verseSimilarity: "Verse similarity",
   formulas: "Formulas",
 };
 
