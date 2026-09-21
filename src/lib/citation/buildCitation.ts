@@ -33,7 +33,8 @@ export type CitationKind =
   | "collocations"
   | "cooccurrence"
   | "formulas"
-  | "verseSimilarity";
+  | "verseSimilarity"
+  | "patterns";
 
 const SUBJECT_LABEL: Record<CitationKind, string> = {
   root: "Root",
@@ -48,6 +49,7 @@ const SUBJECT_LABEL: Record<CitationKind, string> = {
   collocations: "Collocations",
   cooccurrence: "Cooccurrence",
   verseSimilarity: "Verse similarity",
+  patterns: "Patterns",
   formulas: "Formulas",
 };
 

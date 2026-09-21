@@ -692,6 +692,8 @@ export const en: Dict = {
     patternsDrilldownHint: "Click a bar to see its matching occurrences in Advanced Search.",
     patternsShapeRootsShown: (shown, total) =>
       `Showing ${shown.toLocaleString()} of ${total.toLocaleString()} roots, by occurrence count`,
+    patternsScopedNote:
+      "Root shapes are exact at any scope. Verb-Form and category counts use each word-form's usual grammatical category rather than this occurrence's own tag (the same method Advanced Search's filters use) – a participle or verbal noun carries the same Form tag its finite verb does, so category is what tells them apart. This usually matches the whole-Qur'an figures above closely; where a word's category genuinely varies by context, it may not.",
     formulasHeading: "Recurring phrases (formulas)",
     formulasDescription:
       "Word sequences that recur often enough, in exactly the same words, to be candidate fixed expressions -- classical Qur'anic rhetorical studies call this takrar (repetition). Sliding windows of 3-6 consecutive words within a single verse, never crossing a verse boundary; shorter phrases need a higher repeat count to qualify, since they recur more often by grammatical chance alone.",

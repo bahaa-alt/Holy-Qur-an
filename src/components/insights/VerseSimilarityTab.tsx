@@ -81,7 +81,6 @@ export function VerseSimilarityTab({ meta }: { meta: MetaFile }) {
     [allRows, scope, mode],
   );
 
-  const selectedRow = selected !== null ? rows.find((r) => r.i === selected) : null;
   const loading = !data;
 
   function buildTable(): ExportTable {
@@ -173,46 +172,53 @@ export function VerseSimilarityTab({ meta }: { meta: MetaFile }) {
           {rows.length === 0 ? (
             <p className="mt-4 text-sm text-muted">{t.insightsPage.verseSimilarityNoResults}</p>
           ) : (
-            <div className="mt-2 divide-y divide-border/60">
-              {rows.map((row) => (
-                <button
-                  key={row.i}
-                  type="button"
-                  onClick={() => setSelected((prev) => (prev === row.i ? null : row.i))}
-                  className={`flex w-full items-center justify-between gap-3 rounded-lg px-2 py-2 text-start text-sm transition-colors ${
-                    selected === row.i ? "bg-accent/10" : "hover:bg-bg"
-                  }`}
-                >
-                  <span className="text-ink">
-                    <bdi>
-                      {row.refA.s}:{row.refA.a}
-                    </bdi>{" "}
-                    ↔{" "}
-                    <bdi>
-                      {row.refB.s}:{row.refB.a}
-                    </bdi>
-                  </span>
-                  <span className="shrink-0 text-xs text-muted">
-                    {t.insightsPage.verseSimilarityJaccard(Math.round(row.pair.jaccard * 100))} ·{" "}
-                    {t.insightsPage.verseSimilaritySharedRoots(row.pair.sharedRoots)}
-                  </span>
-                </button>
-              ))}
-            </div>
+            <>
+              <p className="mt-2 text-xs text-muted">{t.insightsPage.verseSimilarityPickPrompt}</p>
+              <div className="mt-1 divide-y divide-border/60">
+                {rows.map((row) => (
+                  <div key={row.i}>
+                    <button
+                      type="button"
+                      onClick={() => setSelected((prev) => (prev === row.i ? null : row.i))}
+                      aria-expanded={selected === row.i}
+                      className={`flex w-full items-center justify-between gap-3 rounded-lg px-2 py-2 text-start text-sm transition-colors ${
+                        selected === row.i ? "bg-accent/10" : "hover:bg-bg"
+                      }`}
+                    >
+                      <span className="text-ink">
+                        <bdi>
+                          {row.refA.s}:{row.refA.a}
+                        </bdi>{" "}
+                        ↔{" "}
+                        <bdi>
+                          {row.refB.s}:{row.refB.a}
+                        </bdi>
+                      </span>
+                      <span className="shrink-0 text-xs text-muted">
+                        {t.insightsPage.verseSimilarityJaccard(Math.round(row.pair.jaccard * 100))}{" "}
+                        · {t.insightsPage.verseSimilaritySharedRoots(row.pair.sharedRoots)}
+                      </span>
+                    </button>
+                    {/* Expands directly under the row that opened it, not at
+                        the bottom of however many rows are above it -- a
+                        list here can run into the hundreds, and jumping a
+                        reader past all of them to see what they just tapped
+                        was the whole complaint. */}
+                    {selected === row.i && (
+                      <div className="rounded-lg bg-bg/60 px-2 pb-3 pt-1">
+                        <VerseSimilarityDetail
+                          key={row.i}
+                          refA={row.refA}
+                          refB={row.refB}
+                          surahMetaByNum={surahMetaByNum}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
           )}
-
-          <div className="mt-4 border-t border-border pt-4">
-            {!selectedRow ? (
-              <p className="text-sm text-muted">{t.insightsPage.verseSimilarityPickPrompt}</p>
-            ) : (
-              <VerseSimilarityDetail
-                key={selectedRow.i}
-                refA={selectedRow.refA}
-                refB={selectedRow.refB}
-                surahMetaByNum={surahMetaByNum}
-              />
-            )}
-          </div>
         </>
       )}
     </div>
