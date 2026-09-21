@@ -708,6 +708,11 @@ export const en: Dict = {
     verseSimilaritySharedRoots: (n) => `${n} shared roots`,
     verseSimilarityJaccard: (pct) => `${pct}% overlap`,
     verseSimilarityPickPrompt: "Pick a pair above to compare the two verses.",
+    verseSimilarityModeBoth: "Both verses in scope",
+    verseSimilarityModeEither: "Either verse in scope",
+    verseSimilarityModeHint:
+      '"Both" finds a passage echoing itself; "either" finds this scope\'s echoes anywhere else in the Qur\'an.',
+    verseSimilarityNoResults: "No pair meets the similarity floor under this scope and mode.",
     sortByFrequency: "Frequency",
     sortByPmi: "Statistical strength (PMI)",
     pmiExplanation:

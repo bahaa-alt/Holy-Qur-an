@@ -651,6 +651,12 @@ export interface Dict {
     verseSimilaritySharedRoots: (n: number) => string;
     verseSimilarityJaccard: (pct: number) => string;
     verseSimilarityPickPrompt: string;
+    /** "both verses in scope" -- internal parallelism within the chosen scope */
+    verseSimilarityModeBoth: string;
+    /** "either verse in scope" -- this scope's echoes elsewhere in the Qur'an */
+    verseSimilarityModeEither: string;
+    verseSimilarityModeHint: string;
+    verseSimilarityNoResults: string;
     sortByFrequency: string;
     sortByPmi: string;
     pmiExplanation: string;
