@@ -51,6 +51,7 @@ describe("buildCitation", () => {
     expect(cite("formulas", "quran")).toContain("Formulas quran.");
     expect(cite("verseSimilarity", "quran")).toContain("Verse similarity quran.");
     expect(cite("patterns", "quran")).toContain("Patterns quran.");
+    expect(cite("letters", "quran")).toContain("Letter frequency quran.");
   });
 
   it("formats a root citation", () => {
