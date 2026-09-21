@@ -111,13 +111,10 @@ function Bar({
  * before this. Scoping it means recomputing from occurrences.json (see
  * lib/insights/patternsScope.ts's doc comment for the full picture, and
  * for why "just trust verbForm" is a real trap: a Form's participle and
- * verbal noun carry the same VF: tag its finite verb does). Root shapes
- * come out exact at any scope; verb-Form and category counts use each
- * word-form's usual category rather than this specific occurrence's own
- * tag, the same approximation Advanced Search's own filters already run
- * on -- close to the shipped figures in practice, not identical. That
- * note only appears once a scope narrows past "quran", where the tab
- * shows patterns.json's exact shipped figures unchanged.
+ * verbal noun carry the same VF: tag its finite verb does). Every count --
+ * verb-Form, category, root shape -- comes out exact at any scope, matching
+ * patterns.json's own shipped whole-Qur'an figures exactly once scope
+ * widens back to "quran".
  */
 export function PatternsTab({ meta }: { meta: MetaFile }) {
   const t = useT();
@@ -193,18 +190,7 @@ export function PatternsTab({ meta }: { meta: MetaFile }) {
       slug: `patterns-${scopeLabel.replace(":", "-")}`,
       meta: {
         title: t.insightsPage.patternsHeading,
-        provenance: [
-          { label: "scope", value: scopeLabel },
-          ...(scope.kind !== "quran"
-            ? [
-                {
-                  label: "note",
-                  value:
-                    "verb-Form and category counts use each word-form's usual category, not this occurrence's own tag; root shapes are exact",
-                },
-              ]
-            : []),
-        ],
+        provenance: [{ label: "scope", value: scopeLabel }],
       },
       columns: [
         { key: "section", label: "section" },
@@ -229,9 +215,6 @@ export function PatternsTab({ meta }: { meta: MetaFile }) {
             labels={t.insightsPage.compare}
           />
         </div>
-        {scope.kind !== "quran" && (
-          <p className="mt-2 text-xs text-muted">{t.insightsPage.patternsScopedNote}</p>
-        )}
         {!loading && (
           <div className="mt-3 flex justify-end gap-2">
             <SaveButton

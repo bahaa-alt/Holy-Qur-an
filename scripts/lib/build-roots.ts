@@ -100,6 +100,8 @@ interface RawSegmentOcc {
   seg: number;
   form: string;
   tagsJoined: string;
+  /** this segment's own classify() result -- not the word-form's, see occurrenceIndex below */
+  cat: Cat;
 }
 
 interface RootAgg {
@@ -170,7 +172,7 @@ export function buildRoots(words: readonly RawWord[], gloss: RootsGlossMap): Bui
 
         const tagsJoined = seg.tags.join("|");
         agg.featsSet.add(tagsJoined);
-        agg.segments.push({ s: seg.s, a: seg.a, w: seg.w, seg: seg.seg, form: seg.form, tagsJoined });
+        agg.segments.push({ s: seg.s, a: seg.a, w: seg.w, seg: seg.seg, form: seg.form, tagsJoined, cat });
       } else if (seg.lemma !== null) {
         let entry = rootlessAggs.get(seg.lemma);
         if (!entry) {
@@ -200,7 +202,7 @@ export function buildRoots(words: readonly RawWord[], gloss: RootsGlossMap): Bui
 
         const tagsJoined = seg.tags.join("|");
         entry.featsSet.add(tagsJoined);
-        entry.segments.push({ s: seg.s, a: seg.a, w: seg.w, seg: seg.seg, form: seg.form, tagsJoined });
+        entry.segments.push({ s: seg.s, a: seg.a, w: seg.w, seg: seg.seg, form: seg.form, tagsJoined, cat });
       }
     }
   }
@@ -384,19 +386,23 @@ export function buildRoots(words: readonly RawWord[], gloss: RootsGlossMap): Bui
   formsEntries.sort((a, b) => a.key.localeCompare(b.key));
 
   // --- Build global occurrence index for cross-corpus faceted search (rooted occurrences only) ---
+  // Reads straight from each root's raw segments (not RootFile.occ + its
+  // formIdx) so every row's catIdx is THIS occurrence's own classify()
+  // result -- not its word-form's, which can differ for a form text shared
+  // by occurrences that classify differently (a homograph, or two segments
+  // whose tags diverge in a way that doesn't change the rendered form).
   const catList = Object.keys(CATEGORY_LABELS) as Cat[];
   const catToIdx = new Map(catList.map((c, i) => [c, i]));
   const occurrenceIndexRows: OccurrenceIndexRow[] = [];
   for (const root of sortedRoots) {
     const rootIdx = rootTextToGlobalIdx.get(root)!;
-    const file = rootFiles.get(root)!;
-    const formsWithLemmaText = perRootFormsWithLemmaText.get(root)!;
-    for (const [s, a, w, , formIdx, featIdx] of file.occ) {
-      const { entry: form, lemmaText } = formsWithLemmaText[formIdx];
+    const agg = rootAggs.get(root)!;
+    for (const seg of agg.segments) {
+      const lemmaText = agg.forms.get(seg.form)!.lemmaText;
       const lemmaIdx = globalLemmaLookup.get(`${root} ${lemmaText}`)!;
-      const tags = (file.feats[featIdx] ?? "").split("|").filter((t) => t !== "");
+      const tags = seg.tagsJoined.split("|").filter((t) => t !== "");
       const verbForm = extractVerbFormCode(tags);
-      occurrenceIndexRows.push([s, a, w, rootIdx, lemmaIdx, catToIdx.get(form.cat)!, verbForm]);
+      occurrenceIndexRows.push([seg.s, seg.a, seg.w, rootIdx, lemmaIdx, catToIdx.get(seg.cat)!, verbForm]);
     }
   }
   // Built by iterating roots in alphabetical order, so at this point rows
