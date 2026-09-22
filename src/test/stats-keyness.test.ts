@@ -6,6 +6,7 @@ import {
   contingencyG2,
   G2_CRITICAL,
   keyness,
+  logDice,
   logLikelihood,
   logRatio,
   logRatioCI,
@@ -112,6 +113,36 @@ describe("contingencyG2", () => {
     expect(atIndependence).toBeCloseTo(0, 9);
     expect(strong).toBeGreaterThan(weak);
     expect(weak).toBeGreaterThan(atIndependence);
+  });
+});
+
+describe("logDice", () => {
+  /**
+   * Expected values independently computed in Python (math.log2), from
+   * Rychlý's (2008) formula directly, not copied from this implementation.
+   */
+  it("scores exactly 14 -- its ceiling -- when the two items only ever co-occur", () => {
+    expect(logDice(5, 5, 5)).toBeCloseTo(14, 12);
+  });
+
+  it("matches an independently computed worked example (count=3, freqs=4,5)", () => {
+    expect(logDice(3, 4, 5)).toBeCloseTo(13.415037499278844, 9);
+  });
+
+  it("matches a second worked example (count=1, freqs=2,5)", () => {
+    expect(logDice(1, 2, 5)).toBeCloseTo(12.192645077942396, 9);
+  });
+
+  it("scores a rare co-occurrence between two otherwise-common items low", () => {
+    expect(logDice(2, 1000, 1000)).toBeCloseTo(5.034215715337913, 9);
+  });
+
+  it("returns -Infinity rather than NaN when both frequencies are zero", () => {
+    expect(logDice(0, 0, 0)).toBe(-Infinity);
+  });
+
+  it("is symmetric in the two frequencies", () => {
+    expect(logDice(4, 10, 20)).toBeCloseTo(logDice(4, 20, 10), 12);
   });
 });
 

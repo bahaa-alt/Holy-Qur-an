@@ -371,3 +371,26 @@ export function contingencyG2({ both, onlyFirst, onlySecond, neither }: Continge
   }
   return 2 * sum;
 }
+
+/**
+ * Log-dice association score (Rychlý 2008): the de facto standard
+ * alongside PMI in corpus lexicography (Sketch Engine's primary
+ * collocation score), offered here as PMI's complement for the same
+ * reason keyness pairs G² with log ratio: PMI is known to overweight
+ * rare pairs (two items that co-occur once, each otherwise unattested,
+ * score PMI's maximum regardless of how little evidence that really is),
+ * and log-dice is comparatively stable on sparse data because its scale
+ * is fixed rather than growing as either item gets rarer.
+ *
+ * 14 + log2(2 * both / (freqX + freqY)), where `freqX`/`freqY` are each
+ * item's own total frequency over whatever space they are being compared
+ * in (the same "opportunity space" PMI is measured over, for the same
+ * pair, so the two scores describe the same comparison). The additive 14
+ * is Rychlý's own convention, chosen so a typical corpus's scores land
+ * in roughly [0, 14]; two items that only ever occur together (the
+ * strongest possible association) score exactly 14.
+ */
+export function logDice(both: number, freqX: number, freqY: number): number {
+  if (freqX + freqY <= 0) return -Infinity;
+  return 14 + Math.log2((2 * both) / (freqX + freqY));
+}

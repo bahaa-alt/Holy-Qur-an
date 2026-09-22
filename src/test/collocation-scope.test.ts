@@ -7,8 +7,8 @@ import type { VerbPrepositionRow } from "@/lib/data/types";
  * can be checked by hand. What this looks like over the real corpus is a
  * claim about the Qur'an and belongs in scripts/build-data.ts instead.
  */
-// g2/p/qValue are unexercised by this file's scoping tests -- arbitrary
-// but valid placeholders, since VerbPrepositionRow requires them.
+// logDice/g2/p/qValue are unexercised by this file's scoping tests --
+// arbitrary but valid placeholders, since VerbPrepositionRow requires them.
 const rows: VerbPrepositionRow[] = [
   {
     verbRootAr: "أمن",
@@ -16,6 +16,7 @@ const rows: VerbPrepositionRow[] = [
     prepositionLemma: "بِ",
     count: 3,
     pmi: 1.2,
+    logDice: 8,
     g2: 5,
     p: 0.02,
     qValue: 0.05,
@@ -31,6 +32,7 @@ const rows: VerbPrepositionRow[] = [
     prepositionLemma: "لِ",
     count: 1,
     pmi: -0.4,
+    logDice: 2,
     g2: 0.1,
     p: 0.9,
     qValue: 0.9,

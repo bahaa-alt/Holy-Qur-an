@@ -27,6 +27,7 @@ function Bar({
   values,
   metric,
   pmiLabel,
+  logDiceLabel,
   sigLabel,
   active,
   onClick,
@@ -35,6 +36,7 @@ function Bar({
   values: readonly number[];
   metric: SortMode;
   pmiLabel: string;
+  logDiceLabel: string;
   sigLabel: string;
   active: boolean;
   onClick: () => void;
@@ -55,7 +57,11 @@ function Bar({
       <div className="w-32 shrink-0 text-end text-xs text-muted">
         {row.scopedCount.toLocaleString()}
         {metric === "pmi" && ` · ${pmiLabel}`}
-        {metric === "pmi" && <div className="text-[10px] text-muted/70">{sigLabel}</div>}
+        {metric === "pmi" && (
+          <div className="text-[10px] text-muted/70">
+            {logDiceLabel} · {sigLabel}
+          </div>
+        )}
       </div>
     </button>
   );
@@ -133,8 +139,8 @@ export function CollocationsTab() {
           { label: "verb root", value: selectedRoot ?? "" },
           { label: "scope", value: scopeLabel },
           {
-            label: "pmi, g2, p-value, fdr q-value",
-            value: "measured over the whole Qur'an (Dunning 1993); do not vary with scope",
+            label: "pmi, log_dice, g2, p-value, fdr q-value",
+            value: "measured over the whole Qur'an (Dunning 1993; Rychlý 2008); do not vary with scope",
           },
         ],
       },
@@ -142,6 +148,7 @@ export function CollocationsTab() {
         { key: "preposition", label: "preposition" },
         { key: "count_in_scope", label: "count_in_scope" },
         { key: "pmi_whole_quran", label: "pmi_whole_quran" },
+        { key: "log_dice_whole_quran", label: "log_dice_whole_quran" },
         { key: "log_likelihood_g2", label: "log_likelihood_g2" },
         { key: "p_value", label: "p_value" },
         { key: "fdr_q_value", label: "fdr_q_value" },
@@ -150,6 +157,7 @@ export function CollocationsTab() {
         r.prepositionLemma,
         r.scopedCount,
         r.pmi.toFixed(3),
+        r.logDice.toFixed(3),
         r.g2.toFixed(3),
         r.p.toExponential(3),
         r.qValue.toExponential(3),
@@ -282,6 +290,7 @@ export function CollocationsTab() {
                     values={metricValues}
                     metric={effectiveSortMode}
                     pmiLabel={t.insightsPage.pmiLabel(row.pmi.toFixed(2))}
+                    logDiceLabel={t.insightsPage.logDiceLabel(row.logDice.toFixed(2))}
                     sigLabel={t.insightsPage.collocationSigLabel(row.qValue)}
                     active={selectedCombo === row.prepositionKey}
                     onClick={() =>

@@ -1,5 +1,5 @@
 import { normalize } from "../../src/lib/arabic/normalize";
-import { benjaminiHochberg, chiSquarePValue1df, contingencyG2 } from "../../src/lib/stats/keyness";
+import { benjaminiHochberg, chiSquarePValue1df, contingencyG2, logDice } from "../../src/lib/stats/keyness";
 import type { CollocationsFile, VerbPrepositionRow } from "../../src/lib/data/types";
 import type { RawWord } from "./parse-morphology";
 
@@ -107,6 +107,9 @@ export function buildCollocations(words: readonly RawWord[]): CollocationsFile {
       prepositionLemma: PREPOSITIONS[prepositionKey],
       count,
       pmi,
+      // A second, more sparse-data-stable association measure alongside
+      // PMI (Rychlý 2008), over the same opportunity-space frequencies.
+      logDice: logDice(count, verbTotal, prepTotal),
       g2,
       p: chiSquarePValue1df(g2),
       refs: refsByCombo.get(comboKey)!,
