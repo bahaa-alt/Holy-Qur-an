@@ -42,7 +42,26 @@ export function DailyWidget() {
     };
   }, []);
 
-  if (!state) return null;
+  // Reserves the exact card shell the loaded content fills in below, so the
+  // homepage's highest-traffic section never just vanishes on a slow
+  // connection (confirmed under throttled network: this used to render
+  // nothing at all until both fetches resolved, silently omitting the whole
+  // section and then popping it in, shifting everything below it down).
+  if (!state) {
+    return (
+      <div className="mt-10 grid gap-4 sm:grid-cols-2">
+        {[0, 1].map((i) => (
+          <div key={i} className="rounded-2xl border border-border bg-surface p-5">
+            <div className="h-3 w-28 animate-pulse rounded bg-border" />
+            <div className="mt-3 h-7 w-2/3 animate-pulse rounded bg-border" />
+            <div className="mt-3 h-4 w-full animate-pulse rounded bg-border" />
+            <div className="mt-1.5 h-4 w-4/5 animate-pulse rounded bg-border" />
+            <div className="mt-4 h-4 w-24 animate-pulse rounded bg-border" />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="mt-10 grid gap-4 sm:grid-cols-2">
