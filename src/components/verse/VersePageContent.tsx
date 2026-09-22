@@ -87,13 +87,21 @@ export function VersePageContent({
             hover is not an affordance on a phone. */}
         <p className="mt-2 text-xs text-muted/70">{t.wordInfoPanel.tapHint}</p>
         <p className="mt-4 text-sm leading-relaxed text-muted">{verse.t}</p>
-        {verse.pickthall && (
-          <p className="mt-2 text-sm leading-relaxed text-muted/80">
-            <span className="me-1 text-xs uppercase tracking-wide text-muted/60">
-              {t.ayahCard.pickthallLabel}
-            </span>
-            {verse.pickthall}
-          </p>
+        {(
+          [
+            [verse.pickthall, t.ayahCard.pickthallLabel],
+            [verse.yusufAli, t.ayahCard.yusufAliLabel],
+            [verse.rodwell, t.ayahCard.rodwellLabel],
+            [verse.sale, t.ayahCard.saleLabel],
+          ] as const
+        ).map(
+          ([text, label]) =>
+            text && (
+              <p key={label} className="mt-2 text-sm leading-relaxed text-muted/80">
+                <span className="me-1 text-xs uppercase tracking-wide text-muted/60">{label}</span>
+                {text}
+              </p>
+            ),
         )}
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
@@ -101,6 +109,7 @@ export function VersePageContent({
             arabic={verse.w.join(" ")}
             translation={verse.t}
             pickthall={verse.pickthall}
+            extraTranslations={[verse.yusufAli, verse.rodwell, verse.sale]}
             surah={s}
             ayah={a}
           />

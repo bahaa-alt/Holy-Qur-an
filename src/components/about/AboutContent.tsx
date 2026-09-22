@@ -48,6 +48,12 @@ export function AboutContent({
       </div>
 
       <div>
+        <h2 className="text-lg font-semibold">{t.aboutPage.witnessesHeading}</h2>
+        <p className="mt-2 text-muted">{t.aboutPage.witnessesTranslationsBody}</p>
+        <p className="mt-2 text-muted">{t.aboutPage.witnessesTafsirBody}</p>
+      </div>
+
+      <div>
         <h2 className="text-lg font-semibold">{t.aboutPage.howCountsComputedHeading}</h2>
         <p className="mt-2 text-muted">{t.aboutPage.howCountsComputedBody}</p>
       </div>
@@ -133,6 +139,7 @@ export function AboutContent({
               <li>{t.aboutPage.changelogMoreStatsAdditions}</li>
               <li>{t.aboutPage.changelogResearchTooling}</li>
               <li>{t.aboutPage.changelogStudies}</li>
+              <li>{t.aboutPage.changelogWitnesses}</li>
             </ul>
           </div>
           <div>

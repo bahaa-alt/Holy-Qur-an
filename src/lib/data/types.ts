@@ -330,7 +330,13 @@ export interface ReadingSurahFile {
   verses: { a: number; t: string }[];
 }
 
-/** Provenance and coverage for a shipped tafsir (Qur'anic commentary). */
+/**
+ * Provenance and coverage for a tafsir (Qur'anic commentary) this app can
+ * show. `coveredVerses`/`totalVerses` are only known for a tafsir this app
+ * ships and validates at build time (see buildTafsir) -- omitted, not
+ * fabricated, for one fetched live from an external source at read time,
+ * where no build-time pass ever sees every verse.
+ */
 export interface TafsirMetaFile {
   slug: string;
   name: string;
@@ -338,8 +344,8 @@ export interface TafsirMetaFile {
   authors: string;
   authorsAr: string;
   /** verses this commentary has an entry for -- deliberately less than totalVerses */
-  coveredVerses: number;
-  totalVerses: number;
+  coveredVerses?: number;
+  totalVerses?: number;
 }
 
 /** One surah's commentary. Verses with no entry are simply absent (see buildTafsir). */
@@ -456,6 +462,13 @@ export interface SurahVerse {
    *  for translation comparison. Absent for the small number of verses the
    *  Pickthall source doesn't cover (see manifest for provenance). */
   pickthall?: string;
+  /** Abdullah Yusuf Ali (1934), via fawazahmed0/quran-api -- full 6,236-verse coverage. */
+  yusufAli?: string;
+  /** John Medows Rodwell (1861), via fawazahmed0/quran-api -- public domain (d. 1900). */
+  rodwell?: string;
+  /** George Sale (1734), via fawazahmed0/quran-api -- public domain (d. 1736); the
+   *  first major English translation made directly from the Arabic. */
+  sale?: string;
 }
 
 export interface SurahFile {
