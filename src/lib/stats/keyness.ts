@@ -50,6 +50,9 @@ export interface Keyness {
   /** occurrences per 10,000 tokens, in the scope and in the reference */
   rate: number;
   referenceRate: number;
+  /** 95% Wilson score interval on `rate`/`referenceRate`, same units (per 10,000 tokens) */
+  rateCI: WilsonInterval;
+  referenceRateCI: WilsonInterval;
   /** p-value for g2 at 1 degree of freedom */
   p: number;
   /**
@@ -105,6 +108,40 @@ export function logRatio({ a, b, c, d }: KeynessInput): { value: number; estimat
   const safeA = a === 0 ? 0.5 : a;
   const safeB = b === 0 ? 0.5 : b;
   return { value: Math.log2(safeA / c / (safeB / d)), estimated };
+}
+
+export interface WilsonInterval {
+  low: number;
+  high: number;
+}
+
+/** z for a two-sided 95% interval (Φ⁻¹(0.975)), to full double precision. */
+const Z_95 = 1.959963984540054;
+
+/**
+ * Wilson score interval (Wilson 1927) for a binomial proportion, at 95%
+ * confidence. A rate on its own is a point estimate; a reader deciding
+ * whether "312 per 10,000 here vs 180 elsewhere" is a real difference or
+ * two overlapping ranges of uncertainty needs the interval, not just the
+ * point.
+ *
+ * Preferred over the textbook normal ("Wald") interval because it stays
+ * inside [0, 1] and keeps its stated coverage even for the small,
+ * skewed counts a keyness table runs on -- exactly where the Wald
+ * interval is known to fail (it can extend below 0 or above 1, and its
+ * true coverage drifts well under 95% for small n or p near 0 or 1).
+ */
+export function wilsonInterval(successes: number, total: number, z: number = Z_95): WilsonInterval {
+  if (total <= 0) return { low: 0, high: 0 };
+  const p = successes / total;
+  const z2 = z * z;
+  const denom = 1 + z2 / total;
+  const center = p + z2 / (2 * total);
+  const margin = z * Math.sqrt(p * (1 - p) / total + z2 / (4 * total * total));
+  return {
+    low: Math.max(0, (center - margin) / denom),
+    high: Math.min(1, (center + margin) / denom),
+  };
 }
 
 /**
@@ -164,6 +201,8 @@ export function keyness(input: KeynessInput): Keyness {
   const lr = logRatio(input);
   const rate = c > 0 ? (a / c) * 10_000 : 0;
   const referenceRate = d > 0 ? (b / d) * 10_000 : 0;
+  const rateCI = wilsonInterval(a, c);
+  const referenceRateCI = wilsonInterval(b, d);
   return {
     g2,
     logRatio: lr.value,
@@ -172,6 +211,72 @@ export function keyness(input: KeynessInput): Keyness {
     expected: c + d > 0 ? (c * (a + b)) / (c + d) : 0,
     rate,
     referenceRate,
+    rateCI: { low: rateCI.low * 10_000, high: rateCI.high * 10_000 },
+    referenceRateCI: { low: referenceRateCI.low * 10_000, high: referenceRateCI.high * 10_000 },
     p: chiSquarePValue1df(g2),
   };
+}
+
+export interface FdrResult {
+  /** Benjamini-Hochberg q-value per input p-value, same order as input */
+  qValues: number[];
+  /** whether each p-value is significant at `alpha` under BH, same order as input */
+  significant: boolean[];
+  /**
+   * The largest raw p-value BH still calls significant (0 when none are).
+   * BH significance turns out to be exactly "p <= this one number" once
+   * computed, because p-values are tested in ascending order and the
+   * per-rank threshold only grows -- so this can stand in for
+   * `bonferroniAlpha` anywhere that wants a single cutoff to display
+   * against (see CompareTab, which lets the reader pick either).
+   */
+  thresholdP: number;
+}
+
+/**
+ * Benjamini-Hochberg (1995) false discovery rate control.
+ *
+ * Bonferroni bounds the probability of ANY false positive among all
+ * tests -- exactly one error, anywhere, at the stated rate. That is the
+ * right guarantee for a single make-or-break claim, but it is very
+ * conservative across 1,651 simultaneous root comparisons: real,
+ * moderate effects get buried along with the noise. BH instead bounds
+ * the EXPECTED PROPORTION of false positives among the roots it calls
+ * significant, which trades a small, known amount of that guarantee for
+ * substantially more power to find real effects -- the field's current
+ * default recommendation for a comparison at this scale.
+ *
+ * Standard step-up procedure: sort p-values ascending, find the largest
+ * rank k with p(k) <= (k/m)*alpha, and call every p-value at or below
+ * that rank significant. q-values (the smallest FDR at which a given
+ * p-value would be called significant) are computed by the usual
+ * running-minimum pass from the largest rank down, which keeps them
+ * monotonic the way Benjamini & Hochberg's own definition requires.
+ */
+export function benjaminiHochberg(pValues: readonly number[], alpha = 0.05): FdrResult {
+  const m = pValues.length;
+  const indexed = pValues.map((p, i) => ({ p, i })).sort((x, y) => x.p - y.p);
+  const qValues = new Array<number>(m);
+  const significant = new Array<boolean>(m).fill(false);
+
+  let largestSigRank = 0;
+  for (let rank = m; rank >= 1; rank--) {
+    if (indexed[rank - 1].p <= (rank / m) * alpha) {
+      largestSigRank = rank;
+      break;
+    }
+  }
+  for (let rank = 1; rank <= largestSigRank; rank++) {
+    significant[indexed[rank - 1].i] = true;
+  }
+  const thresholdP = largestSigRank > 0 ? indexed[largestSigRank - 1].p : 0;
+
+  let runningMin = 1;
+  for (let rank = m; rank >= 1; rank--) {
+    const { p, i } = indexed[rank - 1];
+    runningMin = Math.min(runningMin, (p * m) / rank);
+    qValues[i] = runningMin;
+  }
+
+  return { qValues, significant, thresholdP };
 }

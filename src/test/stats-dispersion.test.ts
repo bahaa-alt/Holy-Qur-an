@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dispersion } from "@/lib/stats/dispersion";
+import { dispersion, dispersionPermutationTest } from "@/lib/stats/dispersion";
 
 describe("dispersion (Gries's DP)", () => {
   it("is 0 when occurrences follow the parts' sizes exactly", () => {
@@ -55,5 +55,41 @@ describe("dispersion (Gries's DP)", () => {
 
   it("refuses mismatched inputs instead of silently misaligning parts", () => {
     expect(() => dispersion([1, 2], [100])).toThrow(/line up/);
+  });
+});
+
+describe("dispersionPermutationTest", () => {
+  it("gives a spread-proportionally item a p-value of exactly 1", () => {
+    // Observed DP is 0, the minimum any permutation's DP can be (DP >= 0
+    // always) -- so literally every permuted draw is "at least as
+    // extreme", deterministically, regardless of the RNG's specific draws.
+    const r = dispersionPermutationTest([10, 20, 30, 40], [100, 200, 300, 400], 50);
+    expect(r.observedDp).toBeCloseTo(0, 12);
+    expect(r.p).toBe(1);
+  });
+
+  it("gives an extremely concentrated item a small p-value", () => {
+    // All 50 occurrences in a part holding only 10% of the text: under
+    // the null, ~5 occurrences are expected there (sd ~2.1), so landing
+    // all 50 is many standard deviations out -- no permutation should
+    // reach that DP, making p the smoothed floor 1/(permutations+1).
+    const r = dispersionPermutationTest([50, 0, 0, 0], [100, 300, 300, 300], 199);
+    expect(r.observedDp).toBeCloseTo(0.9, 12);
+    expect(r.p).toBeCloseTo(1 / 200, 12);
+  });
+
+  it("is reproducible: the same seed gives the same result", () => {
+    const a = dispersionPermutationTest([97, 1, 1, 1], [1000, 1000, 1000, 1000], 99, 42);
+    const b = dispersionPermutationTest([97, 1, 1, 1], [1000, 1000, 1000, 1000], 99, 42);
+    expect(a).toEqual(b);
+  });
+
+  it("returns p=1 trivially for an item that never occurs, without dividing by zero", () => {
+    const r = dispersionPermutationTest([0, 0], [100, 100], 50);
+    expect(r).toEqual({ observedDp: 0, p: 1, permutations: 50 });
+  });
+
+  it("refuses mismatched inputs instead of silently misaligning parts", () => {
+    expect(() => dispersionPermutationTest([1, 2], [100], 10)).toThrow(/line up/);
   });
 });

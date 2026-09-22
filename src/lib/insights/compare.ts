@@ -153,3 +153,37 @@ export function corpusDispersion(
   }
   return rows;
 }
+
+/**
+ * One root's occurrence count per surah, alongside each surah's total
+ * rooted-occurrence count -- the same "part size" corpusDispersion
+ * weights by. What dispersionPermutationTest (lib/stats/dispersion)
+ * needs to test one root's DP for significance.
+ *
+ * A fresh pass over verse-roots.json rather than a lookup into
+ * corpusDispersion's own working set, computed on demand for whichever
+ * single row a reader asks about -- corpusDispersion does not keep
+ * per-surah counts around for all 1,651 roots once it has reduced each
+ * to its DP, and a permutation test's cost is dominated by one root's
+ * own occurrence count, not by how many roots exist.
+ */
+export function perSurahCounts(
+  verseRoots: VerseRootsFile,
+  refs: readonly VerseRef[],
+  rootIdx: number,
+  surahCount = 114,
+): { counts: number[]; sizes: number[] } {
+  const counts = new Array<number>(surahCount).fill(0);
+  const sizes = new Array<number>(surahCount).fill(0);
+  const verses = Math.min(verseRoots.length, refs.length);
+  for (let v = 0; v < verses; v++) {
+    const surah = refs[v].s - 1;
+    if (surah < 0 || surah >= surahCount) continue;
+    for (const [r] of verseRoots[v]) {
+      if (r < 0) continue;
+      sizes[surah] += 1;
+      if (r === rootIdx) counts[surah] += 1;
+    }
+  }
+  return { counts, sizes };
+}

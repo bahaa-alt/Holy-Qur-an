@@ -532,6 +532,11 @@ export const en: Dict = {
         `${verses.toLocaleString()} verses \u00b7 ${tokens.toLocaleString()} rooted occurrences here, against ${referenceTokens.toLocaleString()} elsewhere`,
       correctionNote: (tests: number, alpha: string) =>
         `${tests.toLocaleString()} roots were tested, so \u201Ccorrected\u201D marks the rows that survive a Bonferroni threshold of p < ${alpha}. At a plain p < 0.05, about ${Math.round(tests * 0.05).toLocaleString()} roots would clear the bar by chance alone.`,
+      fdrCorrectionNote: (shown: number, alpha: string) =>
+        `${shown.toLocaleString()} roots meet the minimum-occurrence floor above; among those, \u201Ccorrected\u201D marks the rows Benjamini-Hochberg FDR calls significant at p < ${alpha}. This is a different, smaller family than Bonferroni's (every root tested, floor or no floor) \u2014 FDR is applied only where the rate itself is estimated from enough occurrences to be worth defending, and has more power to find real, moderate effects than Bonferroni across a family this size.`,
+      correctionMethodLabel: "Correction",
+      correctionBonferroni: "Bonferroni",
+      correctionFdr: "FDR (BH)",
       nsNote:
         "Rows marked n.s. are not statistically significant; they are shown because absence of evidence is a result too.",
       estimatedNote:
@@ -541,12 +546,20 @@ export const en: Dict = {
       colCount: "n",
       colHere: "per 10k here",
       colElsewhere: "per 10k elsewhere",
+      colRateCIHint: "The smaller range underneath is the 95% Wilson score confidence interval.",
       colLogRatio: "Log ratio",
       colG2: "G\u00b2",
       colSig: "Significance",
       colRange: "Surahs",
       colDp: "DP",
       colSpread: "Concentration",
+      colSignificance: "Significance",
+      colSignificanceHint:
+        "A permutation test: how often placing this root's occurrences by chance, in proportion to each surah's size, produces a DP at least this high. Computed on demand, one root at a time.",
+      testSignificance: "Test significance",
+      testingSignificance: "Testing\u2026",
+      significanceResult: (p: number, permutations: number) =>
+        `p = ${p.toFixed(3)} (${permutations.toLocaleString()} permutations)`,
       sig: {
         corrected: "corrected",
         p001: "p < 0.001",
@@ -561,8 +574,14 @@ export const en: Dict = {
         "G\u00b2 is log-likelihood (Dunning 1993): how surprising the difference is, given how much text is involved. It grows with the size of the corpus, so a large G\u00b2 on a tiny difference is real but may be uninteresting.",
       methodsLogRatio:
         "Log ratio (Hardie 2014) is the size of the difference, in doublings: +1 means twice as common here, +3 means eight times. It does not grow with corpus size, and it is unstable on small counts \u2014 which is what the minimum-occurrence floor is for.",
+      methodsCI:
+        "The smaller range under each rate is a 95% Wilson score confidence interval (Wilson 1927): where the true rate plausibly lies, not just its single best estimate. Preferred here over the textbook normal approximation because it stays inside 0-100% and keeps its stated coverage even at the small counts a keyness table often runs on.",
+      methodsCorrection:
+        "Bonferroni and FDR (Benjamini-Hochberg, 1995) answer different questions and are offered as alternatives, not as one right answer. Bonferroni bounds the chance of any false positive at all, across every root that occurs anywhere in the comparison \u2014 strict, and conservative enough to bury real, moderate effects among 1,651 simultaneous tests. FDR instead bounds the expected proportion of false positives among the rows it calls significant, computed only among the roots above the minimum-occurrence floor, and has more power to find those effects at some known cost in false discoveries.",
       methodsDp:
         "DP is Gries's deviation of proportions (2008): how far a root's distribution across the 114 surahs departs from what those surahs' sizes would predict. It separates a word used 300 times across eighty surahs from one used 300 times in a single passage \u2014 two facts this app previously reported identically.",
+      methodsPermutation:
+        "DP alone is descriptive, not a significance test: a root occurring only a handful of times can look concentrated by pure luck. \u201CTest significance\u201D runs a permutation (Monte Carlo) test for that one root: simulate its occurrences landing by chance, in proportion to each surah's size, many times over, and see how often that alone produces a DP as high as observed. A small p-value means the concentration is unlikely to be a coincidence of where a rare word happened to land.",
       methodsLimits:
         "The reference corpus is always the rest of the Qur'an, which is a small corpus by the standards of these measures: read a single row as a lead to follow, not a result to publish. Roots are the unit here; lemmas, grammatical features and collocation follow.",
     },
