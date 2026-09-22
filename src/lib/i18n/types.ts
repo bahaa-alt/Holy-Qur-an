@@ -43,6 +43,8 @@ export interface Dict {
     saved: string;
     studies: string;
     about: string;
+    openMenu: string;
+    closeMenu: string;
   };
   footer: {
     tagline: string;
