@@ -1,4 +1,5 @@
 import { normalize } from "../../src/lib/arabic/normalize";
+import { benjaminiHochberg, chiSquarePValue1df, contingencyG2 } from "../../src/lib/stats/keyness";
 import type { CollocationsFile, VerbPrepositionRow } from "../../src/lib/data/types";
 import type { RawWord } from "./parse-morphology";
 
@@ -82,20 +83,44 @@ export function buildCollocations(words: readonly RawWord[]): CollocationsFile {
     }
   }
 
-  const verbPrepositions: VerbPrepositionRow[] = [...counts.entries()].map(([comboKey, count]) => {
+  const withoutSig = [...counts.entries()].map(([comboKey, count]) => {
     const [verbRootAr, prepositionKey] = comboKey.split("|");
     const verbTotal = verbTotalWithNext.get(verbRootAr)!;
     const prepTotal = prepGlobalTotal.get(prepositionKey)!;
     const pmi = Math.log2((count * totalWithNext) / (verbTotal * prepTotal));
+    // Dunning's (1993) original collocation test, over the same "any verb
+    // with a next word" opportunity space PMI uses: does this specific
+    // verb+preposition pairing occur together more than the verb's own
+    // frequency and the preposition's own frequency, independently, would
+    // predict? See lib/stats/keyness.ts's contingencyG2 for why this needs
+    // the full 2x2 table rather than the two-corpus comparison logLikelihood
+    // above it computes.
+    const g2 = contingencyG2({
+      both: count,
+      onlyFirst: verbTotal - count,
+      onlySecond: prepTotal - count,
+      neither: totalWithNext - verbTotal - prepTotal + count,
+    });
     return {
       verbRootAr,
       prepositionKey,
       prepositionLemma: PREPOSITIONS[prepositionKey],
       count,
       pmi,
+      g2,
+      p: chiSquarePValue1df(g2),
       refs: refsByCombo.get(comboKey)!,
     };
   });
+
+  // FDR across every verb+preposition combo tracked (the natural family: one
+  // test per combo, same as this file's own PMI denominators), not per verb
+  // root -- so a combo's q-value means the same thing everywhere it appears.
+  const fdr = benjaminiHochberg(withoutSig.map((r) => r.p));
+  const verbPrepositions: VerbPrepositionRow[] = withoutSig.map((r, i) => ({
+    ...r,
+    qValue: fdr.qValues[i],
+  }));
   verbPrepositions.sort((a, b) => a.verbRootAr.localeCompare(b.verbRootAr) || b.count - a.count);
 
   return { verbPrepositions };

@@ -520,6 +520,7 @@ export interface Dict {
       colElsewhere: string;
       colRateCIHint: string;
       colLogRatio: string;
+      colLogRatioCIHint: string;
       colG2: string;
       colSig: string;
       colRange: string;
@@ -674,6 +675,8 @@ export interface Dict {
     sortByPmi: string;
     pmiExplanation: string;
     pmiLabel: (value: string) => string;
+    collocationSigExplanation: string;
+    collocationSigLabel: (q: number) => string;
   };
   formulaDetailPage: {
     backToInsights: string;
@@ -894,6 +897,7 @@ export interface Dict {
     corpusExportDownload: (size: string) => string;
     corpusExportReleases: string;
     corpusExportNotPublished: (size: string) => string;
+    codebookBody: string;
     qcqlCliHeading: string;
     qcqlCliBody: string;
   };

@@ -27,6 +27,7 @@ function Bar({
   values,
   metric,
   pmiLabel,
+  sigLabel,
   active,
   onClick,
 }: {
@@ -34,6 +35,7 @@ function Bar({
   values: readonly number[];
   metric: SortMode;
   pmiLabel: string;
+  sigLabel: string;
   active: boolean;
   onClick: () => void;
 }) {
@@ -53,6 +55,7 @@ function Bar({
       <div className="w-32 shrink-0 text-end text-xs text-muted">
         {row.scopedCount.toLocaleString()}
         {metric === "pmi" && ` · ${pmiLabel}`}
+        {metric === "pmi" && <div className="text-[10px] text-muted/70">{sigLabel}</div>}
       </div>
     </button>
   );
@@ -129,15 +132,28 @@ export function CollocationsTab() {
         provenance: [
           { label: "verb root", value: selectedRoot ?? "" },
           { label: "scope", value: scopeLabel },
-          { label: "pmi", value: "measured over the whole Qur'an; does not vary with scope" },
+          {
+            label: "pmi, g2, p-value, fdr q-value",
+            value: "measured over the whole Qur'an (Dunning 1993); do not vary with scope",
+          },
         ],
       },
       columns: [
         { key: "preposition", label: "preposition" },
         { key: "count_in_scope", label: "count_in_scope" },
         { key: "pmi_whole_quran", label: "pmi_whole_quran" },
+        { key: "log_likelihood_g2", label: "log_likelihood_g2" },
+        { key: "p_value", label: "p_value" },
+        { key: "fdr_q_value", label: "fdr_q_value" },
       ],
-      rows: rows.map((r) => [r.prepositionLemma, r.scopedCount, r.pmi.toFixed(3)]),
+      rows: rows.map((r) => [
+        r.prepositionLemma,
+        r.scopedCount,
+        r.pmi.toFixed(3),
+        r.g2.toFixed(3),
+        r.p.toExponential(3),
+        r.qValue.toExponential(3),
+      ]),
     };
   }
 
@@ -255,7 +271,9 @@ export function CollocationsTab() {
                   </div>
                 </div>
                 {effectiveSortMode === "pmi" && (
-                  <p className="mb-2 text-xs text-muted">{t.insightsPage.pmiExplanation}</p>
+                  <p className="mb-2 text-xs text-muted">
+                    {t.insightsPage.pmiExplanation} {t.insightsPage.collocationSigExplanation}
+                  </p>
                 )}
                 {rows.map((row) => (
                   <Bar
@@ -264,6 +282,7 @@ export function CollocationsTab() {
                     values={metricValues}
                     metric={effectiveSortMode}
                     pmiLabel={t.insightsPage.pmiLabel(row.pmi.toFixed(2))}
+                    sigLabel={t.insightsPage.collocationSigLabel(row.qValue)}
                     active={selectedCombo === row.prepositionKey}
                     onClick={() =>
                       setSelectedCombo((prev) =>

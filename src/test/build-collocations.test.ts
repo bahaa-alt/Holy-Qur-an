@@ -89,4 +89,28 @@ describe("buildCollocations", () => {
     // confirming PMI isn't just re-deriving the count ranking here.
     expect(alim.pmi).toBeGreaterThan(katab.pmi);
   });
+
+  it("computes the exact G2 and p-value for each combo's full 2x2 contingency table", () => {
+    // Independently computed in Python (a from-scratch reimplementation of
+    // the 2x2 G-test, not copied from this module), from the same
+    // verbTotal/prepTotal/totalWithNext this file's PMI test derives:
+    //   علم/ب: both=3, onlyFirst=4-3=1, onlySecond=5-3=2, neither=9-4-5+3=3
+    //   كتب/ب: both=1, onlyFirst=2-1=1, onlySecond=5-1=4, neither=9-2-5+1=3
+    const alim = verbPrepositions.find((r) => r.verbRootAr === "علم" && r.prepositionKey === "ب")!;
+    const katab = verbPrepositions.find((r) => r.verbRootAr === "كتب" && r.prepositionKey === "ب")!;
+    expect(alim.g2).toBeCloseTo(1.1365105517087877, 9);
+    expect(alim.p).toBeCloseTo(0.28639087476494207, 9);
+    expect(katab.g2).toBeCloseTo(0.032006190705436616, 9);
+    expect(katab.p).toBeCloseTo(0.8580140705739678, 9);
+  });
+
+  it("gives every combo a Benjamini-Hochberg q-value in [0, 1], computed across the whole family", () => {
+    for (const row of verbPrepositions) {
+      expect(row.qValue).toBeGreaterThanOrEqual(0);
+      expect(row.qValue).toBeLessThanOrEqual(1);
+      // q-value is never smaller than the row's own p-value (BH's q is a
+      // minimum over p*m/rank for ranks at or below this one, and m/rank >= 1).
+      expect(row.qValue).toBeGreaterThanOrEqual(row.p - 1e-9);
+    }
+  });
 });

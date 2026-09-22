@@ -65,7 +65,9 @@ export function KeynessTable({
             <th className={TH} title={t.insightsPage.compare.colRateCIHint}>
               {t.insightsPage.compare.colElsewhere}
             </th>
-            <th className={TH}>{t.insightsPage.compare.colLogRatio}</th>
+            <th className={TH} title={t.insightsPage.compare.colLogRatioCIHint}>
+              {t.insightsPage.compare.colLogRatio}
+            </th>
             <th className={TH}>{t.insightsPage.compare.colG2}</th>
             <th className={TH}>{t.insightsPage.compare.colSig}</th>
             <th className={TH} />
@@ -111,6 +113,11 @@ export function KeynessTable({
                       {" †"}
                     </span>
                   )}
+                  <div className="text-[10px] font-normal text-muted/70">
+                    {k.logRatioCI.low > 0 ? "+" : ""}
+                    {k.logRatioCI.low.toFixed(2)}–{k.logRatioCI.high > 0 ? "+" : ""}
+                    {k.logRatioCI.high.toFixed(2)}
+                  </div>
                 </td>
                 <td className={NUM}>{k.g2.toFixed(1)}</td>
                 <td className={`${TD} whitespace-nowrap`}>

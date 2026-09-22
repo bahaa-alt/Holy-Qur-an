@@ -626,6 +626,17 @@ export interface VerbPrepositionRow {
    * frequently) associated with a given verb.
    */
   pmi: number;
+  /**
+   * Log-likelihood G² for this combo's full 2x2 contingency table (Dunning
+   * 1993): does this verb+preposition pairing co-occur more than the verb's
+   * and the preposition's own frequencies, independently, would predict.
+   * Computed over the same opportunity space as `pmi`.
+   */
+  g2: number;
+  /** p-value for `g2` at 1 degree of freedom */
+  p: number;
+  /** Benjamini-Hochberg (1995) FDR q-value, computed across every combo tracked */
+  qValue: number;
   /** every occurrence of this combo, uncapped -- w is the verb's own
    *  1-based word position; the preposition/its object is the next word (w+1) */
   refs: { s: number; a: number; w: number }[];
