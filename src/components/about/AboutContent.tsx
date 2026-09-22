@@ -209,6 +209,18 @@ export function AboutContent({
             corpus-columns.csv
           </a>
         </p>
+        <p className="mt-3 text-muted">
+          {t.aboutPage.reproducibilityExampleBody}{" "}
+          <a
+            href="https://github.com/bahaa-alt/Holy-Qur-an/blob/HEAD/examples/reproduce_keyness.py"
+            target="_blank"
+            rel="noreferrer"
+            className="text-accent hover:text-accent-strong"
+            dir="ltr"
+          >
+            examples/reproduce_keyness.py
+          </a>
+        </p>
       </div>
 
       <div>

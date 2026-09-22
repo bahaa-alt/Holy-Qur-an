@@ -675,6 +675,7 @@ export interface Dict {
     sortByPmi: string;
     pmiExplanation: string;
     pmiLabel: (value: string) => string;
+    logDiceLabel: (value: string) => string;
     collocationSigExplanation: string;
     collocationSigLabel: (q: number) => string;
   };
@@ -898,6 +899,7 @@ export interface Dict {
     corpusExportReleases: string;
     corpusExportNotPublished: (size: string) => string;
     codebookBody: string;
+    reproducibilityExampleBody: string;
     qcqlCliHeading: string;
     qcqlCliBody: string;
   };

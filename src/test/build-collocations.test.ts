@@ -90,6 +90,13 @@ describe("buildCollocations", () => {
     expect(alim.pmi).toBeGreaterThan(katab.pmi);
   });
 
+  it("computes the exact log-dice score, independently verified in Python", () => {
+    const alim = verbPrepositions.find((r) => r.verbRootAr === "علم" && r.prepositionKey === "ب")!;
+    const katab = verbPrepositions.find((r) => r.verbRootAr === "كتب" && r.prepositionKey === "ب")!;
+    expect(alim.logDice).toBeCloseTo(13.415037499278844, 9);
+    expect(katab.logDice).toBeCloseTo(12.192645077942396, 9);
+  });
+
   it("computes the exact G2 and p-value for each combo's full 2x2 contingency table", () => {
     // Independently computed in Python (a from-scratch reimplementation of
     // the 2x2 G-test, not copied from this module), from the same

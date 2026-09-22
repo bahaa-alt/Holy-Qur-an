@@ -595,18 +595,33 @@ export interface RhymeFile {
   rows: RhymeRow[];
 }
 
-/** One root ranked by how over/under-represented it is in one surah vs. its corpus-wide average rate. */
+/**
+ * One root that is significantly over-represented in one surah relative to
+ * its corpus-wide rate, scored with the same keyness this app uses
+ * everywhere else (surah = scope, rest of the Qur'an = reference, rooted
+ * occurrences as the token basis -- see lib/insights/compare.ts).
+ */
 export interface DistinctiveRootRow {
   ar: string;
   glossShort: string;
   /** occurrences of this root within this surah */
   localCount: number;
-  /** (localCount / this surah's word count) ÷ (corpus-wide count / corpus-wide word count) */
+  /** this surah's rate ÷ the reference (rest-of-Qur'an) rate -- the human-readable "N.N× avg" figure */
   ratio: number;
+  /** log-likelihood G² (Dunning 1993 / Rayson & Garside 2000) for this root's surah-vs-rest comparison */
+  g2: number;
+  /** p-value for `g2` at 1 degree of freedom */
+  p: number;
 }
 
 export interface DistinctiveVocabFile {
-  /** bySurah[n - 1] = that surah's top distinctive roots, ranked by ratio desc (min. 3 occurrences in-surah to qualify) */
+  /**
+   * bySurah[n - 1] = that surah's top distinctive roots: only roots whose
+   * G² clears a Bonferroni-corrected threshold (sized to how many roots
+   * were tested in that surah) qualify at all, ranked by G² desc among
+   * those that do. Up to 8 per surah, minimum 3 occurrences in-surah to
+   * be tested in the first place.
+   */
   bySurah: DistinctiveRootRow[][];
 }
 
@@ -626,6 +641,14 @@ export interface VerbPrepositionRow {
    * frequently) associated with a given verb.
    */
   pmi: number;
+  /**
+   * Log-dice association score (Rychlý 2008), over the same opportunity
+   * space as `pmi`: 14 + log2(2*count / (verbTotal + prepTotal)). Offered
+   * alongside PMI because PMI is known to overweight rare pairs; log-dice
+   * is comparatively stable on sparse data, and is the field's other
+   * commonly cited collocation-strength measure (Sketch Engine's default).
+   */
+  logDice: number;
   /**
    * Log-likelihood G² for this combo's full 2x2 contingency table (Dunning
    * 1993): does this verb+preposition pairing co-occur more than the verb's

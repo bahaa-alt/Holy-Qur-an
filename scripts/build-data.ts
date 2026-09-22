@@ -558,7 +558,7 @@ async function main() {
     surahFiles,
   );
   const rhyme = buildRhyme(surahFiles);
-  const distinctiveVocab = buildDistinctiveVocab(words, rootFiles, indexRoots, meta.surahs.length);
+  const distinctiveVocab = buildDistinctiveVocab(rootFiles, indexRoots, meta.surahs.length);
   const collocations = buildCollocations(words);
   const abjad = buildAbjad(words, meta.surahs.length, globalIdOf);
   const verseCountByRoot = new Map(indexRoots.map((r) => [r.ar, r.verseCount]));
