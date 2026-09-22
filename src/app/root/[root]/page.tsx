@@ -1,11 +1,5 @@
 import { notFound } from "next/navigation";
-import {
-  readIndex,
-  readManifest,
-  readMeta,
-  readRootFile,
-  readVerseRoots,
-} from "@/lib/data/serverData";
+import { readIndex, readMeta, readRootFile, readVerseRoots } from "@/lib/data/serverData";
 import { buildRootSummary } from "@/lib/root/summary";
 import { buildSurahDistribution } from "@/lib/root/distribution";
 import { buildConjugationTables, hasVerbLemma } from "@/lib/root/conjugation";
@@ -13,7 +7,7 @@ import { buildCollocations } from "@/lib/root/collocations";
 import { buildSurahOccurrenceCounts } from "@/lib/root/surahHeatmap";
 import { RootHeader } from "@/components/root/RootHeader";
 import { SurahHeatmapStrip } from "@/components/root/SurahHeatmapStrip";
-import { CiteButton } from "@/components/root/CiteButton";
+import { CiteMenu } from "@/components/citation/CiteMenu";
 import { SaveButton } from "@/components/notes/SaveButton";
 import { FrequencyChart } from "@/components/root/FrequencyChart";
 import { FormsTable } from "@/components/root/FormsTable";
@@ -50,7 +44,6 @@ export default async function RootPage({ params }: { params: Promise<{ root: str
   }
 
   const summary = buildRootSummary(file);
-  const manifest = readManifest();
   const meta = readMeta();
   const distribution = buildSurahDistribution(file, meta);
   const surahLabels = new Map(meta.surahs.map((s) => [s.n, s.translit]));
@@ -79,10 +72,9 @@ export default async function RootPage({ params }: { params: Promise<{ root: str
               label={root}
               href={`/root/${encodeURIComponent(root)}/`}
             />
-            <CiteButton
+            <CiteMenu
               subject={{ kind: "root", label: root }}
-              manifest={manifest}
-              canonical={absoluteUrl(`/root/${encodeURIComponent(root)}/`)}
+              path={`/root/${encodeURIComponent(root)}/`}
             />
           </>
         }

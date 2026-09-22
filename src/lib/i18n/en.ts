@@ -158,9 +158,12 @@ export const en: Dict = {
     heading: "Distribution across surahs",
     surahOrder: "Surah order",
     revelationOrder: "Revelation order",
+    noldekeOrder: "Nöldeke order",
     bySurahDescription: "Where this root's occurrences fall across the 114 surahs.",
     byRevelationDescription:
       "The same occurrences, ordered by the conventional chronological (revelation) sequence instead.",
+    byNoldekeDescription:
+      "The same occurrences, ordered by Theodor Nöldeke's chronological reconstruction instead — a distinct scholarly proposal from the conventional order above.",
   },
   wordPositionStats: {
     heading: "Position within the verse",
@@ -181,6 +184,10 @@ export const en: Dict = {
   citeButton: {
     cite: "Cite",
     copied: "Citation copied",
+    copyText: "Copy citation",
+    bibtex: "BibTeX (.bib)",
+    ris: "RIS (.ris)",
+    cslJson: "CSL-JSON (.json)",
   },
   compare: {
     title: "Compare roots",
@@ -415,6 +422,7 @@ export const en: Dict = {
     words: "Words",
     revelation: "Revealed",
     chronological: "Chronological order",
+    noldekeOrder: "Nöldeke order",
     juz: "Juz'",
     hizb: "\u1E24izb",
     surahLength: "Verses in surah",
@@ -453,6 +461,18 @@ export const en: Dict = {
       "This commentary has no separate note on this verse \u2014 usually because it has already glossed it as part of a repeated refrain or an earlier passage. Nothing is shown here rather than the nearest preceding note, which would not be a comment on this verse.",
     liveSourceNote:
       "Fetched live from an external source for this reading \u2014 unlike the rest of this app, it needs a connection and is not stored for offline use.",
+  },
+  treebank: {
+    toggle: "Grammar tree",
+    loading: "Loading the grammar tree\u2026",
+    failed: "Could not load the grammar tree.",
+    noEntry:
+      "This verse has no entry in the dependency treebank \u2014 a small gap (about 1.4% of segments corpus-wide) between two independently segmented corpora, not a claim that this verse has no grammatical structure.",
+    dependsOn: "depends on:",
+    elidedNote:
+      "This verse's traditional analysis also includes at least one elided (implied) element \u2014 a word the grammar requires but the text does not write out \u2014 which is not shown above since it carries no surface text of its own.",
+    sourceNote:
+      "Word-to-word grammatical relations (traditional i\u02bfr\u0101b), from a third-party treebank joined onto this app's own word/segment numbering. See About for the source and its license.",
   },
   readings: {
     toggle: "Other transmissions",
@@ -906,6 +926,12 @@ export const en: Dict = {
     removeAria: (label) => `Remove ${label}`,
     notePlaceholder: "Add a note…",
   },
+  sendToStudy: {
+    button: "Send to Study",
+    hint: "Add this topic's roots/lemmas as one query set in a Study.",
+    newStudyPlaceholder: "New study title…",
+    newStudyButton: "Create & add",
+  },
   studiesPage: {
     title: "Studies",
     subtitle:
@@ -956,6 +982,46 @@ export const en: Dict = {
     rootPrefix: (root) => `root: ${root}`,
     occurrences: "Occurrences",
     surfaceForms: "Surface forms",
+  },
+  limitsPage: {
+    title: "Limits",
+    heading: "What this can and can't tell you",
+    intro:
+      "Every page in this app states its own scope where it matters -- this page just collects those caveats in one place, so a reader who wants the honest edges of the data doesn't have to find each one separately. Nothing here is new; it's a map of caveats stated elsewhere.",
+    readingHeading: "This is one reading, not “the” Qur'an text",
+    readingBody:
+      "Every count, root assignment and citation in this app is computed against one specific reading (riwāya) and one verse-numbering tradition -- see About for which. A different canonical reading can put a word under a different root entirely, and verse numbering is itself a separate tradition from the reading, so a reference like 2:189 does not mean the same thing in every edition of the Qur'an in print.",
+    translationsHeading: "The five translations were chosen for licensing, not completeness",
+    translationsBody:
+      "Saheeh International, Pickthall, Yusuf Ali, Rodwell and Sale are shown because their text is unambiguously public domain (by translator death date) or explicitly licensed for redistribution -- not because they are the five best, most literal, or most widely used renderings. Several well-known modern translations were considered and excluded on copyright grounds alone.",
+    tafsirHeading: "A commentary with no note on a verse is not a claim that it needs none",
+    tafsirBody:
+      "Al-Jalalayn ships with the app and is validated at build time; a verse with no separate note usually means the commentary already glossed it elsewhere (a repeated refrain, an earlier passage), and that gap count is exact. The other three commentaries (al-Kashshaf, Mafatih al-Ghayb, Ruh al-Ma'ani) are fetched live from an external source when opened -- they need a connection, are not stored for offline use, and this app does not track their exact verse coverage the way it does al-Jalalayn's.",
+    topicsHeading: "The Topics and Names indexes are a starting point, not an exegesis",
+    topicsBody:
+      "Every topic (and every entry under Names) is a hand-picked list of roots/lemmas, not derived from parsing any tafsir. A verse can be substantively about a topic without using any of its listed roots (metaphor, pronoun reference, narrative context), and a root's appearance doesn't guarantee its dominant sense is the operative one in that verse. Treat it as a fast way to find candidate verses, not a verdict on meaning.",
+    laneHeading: "Lane's Lexicon has real gaps",
+    laneBody:
+      "Lane died before finishing his own dictionary, and the tail (roughly the letters ك through ي) was assembled posthumously from thinner notes. A missing entry for a root is a genuine gap in the source, not something this app fills in by guessing from a similarly spelled root.",
+    syntaxHeading: "Function tags are a separate layer from root counts",
+    syntaxBody:
+      "The grammatical function tags shown on the Syntax page (restriction, condition, circumstantial ḥāl, and the rest) are not “occurrences” in this app's usual sense -- most of them mark rootless particles. This layer never affects a root's occurrence count anywhere else in the app.",
+    readingsPanelHeading: "The alternative-transmissions panel shows wording only",
+    readingsPanelBody:
+      "The seven non-Hafs transmissions shown per verse are written texts, so they carry wording (farsh) differences only. Most of what actually distinguishes recitations audibly -- vowel length, pausal forms, assimilation, the treatment of hamza -- is uṣūl, and none of it is visible in written text. Nothing on that panel is diffed, scored or highlighted; the texts are simply placed side by side.",
+    chronologyHeading: "Two chronological orderings, and neither is a consensus",
+    chronologyBody:
+      "This app shows two revelation-order reconstructions: the conventional order used since the 1924 Cairo edition, and Theodor Nöldeke's separate 19th-century academic reconstruction. They agree on many surahs and disagree on others -- both are scholarly proposals about a tradition with real uncertainty at the edges, not settled fact, and neither is a religious ruling.",
+    treebankHeading: "The grammar tree is one parse, not the only valid one",
+    treebankBody:
+      "The word-to-word dependency relations (traditional iʿrāb) shown per verse come from one external, third-party analysis. Classical Arabic grammar famously admits more than one defensible parse for some constructions, and this app shows the one its source records, not a survey of alternatives. About 1.4% of this corpus's word-segments have no entry at all (two independently segmented corpora disagreeing on a handful of boundaries), and an elided/implied element the traditional analysis posits but the text doesn't write out is noted, not rendered as part of the tree.",
+    statsHeading: "The statistics describe a small, closed corpus",
+    statsBody:
+      "The Qur'an is roughly 77,000 words -- small by the standards most corpus-linguistic methods (keyness, dispersion, collocation) were built for. A single row in Compare or Insights is a lead worth following up, not a result to publish on its own; at whole-Qur'an scope there is nothing to compare a root's dispersion against, and a root with zero occurrences on one side of a comparison is floored to 0.5 to keep its effect size finite, which is an estimation artifact, not a real count.",
+    occurrenceHeading: "“Occurrence” has one specific, narrow meaning",
+    occurrenceBody:
+      "Everywhere this app counts “occurrences” of a root, it means tagged morphological segments carrying that root -- particles, pronouns and clitics are never counted toward any root's total, however semantically related they might feel.",
+    aboutLinkNote: "See About for full data sources, licenses and the reading this app is built on.",
   },
   aboutPage: {
     title: "About",
@@ -1043,6 +1109,8 @@ export const en: Dict = {
       "Added Studies: named collections of QCQL query sets combined by set algebra (intersect/union/subtract), with notes and a citable table/JSON/Markdown export -- the next unit up from a single saved query.",
     changelogWitnesses:
       "Added three more English translations (Yusuf Ali, Rodwell, Sale) alongside Saheeh International and Pickthall, and a choice of three more classical tafsirs (al-Kashshaf, Mafatih al-Ghayb, Ruh al-Ma'ani) alongside al-Jalalayn -- see \"Translations and commentary\" above for what's shipped offline versus fetched live.",
+    changelogRoadmapFive:
+      "Added a word-to-word dependency treebank (traditional iʿrāb) per verse; a second chronological ordering (Nöldeke's, alongside the existing conventional one) with its own QCQL filter; machine-readable citation exports (BibTeX, RIS, CSL-JSON) alongside the existing plain-text citation; a \"Send to Study\" action turning any Topic or Names entry into a QCQL query set; and this Limits page, consolidating scope caveats that were previously scattered one-per-page.",
     changelogV1Label: "v1.0.0 (20 September 2026)",
     changelogV1Note: "First archived release.",
     dataSourcesHeading: "Data sources & licenses",

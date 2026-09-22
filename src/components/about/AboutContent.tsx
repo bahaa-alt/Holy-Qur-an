@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useT } from "@/lib/i18n/LanguageContext";
 import { OfflineDownload } from "@/components/layout/OfflineDownload";
 import type { ManifestFile } from "@/lib/data/types";
@@ -30,6 +31,13 @@ export function AboutContent({
       <div>
         <h1 className="text-2xl font-semibold">{t.aboutPage.heading}</h1>
         <p className="mt-2 text-muted">{t.aboutPage.intro}</p>
+        <p className="mt-2 text-sm">
+          <Link href="/limits/" className="text-accent hover:underline">
+            {t.limitsPage.title}
+          </Link>
+          {" — "}
+          <span className="text-muted">{t.limitsPage.heading}</span>
+        </p>
       </div>
 
       <div>
@@ -140,6 +148,7 @@ export function AboutContent({
               <li>{t.aboutPage.changelogResearchTooling}</li>
               <li>{t.aboutPage.changelogStudies}</li>
               <li>{t.aboutPage.changelogWitnesses}</li>
+              <li>{t.aboutPage.changelogRoadmapFive}</li>
             </ul>
           </div>
           <div>

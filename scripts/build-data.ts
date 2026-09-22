@@ -37,6 +37,7 @@ import { executeQcql } from "../src/lib/qcql/execute";
 import { parseQcql } from "../src/lib/qcql/parse";
 import { RIWAYAT, buildReadings, type RawEdition } from "./lib/build-readings";
 import { TAFSIR_SLUG, buildTafsir, type RawTafsirRow } from "./lib/build-tafsir";
+import { buildTreebank, parseTreebankTSV } from "./lib/build-treebank";
 import { buildLane, type RawLaneEntry } from "./lib/build-lane";
 import { MUJAM_SOURCE_TABLE, MUJAM_WORKS, buildMujam, type RawMujamEntry } from "./lib/build-mujam";
 import { describeTag } from "../src/lib/morphology/tagLabels";
@@ -168,6 +169,12 @@ const SOURCES: ManifestSource[] = [
     license:
       "Unlicense packaging; each translator died long enough ago (1953, 1900, 1736) that the translation text itself is public domain",
   },
+  {
+    name: "Dependency treebank (traditional iʿrāb): word-to-word grammatical relations",
+    url: "https://github.com/NoorBayan/Quranic",
+    license:
+      "MIT. Covers 128,207 of this corpus's 130,030 segments -- see the Grammar tree panel's own note for what a gap or an elided/implied element means.",
+  },
 ];
 
 // Bulk downloads that are deliberately NOT part of the deployed site. Git-
@@ -184,6 +191,15 @@ const LANE_ZIP_URL =
 // tables are read (see MUJAM_WORKS).
 const MUJAM_ZIP_URL =
   "https://raw.githubusercontent.com/wizsk/arabic_lexicons/master/assets/data/db/db.sqlite.zip";
+
+// A word-to-word dependency treebank (traditional iʿrāb) covering the whole
+// Qur'an, from the same kind of place as Lane's and the Arabic lexicons: a
+// .rar tracked in its own repository, fetched and cached, extracted with
+// unrar-free the way unzip already handles the .zip archives above -- see
+// ci.yml/deploy.yml's "Install unrar-free" step. 4.1 MB compressed, 57 MB
+// unpacked (UTF-16LE; parseTreebankTSV normalizes the encoding).
+const TREEBANK_RAR_URL =
+  "https://raw.githubusercontent.com/NoorBayan/Quranic/main/corpus/Quranic.rar";
 
 const TAFSIR_SRC_DIR = join(process.cwd(), "references", "tafsir", `ar-tafsir-al-${TAFSIR_SLUG}`);
 const EXPORT_DIR = join(process.cwd(), "dist", "export");
@@ -219,6 +235,12 @@ const EXPECTED = {
   // spread is real, Mufradat being a lexicon of Qur'anic vocabulary rather
   // than of the language at large.
   mujamCoveredRoots: 1595,
+  // The treebank's own real (non-elided) tokens that join onto one of this
+  // corpus's 130,030 segments by (surah:ayah:word:segment). The ~1,800 gap
+  // is two independently maintained corpora disagreeing on a handful of
+  // segment boundaries -- see build-treebank.ts.
+  treebankCoveredSegments: 128207,
+  treebankTotalSegments: 130030,
   // Segments carrying at least one of case / mood / definiteness / PGN.
   // Well under the 130,030 total, because most particles and prefixes carry
   // none of the four and are deliberately not indexed. Dropped by 12,992
@@ -323,6 +345,9 @@ const LANE_BUDGET_RAW = 32 * 1024 * 1024;
 // root carrying all three (~9.3 MB of source text measured). Excluded from
 // the core totals, as above.
 const MUJAM_BUDGET_RAW = 16 * 1024 * 1024;
+// The dependency treebank, sharded per surah, one entry per covered segment
+// (~128,207 across all 114 files). Excluded from the core totals, as above.
+const TREEBANK_BUDGET_RAW = 12 * 1024 * 1024;
 // Raised from 9 MiB: adding Pickthall's translation to every verse grew
 // surahs/*.json by ~900 KB raw (measured 9.18 MiB total). Gzipped total
 // barely moved (~2.66 MiB, well under TOTAL_GZ_BUDGET) since English prose
@@ -408,6 +433,29 @@ async function fetchMujamDb(): Promise<string> {
   if (!existsSync(unzipped)) fail(`unzip did not produce ${unzipped}`);
   renameSync(unzipped, dbPath);
   return dbPath;
+}
+
+/**
+ * Downloads and unpacks the dependency treebank, caching the archive and
+ * the extracted file. Unlike fetchLaneDb/fetchMujamDb the payload is a
+ * single UTF-16LE-encoded CSV (Quranic.csv), not a database -- read here
+ * and decoded to a UTF-8 string for parseTreebankTSV.
+ */
+async function fetchTreebankCsv(): Promise<string> {
+  const csvPath = join(RAW_DIR, "treebank.csv");
+  if (!existsSync(csvPath) || FORCE) {
+    const rarPath = join(RAW_DIR, "treebank.rar");
+    if (!existsSync(rarPath) || FORCE) {
+      const rar = await fetchBufferWithRetry(TREEBANK_RAR_URL, { label: "the dependency treebank" });
+      mkdirSync(RAW_DIR, { recursive: true });
+      writeFileSync(rarPath, rar);
+    }
+    execFileSync("unrar", ["x", "-o+", rarPath, `${RAW_DIR}/`], { stdio: "pipe" });
+    const extracted = join(RAW_DIR, "Quranic.csv");
+    if (!existsSync(extracted)) fail(`unrar did not produce ${extracted}`);
+    renameSync(extracted, csvPath);
+  }
+  return readFileSync(csvPath).toString("utf16le");
 }
 
 /**
@@ -599,6 +647,15 @@ async function main() {
     readMujamEntries(await fetchMujamDb()),
     indexRoots.map((r) => r.ar),
   );
+
+  // --- 5b-vi. Dependency treebank (traditional iʿrāb) ---
+  const treebankLocations = new Set<string>();
+  for (const word of words) {
+    for (const seg of word.segments) {
+      treebankLocations.add(`${seg.s}:${seg.a}:${seg.w}:${seg.seg}`);
+    }
+  }
+  const treebank = buildTreebank(parseTreebankTSV(await fetchTreebankCsv()), treebankLocations);
 
   // --- 5b-ii. Build the corpus-wide syntactic / rhetorical index ---
   const syntaxIndex = buildSyntax(words);
@@ -888,6 +945,22 @@ async function main() {
   // Partial by nature, and unevenly so per work (see buildMujam); asserted
   // so a source or matching change that silently drops roots fails loudly.
   assertEqual("mujam covered roots", mujam.meta.coveredRoots, EXPECTED.mujamCoveredRoots, errors);
+  assertEqual("treebank shard count", treebank.files.size, meta.surahs.length, errors);
+  // Partial by nature (two independently segmented corpora, see
+  // build-treebank.ts); asserted so a source or join change that silently
+  // drops coverage is caught, not so it reaches 130,030.
+  assertEqual(
+    "treebank covered segments",
+    treebank.meta.coveredSegments,
+    EXPECTED.treebankCoveredSegments,
+    errors,
+  );
+  assertEqual(
+    "treebank total segments",
+    treebank.meta.totalSegments,
+    EXPECTED.treebankTotalSegments,
+    errors,
+  );
   assertEqual(
     "syntax.json tag vocabulary size",
     syntaxIndex.tags.length,
@@ -1170,6 +1243,20 @@ async function main() {
   report.record("tafsir/*/*.json", tafsirRaw, tafsirGz, false);
   if (tafsirRaw > TAFSIR_BUDGET_RAW) {
     fail(`tafsir/ exceeds its budget: ${tafsirRaw} > ${TAFSIR_BUDGET_RAW} bytes`);
+  }
+
+  const treebankMetaSize = writeJSON(join(OUT_DIR, "treebank", "meta.json"), treebank.meta);
+  report.record("treebank/meta.json", treebankMetaSize.rawBytes, treebankMetaSize.gzBytes);
+  const treebankSizes = [...treebank.files.entries()].map(([n, file]) =>
+    writeJSON(join(OUT_DIR, "treebank", `${n}.json`), file),
+  );
+  // Uncounted for the same reason as readings/ and tafsir/: an apparatus
+  // opened per verse, fetched lazily, and not warmed by prefetchAll.
+  const treebankRaw = treebankSizes.reduce((sum, x) => sum + x.rawBytes, 0);
+  const treebankGz = treebankSizes.reduce((sum, x) => sum + x.gzBytes, 0);
+  report.record("treebank/*.json", treebankRaw, treebankGz, false);
+  if (treebankRaw > TREEBANK_BUDGET_RAW) {
+    fail(`treebank/ exceeds its budget: ${treebankRaw} > ${TREEBANK_BUDGET_RAW} bytes`);
   }
 
   const syntaxSize = writeJSON(join(OUT_DIR, "syntax.json"), syntaxIndex);

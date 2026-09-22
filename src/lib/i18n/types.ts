@@ -163,8 +163,10 @@ export interface Dict {
     heading: string;
     surahOrder: string;
     revelationOrder: string;
+    noldekeOrder: string;
     bySurahDescription: string;
     byRevelationDescription: string;
+    byNoldekeDescription: string;
   };
   wordPositionStats: {
     heading: string;
@@ -183,6 +185,10 @@ export interface Dict {
   citeButton: {
     cite: string;
     copied: string;
+    copyText: string;
+    bibtex: string;
+    ris: string;
+    cslJson: string;
   };
   compare: {
     title: string;
@@ -398,6 +404,7 @@ export interface Dict {
     words: string;
     revelation: string;
     chronological: string;
+    noldekeOrder: string;
     juz: string;
     hizb: string;
     surahLength: string;
@@ -430,6 +437,18 @@ export interface Dict {
     noEntryUnknownTotal: string;
     /** Shown for a source fetched live rather than shipped with the app. */
     liveSourceNote: string;
+  };
+  treebank: {
+    toggle: string;
+    loading: string;
+    failed: string;
+    /** Shown when this verse has no treebank entries at all (the ~1.4% join gap). */
+    noEntry: string;
+    /** Prefixes the head segment's own text, e.g. "depends on: <text>". */
+    dependsOn: string;
+    /** Shown when this verse's traditional analysis includes an elided/implied element not represented as a segment. */
+    elidedNote: string;
+    sourceNote: string;
   };
   readings: {
     toggle: string;
@@ -835,6 +854,12 @@ export interface Dict {
     removeAria: (label: string) => string;
     notePlaceholder: string;
   };
+  sendToStudy: {
+    button: string;
+    hint: string;
+    newStudyPlaceholder: string;
+    newStudyButton: string;
+  };
   studiesPage: {
     title: string;
     subtitle: string;
@@ -879,6 +904,34 @@ export interface Dict {
     rootPrefix: (root: string) => string;
     occurrences: string;
     surfaceForms: string;
+  };
+  limitsPage: {
+    title: string;
+    heading: string;
+    intro: string;
+    readingHeading: string;
+    readingBody: string;
+    translationsHeading: string;
+    translationsBody: string;
+    tafsirHeading: string;
+    tafsirBody: string;
+    topicsHeading: string;
+    topicsBody: string;
+    laneHeading: string;
+    laneBody: string;
+    syntaxHeading: string;
+    syntaxBody: string;
+    readingsPanelHeading: string;
+    readingsPanelBody: string;
+    chronologyHeading: string;
+    chronologyBody: string;
+    treebankHeading: string;
+    treebankBody: string;
+    statsHeading: string;
+    statsBody: string;
+    occurrenceHeading: string;
+    occurrenceBody: string;
+    aboutLinkNote: string;
   };
   aboutPage: {
     title: string;
@@ -935,6 +988,7 @@ export interface Dict {
     changelogResearchTooling: string;
     changelogStudies: string;
     changelogWitnesses: string;
+    changelogRoadmapFive: string;
     changelogV1Label: string;
     changelogV1Note: string;
     dataSourcesHeading: string;

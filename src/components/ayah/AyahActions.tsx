@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { Check, Copy, ExternalLink } from "lucide-react";
 import { copyToClipboard } from "@/lib/clipboard";
+import { CiteMenu } from "@/components/citation/CiteMenu";
+import { verseHref } from "@/lib/search/suggest";
 import { useT } from "@/lib/i18n/LanguageContext";
 
 export function AyahActions({
@@ -55,6 +57,7 @@ export function AyahActions({
       <Link href={`/surah/${surah}/?ayah=${ayah}`} className="inline-flex items-center gap-1 hover:text-ink">
         <ExternalLink size={13} /> {t.ayahActions.openInSurah}
       </Link>
+      <CiteMenu subject={{ kind: "verse", label: `${surah}:${ayah}` }} path={verseHref(surah, ayah)} />
     </div>
   );
 }

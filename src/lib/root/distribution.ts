@@ -1,5 +1,6 @@
 import type { MetaFile, RootFile } from "@/lib/data/types";
 import { CHRONOLOGICAL_ORDER_BY_SURAH } from "@/lib/data/chronologicalOrder";
+import { NOLDEKE_ORDER_BY_SURAH } from "@/lib/data/noldekeChronology";
 
 export interface SurahCount {
   surah: number;
@@ -42,5 +43,12 @@ export function buildSurahDistribution(file: RootFile, meta: MetaFile): SurahDis
 export function sortByChronologicalOrder<T extends { surah: number }>(rows: readonly T[]): T[] {
   return [...rows].sort(
     (a, b) => CHRONOLOGICAL_ORDER_BY_SURAH[a.surah - 1] - CHRONOLOGICAL_ORDER_BY_SURAH[b.surah - 1],
+  );
+}
+
+/** Reorders rows by Nöldeke's chronological order (see lib/data/noldekeChronology). */
+export function sortByNoldekeOrder<T extends { surah: number }>(rows: readonly T[]): T[] {
+  return [...rows].sort(
+    (a, b) => NOLDEKE_ORDER_BY_SURAH[a.surah - 1] - NOLDEKE_ORDER_BY_SURAH[b.surah - 1],
   );
 }

@@ -41,6 +41,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # See ci.yml's identical step: the treebank source ships as .rar.
+      - name: Install unrar-free
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends unrar-free
+
       - name: Build static export
         # The corpus CSV is published below to a fixed, rolling tag, so its
         # download URL is predictable before the release exists -- which it

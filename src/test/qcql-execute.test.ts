@@ -229,6 +229,14 @@ describe("filters", () => {
     expect(at("[root=علم] :: chrono > 10")).toEqual(["2:1:1"]);
   });
 
+  it("compares Nöldeke's revelation position, a distinct ordering from chrono", () => {
+    // Surah 1 is Nöldeke position 48 (last of his first Meccan phase);
+    // surah 2 is Nöldeke position 91 (first of his Medinan period).
+    expect(at("[root=علم] :: noldeke < 90")).toEqual(["1:1:1", "1:2:1"]);
+    expect(at("[root=علم] :: noldeke = 48")).toEqual(["1:1:1", "1:2:1"]);
+    expect(at("[root=علم] :: noldeke > 90")).toEqual(["2:1:1"]);
+  });
+
   it("applies several filters conjunctively", () => {
     expect(at("[root=علم] :: meccan & surah = 1")).toEqual(["1:1:1", "1:2:1"]);
     expect(at("[root=علم] :: meccan & surah = 2")).toEqual([]);

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Download, FileJson, FileSpreadsheet, FileText, Loader2, Quote } from "lucide-react";
+import { Download, FileJson, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
 import { getManifest } from "@/lib/data/loader";
 import { buildCitation, type CitationSubject } from "@/lib/citation/buildCitation";
-import { copyToClipboard } from "@/lib/clipboard";
+import { CiteMenu } from "@/components/citation/CiteMenu";
 import {
   formatTable,
   tableFilename,
@@ -33,7 +33,7 @@ const FORMATS: { format: TableFormat; icon: typeof FileJson }[] = [
  * `path` is the app-relative path that reproduces the view, including its
  * query string (e.g. `/query/?q=...`). It is resolved against the site's
  * canonical origin rather than read from `window.location`, for the
- * reason CiteButton gives: a preview, a mirror and `next dev` are all the
+ * reason CiteMenu gives: a preview, a mirror and `next dev` are all the
  * wrong address to put in a footnote.
  */
 export function ExportButton({
@@ -47,8 +47,7 @@ export function ExportButton({
   path: string;
 }) {
   const t = useT();
-  const [busy, setBusy] = useState<TableFormat | "cite" | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [busy, setBusy] = useState<TableFormat | null>(null);
 
   async function build(): Promise<{ table: ExportTable; citation: string }> {
     const [table, manifest] = await Promise.all([resolve(), getManifest()]);
@@ -88,19 +87,6 @@ export function ExportButton({
     }
   }
 
-  async function cite() {
-    setBusy("cite");
-    try {
-      const { citation } = await build();
-      if (await copyToClipboard(citation)) {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
-      }
-    } finally {
-      setBusy(null);
-    }
-  }
-
   const labels: Record<TableFormat, string> = {
     csv: t.exportMenu.csv,
     json: t.exportMenu.json,
@@ -124,15 +110,7 @@ export function ExportButton({
           {labels[format]}
         </button>
       ))}
-      <button
-        type="button"
-        onClick={() => void cite()}
-        disabled={busy !== null}
-        className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs text-muted transition-colors hover:border-accent hover:text-accent disabled:opacity-50"
-      >
-        {copied ? <Check size={12} className="text-accent" /> : <Quote size={12} />}
-        {copied ? t.citeButton.copied : t.citeButton.cite}
-      </button>
+      <CiteMenu subject={subject} path={path} />
     </div>
   );
 }

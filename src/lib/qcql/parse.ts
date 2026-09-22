@@ -246,7 +246,7 @@ class Parser {
 
     if (key === "meccan" || key === "medinan") return { kind: "revelation", value: key };
 
-    if (key === "chrono" || key === "surah") {
+    if (key === "chrono" || key === "noldeke" || key === "surah") {
       const opTok = this.next();
       const op = COMPARE_OPS.find((o) => o === opTok.kind);
       if (!op) {
@@ -269,7 +269,7 @@ class Parser {
     }
 
     throw new QcqlError(
-      `Unknown filter "${tok.text}". Filters are: meccan, medinan, chrono, surah.`,
+      `Unknown filter "${tok.text}". Filters are: meccan, medinan, chrono, noldeke, surah.`,
       tok.at,
       tok.text,
     );

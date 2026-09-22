@@ -35,6 +35,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const paths: string[] = [
     "/",
     "/about/",
+    "/limits/",
     "/quran/",
     "/roots/",
     "/search/",

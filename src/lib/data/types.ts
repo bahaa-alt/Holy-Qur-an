@@ -355,6 +355,40 @@ export interface TafsirSurahFile {
   entries: { a: number; t: string }[];
 }
 
+/**
+ * One word-segment's traditional grammatical dependency (iʿrāb), from a
+ * third-party treebank joined onto this app's own (s,a,w,seg) addressing --
+ * see scripts/lib/build-treebank.ts for the join and TreebankPanel for the
+ * UI. `t` is the segment's own Arabic text as the treebank itself tokenizes
+ * it (may differ slightly in diacritics from this app's own rendering).
+ * `head` is the "a:w:g" of the segment this one depends on -- omitted (not
+ * fabricated) when this segment is a sentence root, when its head is an
+ * elided/implied element the source represents with no surface text, or
+ * when it carries no independent relation of its own (e.g. a bare
+ * definite-article prefix).
+ */
+export interface TreebankEntry {
+  a: number;
+  w: number;
+  g: number;
+  t: string;
+  rel: string;
+  relAr: string;
+  head: string | null;
+}
+
+export interface TreebankSurahFile {
+  n: number;
+  entries: TreebankEntry[];
+  /** ayahs whose traditional analysis includes at least one elided/implied element not represented as an entry above */
+  elidedAyahs: number[];
+}
+
+export interface TreebankMetaFile {
+  coveredSegments: number;
+  totalSegments: number;
+}
+
 /** Provenance and coverage for the bundled Arabic-English lexicon. */
 export interface LaneMetaFile {
   name: string;

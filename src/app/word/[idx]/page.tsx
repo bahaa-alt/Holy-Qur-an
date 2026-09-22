@@ -2,14 +2,13 @@ import { notFound } from "next/navigation";
 import {
   readIndex,
   readLemmaFile,
-  readManifest,
   readRootFile,
   readSurahFile,
 } from "@/lib/data/serverData";
 import { buildOccurrenceRows, filterRows } from "@/lib/root/occurrences";
 import { buildWordPositionStats } from "@/lib/word/positionStats";
 import { WordHeader } from "@/components/word/WordHeader";
-import { CiteButton } from "@/components/root/CiteButton";
+import { CiteMenu } from "@/components/citation/CiteMenu";
 import { SaveButton } from "@/components/notes/SaveButton";
 import { FormsTable } from "@/components/root/FormsTable";
 import { WordPositionStatsCard } from "@/components/word/WordPositionStatsCard";
@@ -58,8 +57,6 @@ export default async function WordPage({ params }: { params: Promise<{ idx: stri
     file = lemmaFile;
   }
 
-  const manifest = readManifest();
-
   // A rootless lemma file's occ is already scoped to this exact word; a
   // rooted one covers the whole root, so it's filtered to this lemma's
   // key, same as AyahExplorer's own initialFilters below.
@@ -92,11 +89,7 @@ export default async function WordPage({ params }: { params: Promise<{ idx: stri
               label={row.lemma}
               href={`/word/${idx}/`}
             />
-            <CiteButton
-              subject={{ kind: "word", label: row.lemma }}
-              manifest={manifest}
-              canonical={absoluteUrl(`/word/${idx}/`)}
-            />
+            <CiteMenu subject={{ kind: "word", label: row.lemma }} path={`/word/${idx}/`} />
           </>
         }
       />

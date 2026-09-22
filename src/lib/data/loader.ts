@@ -26,6 +26,8 @@ import type {
   SurahVerse,
   TafsirMetaFile,
   TafsirSurahFile,
+  TreebankMetaFile,
+  TreebankSurahFile,
   SyntaxIndexFile,
   VerseRootsFile,
   VerseSimilarityFile,
@@ -161,6 +163,19 @@ export function getTafsirMeta(slug: string): Promise<TafsirMetaFile> {
  */
 export function getTafsirSurah(slug: string, n: number): Promise<TafsirSurahFile> {
   return cachedFetch(`${DATA_BASE}/tafsir/${slug}/${n}.json`);
+}
+
+/** Coverage for the dependency treebank (see build-treebank.ts): how many of this corpus's segments it has an entry for. */
+export function getTreebankMeta(): Promise<TreebankMetaFile> {
+  return cachedFetch(`${DATA_BASE}/treebank/meta.json`);
+}
+
+/**
+ * One surah's word-to-word dependency relations. Lazily fetched and not
+ * part of prefetchAll, same as tafsir and the alternative readings.
+ */
+export function getTreebankSurah(n: number): Promise<TreebankSurahFile> {
+  return cachedFetch(`${DATA_BASE}/treebank/${n}.json`);
 }
 
 /**
