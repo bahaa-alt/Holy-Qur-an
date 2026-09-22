@@ -194,6 +194,11 @@ export function AboutContent({
       </div>
 
       <div>
+        <h2 className="text-lg font-semibold">{t.aboutPage.qcqlCliHeading}</h2>
+        <p className="mt-2 text-muted">{t.aboutPage.qcqlCliBody}</p>
+      </div>
+
+      <div>
         <h2 className="text-lg font-semibold">{t.aboutPage.citeHeading}</h2>
         <p className="mt-2 text-muted">{t.aboutPage.citeIntro}</p>
         <dl className="mt-3 space-y-1.5 text-sm">

@@ -894,5 +894,7 @@ export interface Dict {
     corpusExportDownload: (size: string) => string;
     corpusExportReleases: string;
     corpusExportNotPublished: (size: string) => string;
+    qcqlCliHeading: string;
+    qcqlCliBody: string;
   };
 }

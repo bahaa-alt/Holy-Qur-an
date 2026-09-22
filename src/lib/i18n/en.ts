@@ -987,5 +987,8 @@ export const en: Dict = {
     corpusExportReleases: "Browse releases",
     corpusExportNotPublished: (size) =>
       `The export is ${size} \u2014 too large to ship with the site, so it is published as a release asset rather than served from here. Build it yourself with \`pnpm data:build\`; it lands in \`dist/export/corpus.csv\`.`,
+    qcqlCliHeading: "Command-line queries",
+    qcqlCliBody:
+      "The same query language the Query page runs in your browser is also available as a script, for anyone who wants to run many queries, batch results into a file, or pull matches into a notebook rather than clicking through a page one query at a time. In a checkout that has run the data build, `npm run qcql -- \"[root=\\u0639\\u0644\\u0645 & cat=verb.perf] :: meccan\"` prints CSV to stdout; add `--format json`, `--with-text`, or `--base-url` to read a deployed instance's data instead of a local build. Run `npm run qcql -- --help` for the full option list.",
   },
 };
