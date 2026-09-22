@@ -35,7 +35,8 @@ export type CitationKind =
   | "formulas"
   | "verseSimilarity"
   | "patterns"
-  | "letters";
+  | "letters"
+  | "study";
 
 const SUBJECT_LABEL: Record<CitationKind, string> = {
   root: "Root",
@@ -53,6 +54,7 @@ const SUBJECT_LABEL: Record<CitationKind, string> = {
   patterns: "Patterns",
   formulas: "Formulas",
   letters: "Letter frequency",
+  study: "Study",
 };
 
 export interface CitationSubject {
