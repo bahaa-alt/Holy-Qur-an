@@ -87,6 +87,28 @@ describe("buildSurahs", () => {
     expect("pickthall" in verse2).toBe(false);
   });
 
+  it("attaches Yusuf Ali, Rodwell and Sale the same way, independently of each other", () => {
+    const yusufAliByRef = new Map([["1:1", "In the name of Allah, Most Gracious, Most Merciful"]]);
+    const rodwellByRef = new Map([["1:1", "In the Name of God, the Compassionate, the Merciful"]]);
+    const saleByRef = new Map([["1:1", "In the name of the most merciful God"]]);
+    const { surahFiles: sf } = buildSurahs(
+      words,
+      [chapter()],
+      new Map(),
+      yusufAliByRef,
+      rodwellByRef,
+      saleByRef,
+    );
+    const verse1 = sf.get(1)!.verses.find((v) => v.a === 1)!;
+    const verse2 = sf.get(1)!.verses.find((v) => v.a === 2)!;
+    expect(verse1.yusufAli).toBe("In the name of Allah, Most Gracious, Most Merciful");
+    expect(verse1.rodwell).toBe("In the Name of God, the Compassionate, the Merciful");
+    expect(verse1.sale).toBe("In the name of the most merciful God");
+    expect("yusufAli" in verse2).toBe(false);
+    expect("rodwell" in verse2).toBe(false);
+    expect("sale" in verse2).toBe(false);
+  });
+
   it("emits every verse even when a verse has no morphology words at all", () => {
     const emptyChapter: QuranJsonChapter = {
       ...chapter(),

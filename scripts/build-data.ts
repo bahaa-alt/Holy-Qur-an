@@ -69,7 +69,8 @@ import type {
   VerseRootsFile,
 } from "../src/lib/data/types";
 
-interface PickthallEdition {
+/** Shared shape of every fawazahmed0/quran-api English edition used here. */
+interface FawazEdition {
   quran: { chapter: number; verse: number; text: string }[];
 }
 
@@ -94,6 +95,27 @@ const READING_URL = (slug: string) =>
 
 const PICKTHALL_URL =
   "https://raw.githubusercontent.com/fawazahmed0/quran-api/1/editions/eng-mohammedmarmadu.min.json";
+
+// Three more English witnesses, same repo/shape/licence as Pickthall above --
+// chosen for stylistic and "school" spread against Saheeh International and
+// Pickthall, and DELIBERATELY restricted to translators long enough dead
+// that the translation itself (not just this repo's packaging) is
+// unambiguously public domain: Yusuf Ali (1934, d. 1953 -- South Asian, the
+// most historically influential English rendering), Rodwell (1861, d. 1900
+// -- Western-academic, reorders surahs chronologically), and Sale (1734,
+// d. 1736 -- the first major English translation made directly from the
+// Arabic). Modern translations on the same host (Asad, Arberry, etc.) were
+// considered and rejected for this reason: their translators died recently
+// enough (1992, 1969) that the translation text itself is very likely still
+// under copyright regardless of this repo's own Unlicense grant, which
+// covers only the packaging. All three shipped here verified at
+// 6,236/6,236 verse coverage (no fallback needed, unlike Pickthall's gap).
+const YUSUF_ALI_URL =
+  "https://raw.githubusercontent.com/fawazahmed0/quran-api/1/editions/eng-abdullahyusufal.min.json";
+const RODWELL_URL =
+  "https://raw.githubusercontent.com/fawazahmed0/quran-api/1/editions/eng-johnmedowsrodwe.min.json";
+const SALE_URL =
+  "https://raw.githubusercontent.com/fawazahmed0/quran-api/1/editions/eng-georgesale.min.json";
 
 const SOURCES: ManifestSource[] = [
   {
@@ -139,6 +161,12 @@ const SOURCES: ManifestSource[] = [
     name: "Pickthall English translation (via tanzil.net)",
     url: "https://github.com/fawazahmed0/quran-api",
     license: "Public domain packaging (Unlicense); translation text via tanzil.net",
+  },
+  {
+    name: "Abdullah Yusuf Ali (1934), John Medows Rodwell (1861) and George Sale (1734) English translations",
+    url: "https://github.com/fawazahmed0/quran-api",
+    license:
+      "Unlicense packaging; each translator died long enough ago (1953, 1900, 1736) that the translation text itself is public domain",
   },
 ];
 
@@ -308,8 +336,15 @@ const MUJAM_BUDGET_RAW = 16 * 1024 * 1024;
 // which cost ~4 bytes each uncompressed. Before this raise the total sat at
 // 12.45 of 12.5 MiB -- ~55 KiB of raw headroom, too tight to absorb any new
 // index at all, which is the real reason for the increase.
-const TOTAL_RAW_BUDGET = 14 * 1024 * 1024;
-const TOTAL_GZ_BUDGET = 3.5 * 1024 * 1024;
+// Raised a fourth time for three more English translations (Yusuf Ali,
+// Rodwell, Sale) alongside Saheeh International and Pickthall -- the same
+// kind of growth as the first raise above, in the same file
+// (surahs/*.json), for the same reason (English prose compresses well, so
+// raw needed the headroom, not gz). Measured total after adding them:
+// 15.60 MiB raw / 4.24 MiB gz. Both budgets kept with headroom above that,
+// not tight to it.
+const TOTAL_RAW_BUDGET = 17 * 1024 * 1024;
+const TOTAL_GZ_BUDGET = 4.75 * 1024 * 1024;
 
 /**
  * Downloads and unpacks the lexicon database, caching both the archive and
@@ -416,10 +451,13 @@ async function main() {
   );
 
   // --- 1. Download ---
-  const [morphology, rootsGloss, pickthall] = await Promise.all([
+  const [morphology, rootsGloss, pickthall, yusufAli, rodwell, sale] = await Promise.all([
     fetchCached(MORPHOLOGY_URL, "quran-morphology.txt", { force: FORCE }),
     fetchCachedJSON<RootsGlossMap>(ROOTS_GLOSS_URL, "roots_index.json", { force: FORCE }),
-    fetchCachedJSON<PickthallEdition>(PICKTHALL_URL, "pickthall.json", { force: FORCE }),
+    fetchCachedJSON<FawazEdition>(PICKTHALL_URL, "pickthall.json", { force: FORCE }),
+    fetchCachedJSON<FawazEdition>(YUSUF_ALI_URL, "yusuf-ali.json", { force: FORCE }),
+    fetchCachedJSON<FawazEdition>(RODWELL_URL, "rodwell.json", { force: FORCE }),
+    fetchCachedJSON<FawazEdition>(SALE_URL, "sale.json", { force: FORCE }),
   ]);
 
   const readingEditions = new Map<string, RawEdition>(
@@ -437,14 +475,26 @@ async function main() {
       ),
     ),
   );
-  const pickthallByRef = new Map<string, string>();
-  for (const v of pickthall.data.quran) {
-    pickthallByRef.set(`${v.chapter}:${v.verse}`, v.text);
+  function byRef(edition: FawazEdition): Map<string, string> {
+    const map = new Map<string, string>();
+    for (const v of edition.quran) map.set(`${v.chapter}:${v.verse}`, v.text);
+    return map;
   }
-  if (pickthallByRef.size < EXPECTED.verses - 50) {
-    console.warn(
-      `Warning: Pickthall translation only covers ${pickthallByRef.size}/${EXPECTED.verses} verses; some verses will show Saheeh International only.`,
-    );
+  const pickthallByRef = byRef(pickthall.data);
+  const yusufAliByRef = byRef(yusufAli.data);
+  const rodwellByRef = byRef(rodwell.data);
+  const saleByRef = byRef(sale.data);
+  for (const [label, map] of [
+    ["Pickthall", pickthallByRef],
+    ["Yusuf Ali", yusufAliByRef],
+    ["Rodwell", rodwellByRef],
+    ["Sale", saleByRef],
+  ] as const) {
+    if (map.size < EXPECTED.verses - 50) {
+      console.warn(
+        `Warning: ${label} translation only covers ${map.size}/${EXPECTED.verses} verses; some verses will show Saheeh International only.`,
+      );
+    }
   }
 
   const chapters: QuranJsonChapter[] = [];
@@ -469,7 +519,14 @@ async function main() {
   );
 
   // --- 3. Build surahs (+ per-verse validation against quran-json) ---
-  const { surahFiles, meta, mismatches } = buildSurahs(words, chapters, pickthallByRef);
+  const { surahFiles, meta, mismatches } = buildSurahs(
+    words,
+    chapters,
+    pickthallByRef,
+    yusufAliByRef,
+    rodwellByRef,
+    saleByRef,
+  );
 
   // --- 4. Build roots / lemmas / forms ---
   const {

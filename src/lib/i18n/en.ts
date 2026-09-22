@@ -449,6 +449,10 @@ export const en: Dict = {
     failed: "Could not load the commentary.",
     noEntry: (covered: number, total: number) =>
       `This commentary has no separate note on this verse. It treats ${covered.toLocaleString()} of the Qur'an's ${total.toLocaleString()} verses individually \u2014 verses it passes over are usually ones it has already glossed, such as a repeated refrain. Nothing is shown here rather than the nearest preceding note, which would not be a comment on this verse.`,
+    noEntryUnknownTotal:
+      "This commentary has no separate note on this verse \u2014 usually because it has already glossed it as part of a repeated refrain or an earlier passage. Nothing is shown here rather than the nearest preceding note, which would not be a comment on this verse.",
+    liveSourceNote:
+      "Fetched live from an external source for this reading \u2014 unlike the rest of this app, it needs a connection and is not stored for offline use.",
   },
   readings: {
     toggle: "Other transmissions",
@@ -815,6 +819,9 @@ export const en: Dict = {
   },
   ayahCard: {
     pickthallLabel: "Pickthall: ",
+    yusufAliLabel: "Yusuf Ali: ",
+    rodwellLabel: "Rodwell: ",
+    saleLabel: "Sale: ",
   },
   wordInfoPanel: {
     loading: "Looking up this word…",
@@ -960,6 +967,11 @@ export const en: Dict = {
       `The Arabic text throughout this app is ${transmission}, in the ${edition}, with ${numbering} verse numbering (6,236 verses).`,
     readingWhyItMatters:
       "This is stated because it is load-bearing, not as a footnote. A different canonical reading can put a word under a different root \u2014 at 2:259 this text reads \u0646\u064F\u0646\u0634\u0650\u0632\u064F (root \u0646\u0634\u0632), where another reads \u0646\u064F\u0646\u0634\u0650\u0631\u064F (root \u0646\u0634\u0631) \u2014 so every root count here is a count for this reading, and every surah:ayah:word reference is an address in this reading. Verse numbering is a separate tradition from the reading, and this app currently offers no others of either.",
+    witnessesHeading: "Translations and commentary",
+    witnessesTranslationsBody:
+      "Every verse page shows five English translations side by side: Saheeh International and Pickthall (the app's original two), plus Abdullah Yusuf Ali (1934), John Medows Rodwell (1861) and George Sale (1734) -- chosen deliberately from translators long enough dead that the translation text itself, not just its packaging, is unambiguously public domain. Two modern translations considered for this list (by Muhammad Asad and A. J. Arberry) were left out for the opposite reason: both translators died recently enough that their translations are very likely still under copyright.",
+    witnessesTafsirBody:
+      "The Commentary panel on a verse page offers a choice of four classical tafsirs. Al-Jalalayn ships with the app and works fully offline. The other three -- al-Zamakhshari's Al-Kashshaf, al-Razi's Mafatih al-Ghayb, and al-Alusi's Ruh al-Ma'ani -- are fetched live from an external source when selected, rather than bundled with the app: al-Razi's text alone runs to roughly 200 MB across all 114 surahs, which would blow well past this app's size budget for a static, installable site. Those three need a live connection and are not stored for offline use; the panel says so when you open one.",
     howCountsComputedHeading: "How counts are computed",
     howCountsComputedBody:
       'An "occurrence" of a root is a morphological segment tagged with that root in the underlying corpus. Particles, pronouns, and grammatical clitics (prefixes and suffixes such as the determiner "al-" or attached pronouns) never carry a root and are never counted toward one, even though they still appear in the verse text. This matches how the Quranic Arabic Corpus itself counts roots, which may differ from tools that count whole inflected words. Those uncounted particles are not discarded, though: the ones carrying a syntactic or rhetorical function \u2014 restriction, condition, circumstantial \u1E25\u0101l, prohibition, emphasis and the rest \u2014 are indexed separately and browsable under Syntax. That is a parallel layer with its own counts; it never changes a root\u2019s totals.',
@@ -1029,6 +1041,8 @@ export const en: Dict = {
       "Added a machine-readable data dictionary (codebook.json and a CSV companion) for the bulk corpus export and the JSON data files; a command-line interface for QCQL, for offline and batch querying; and a runnable reproducibility example that independently reproduces one of this app's own published numbers from the public export alone.",
     changelogStudies:
       "Added Studies: named collections of QCQL query sets combined by set algebra (intersect/union/subtract), with notes and a citable table/JSON/Markdown export -- the next unit up from a single saved query.",
+    changelogWitnesses:
+      "Added three more English translations (Yusuf Ali, Rodwell, Sale) alongside Saheeh International and Pickthall, and a choice of three more classical tafsirs (al-Kashshaf, Mafatih al-Ghayb, Ruh al-Ma'ani) alongside al-Jalalayn -- see \"Translations and commentary\" above for what's shipped offline versus fetched live.",
     changelogV1Label: "v1.0.0 (20 September 2026)",
     changelogV1Note: "First archived release.",
     dataSourcesHeading: "Data sources & licenses",

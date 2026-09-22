@@ -1,5 +1,9 @@
 import type { TafsirMetaFile, TafsirSurahFile } from "../../src/lib/data/types";
 
+/** TafsirMetaFile leaves coverage optional for a live-fetched source (see
+ * externalSources.ts); a build-time-validated tafsir like this one always has it. */
+type BuiltTafsirMeta = TafsirMetaFile & { coveredVerses: number; totalVerses: number };
+
 /** One row as committed under references/tafsir/<slug>/<n>.json. */
 export interface RawTafsirRow {
   surah: number;
@@ -32,7 +36,7 @@ export const TAFSIR_SLUG = "jalalayn";
 export function buildTafsir(
   bySurah: ReadonlyMap<number, readonly RawTafsirRow[]>,
   versesPerSurah: ReadonlyMap<number, number[]>,
-): { meta: TafsirMetaFile; files: Map<number, TafsirSurahFile> } {
+): { meta: BuiltTafsirMeta; files: Map<number, TafsirSurahFile> } {
   const files = new Map<number, TafsirSurahFile>();
   let covered = 0;
   let total = 0;

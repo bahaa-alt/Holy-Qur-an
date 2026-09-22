@@ -40,12 +40,17 @@ export interface BuildSurahsResult {
  *
  * `pickthallByRef` (keyed "s:a") attaches Pickthall's translation alongside
  * Saheeh International where available; omitted entirely for a verse absent
- * from that map, rather than an empty string.
+ * from that map, rather than an empty string. `yusufAliByRef`, `rodwellByRef`
+ * and `saleByRef` follow the identical shape and rule, for the three
+ * additional witnesses added alongside Pickthall.
  */
 export function buildSurahs(
   words: readonly RawWord[],
   chapters: readonly QuranJsonChapter[],
   pickthallByRef: ReadonlyMap<string, string> = new Map(),
+  yusufAliByRef: ReadonlyMap<string, string> = new Map(),
+  rodwellByRef: ReadonlyMap<string, string> = new Map(),
+  saleByRef: ReadonlyMap<string, string> = new Map(),
 ): BuildSurahsResult {
   const wordsByVerse = new Map<string, string[]>();
   for (const word of words) {
@@ -82,12 +87,18 @@ export function buildSurahs(
       }
 
       const pickthall = pickthallByRef.get(`${n}:${a}`);
+      const yusufAli = yusufAliByRef.get(`${n}:${a}`);
+      const rodwell = rodwellByRef.get(`${n}:${a}`);
+      const sale = saleByRef.get(`${n}:${a}`);
       verses.push({
         a,
         w: tokens,
         t: quranVerse.translation,
         ...(mismatch ? { m: 1 as const } : {}),
         ...(pickthall !== undefined ? { pickthall } : {}),
+        ...(yusufAli !== undefined ? { yusufAli } : {}),
+        ...(rodwell !== undefined ? { rodwell } : {}),
+        ...(sale !== undefined ? { sale } : {}),
       });
     }
 

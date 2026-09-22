@@ -113,6 +113,27 @@ export const CORPUS_CSV_COLUMNS: readonly CsvColumnDef[] = [
     description:
       "Pickthall English translation of the verse this word belongs to, repeated once per word. Technically optional (a small number of verses lack Pickthall coverage in the source), though every verse has one in the current build.",
   },
+  {
+    name: "translation_yusufali",
+    type: "string",
+    nullable: false,
+    description:
+      "Abdullah Yusuf Ali's 1934 English translation of the verse this word belongs to, repeated once per word. Full 6,236-verse coverage.",
+  },
+  {
+    name: "translation_rodwell",
+    type: "string",
+    nullable: false,
+    description:
+      "John Medows Rodwell's 1861 English translation of the verse this word belongs to, repeated once per word. Full 6,236-verse coverage.",
+  },
+  {
+    name: "translation_sale",
+    type: "string",
+    nullable: false,
+    description:
+      "George Sale's 1734 English translation of the verse this word belongs to, repeated once per word -- the first major English rendering made directly from the Arabic. Full 6,236-verse coverage.",
+  },
 ];
 
 export interface DataFileDef {
@@ -250,7 +271,7 @@ export const DATA_FILES: readonly DataFileDef[] = [
     path: "surahs/{n}.json",
     type: "SurahFile",
     description:
-      "One surah's verse text and English translations (Saheeh International, Pickthall) -- 114 files, one per surah number.",
+      "One surah's verse text and English translations (Saheeh International, Pickthall, Yusuf Ali, Rodwell, Sale) -- 114 files, one per surah number.",
   },
   {
     path: "roots/{root}.json",

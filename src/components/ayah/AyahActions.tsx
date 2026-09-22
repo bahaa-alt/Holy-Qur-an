@@ -10,6 +10,7 @@ export function AyahActions({
   arabic,
   translation,
   pickthall,
+  extraTranslations,
   surah,
   ayah,
 }: {
@@ -17,6 +18,8 @@ export function AyahActions({
   translation: string;
   /** Pickthall's translation, included in "Copy with translation" when present. */
   pickthall?: string;
+  /** Any further translations to include in "Copy with translation", in display order. */
+  extraTranslations?: (string | undefined)[];
   surah: number;
   ayah: number;
 }) {
@@ -24,7 +27,9 @@ export function AyahActions({
   const [copied, setCopied] = useState<"ar" | "both" | null>(null);
 
   async function handleCopy(kind: "ar" | "both") {
-    const translations = [translation, pickthall].filter(Boolean).join("\n");
+    const translations = [translation, pickthall, ...(extraTranslations ?? [])]
+      .filter(Boolean)
+      .join("\n");
     const text = kind === "ar" ? arabic : `${arabic}\n\n${translations}\n(${surah}:${ayah})`;
     const ok = await copyToClipboard(text);
     if (ok) {

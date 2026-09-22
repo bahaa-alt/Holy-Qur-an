@@ -17,6 +17,9 @@ export const CORPUS_CSV_HEADER_COLUMNS = [
   "tags",
   "translation_saheeh",
   "translation_pickthall",
+  "translation_yusufali",
+  "translation_rodwell",
+  "translation_sale",
 ] as const;
 const HEADER = CORPUS_CSV_HEADER_COLUMNS.join(",");
 
@@ -49,10 +52,19 @@ export function buildCorpusExportCsv(
   meta: MetaFile,
 ): string {
   const surahMetaByNum = new Map(meta.surahs.map((s) => [s.n, s]));
-  const verseByRef = new Map<string, { t: string; pickthall?: string }>();
+  const verseByRef = new Map<
+    string,
+    { t: string; pickthall?: string; yusufAli?: string; rodwell?: string; sale?: string }
+  >();
   for (const file of surahFiles.values()) {
     for (const v of file.verses) {
-      verseByRef.set(`${file.n}:${v.a}`, { t: v.t, pickthall: v.pickthall });
+      verseByRef.set(`${file.n}:${v.a}`, {
+        t: v.t,
+        pickthall: v.pickthall,
+        yusufAli: v.yusufAli,
+        rodwell: v.rodwell,
+        sale: v.sale,
+      });
     }
   }
 
@@ -76,6 +88,9 @@ export function buildCorpusExportCsv(
       rootedSeg ? rootedSeg.tags.join("|") : "",
       verse?.t ?? "",
       verse?.pickthall ?? "",
+      verse?.yusufAli ?? "",
+      verse?.rodwell ?? "",
+      verse?.sale ?? "",
     ]
       .map(csvField)
       .join(",");

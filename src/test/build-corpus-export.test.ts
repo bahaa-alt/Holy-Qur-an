@@ -37,22 +37,22 @@ describe("buildCorpusExportCsv", () => {
 
   it("emits a header row followed by one row per word", () => {
     expect(rows[0]).toBe(
-      "surah,ayah,surah_name_en,surah_name_ar,revelation_type,word_index,word,root,lemma,category,tags,translation_saheeh,translation_pickthall",
+      "surah,ayah,surah_name_en,surah_name_ar,revelation_type,word_index,word,root,lemma,category,tags,translation_saheeh,translation_pickthall,translation_yusufali,translation_rodwell,translation_sale",
     );
     expect(rows).toHaveLength(1 + words.length);
   });
 
   it("leaves root/lemma/category/tags blank for a rootless word", () => {
-    expect(rows[1]).toBe("1,1,The Opening,الفاتحة,meccan,1,بِ,,,,,By the book.,");
+    expect(rows[1]).toBe("1,1,The Opening,الفاتحة,meccan,1,بِ,,,,,By the book.,,,,");
   });
 
   it("fills root/lemma/category/tags from the word's rooted segment", () => {
-    expect(rows[2]).toBe("1,1,The Opening,الفاتحة,meccan,2,كِتَٰبُ,كتب,كِتاب,noun,M|NOM,By the book.,");
+    expect(rows[2]).toBe("1,1,The Opening,الفاتحة,meccan,2,كِتَٰبُ,كتب,كِتاب,noun,M|NOM,By the book.,,,,");
   });
 
   it("escapes a translation containing a comma and a quote per RFC 4180, and carries Pickthall's text", () => {
     expect(rows[3]).toBe(
-      '1,2,The Opening,الفاتحة,meccan,1,قَالَ,قول,قَالَ,verb.perf,PERF|VF:1|3MS,"He said, ""peace,"" and left.","He said: peace, and left"',
+      '1,2,The Opening,الفاتحة,meccan,1,قَالَ,قول,قَالَ,verb.perf,PERF|VF:1|3MS,"He said, ""peace,"" and left.","He said: peace, and left",,,',
     );
   });
 });

@@ -426,6 +426,10 @@ export interface Dict {
     loading: string;
     failed: string;
     noEntry: (covered: number, total: number) => string;
+    /** Same message, for a source whose total coverage isn't tracked (see externalSources.ts). */
+    noEntryUnknownTotal: string;
+    /** Shown for a source fetched live rather than shipped with the app. */
+    liveSourceNote: string;
   };
   readings: {
     toggle: string;
@@ -749,6 +753,9 @@ export interface Dict {
   };
   ayahCard: {
     pickthallLabel: string;
+    yusufAliLabel: string;
+    rodwellLabel: string;
+    saleLabel: string;
   };
   wordInfoPanel: {
     loading: string;
@@ -880,6 +887,9 @@ export interface Dict {
     readingHeading: string;
     readingBody: (transmission: string, edition: string, numbering: string) => string;
     readingWhyItMatters: string;
+    witnessesHeading: string;
+    witnessesTranslationsBody: string;
+    witnessesTafsirBody: string;
     howCountsComputedHeading: string;
     howCountsComputedBody: string;
     insightsMethodologyHeading: string;
@@ -924,6 +934,7 @@ export interface Dict {
     changelogMoreStatsAdditions: string;
     changelogResearchTooling: string;
     changelogStudies: string;
+    changelogWitnesses: string;
     changelogV1Label: string;
     changelogV1Note: string;
     dataSourcesHeading: string;
