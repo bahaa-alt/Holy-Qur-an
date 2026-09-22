@@ -153,10 +153,17 @@ export function SavedList() {
                       </button>
                     </div>
                     {item.detail && <p className="mt-1 text-xs text-muted">{item.detail}</p>}
+                    {/* A note's language isn't fixed by the UI language -- dir="auto"
+                        reads the actual typed content instead of inheriting the page's
+                        RTL base direction in Arabic UI, which otherwise pushes an
+                        English note's trailing punctuation to the wrong end (the same
+                        bidi bug Phase 1 fixed for read-only prose, here in an editable
+                        field). */}
                     <textarea
                       value={item.note}
                       onChange={(e) => handleNoteChange(item.id, e.target.value)}
                       placeholder={t.savedList.notePlaceholder}
+                      dir="auto"
                       rows={2}
                       className="mt-2 w-full resize-y rounded-lg border border-border bg-bg px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
                     />

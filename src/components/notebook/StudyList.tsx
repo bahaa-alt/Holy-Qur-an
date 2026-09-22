@@ -62,6 +62,7 @@ export function StudyList({ onOpen }: { onOpen: (id: string) => void }) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder={t.studiesPage.titlePlaceholder}
+          dir="auto"
           className="min-w-0 flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-accent"
         />
         <button

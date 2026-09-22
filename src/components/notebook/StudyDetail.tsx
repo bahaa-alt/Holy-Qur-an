@@ -263,6 +263,9 @@ export function StudyDetail({
         </button>
       </div>
 
+      {/* Free-text a researcher writes in whichever language the note itself
+          is in, not necessarily the UI language -- every field below gets
+          dir="auto" for the same reason SavedList's note textarea does. */}
       <div>
         <input
           value={study.title}
@@ -271,6 +274,7 @@ export function StudyDetail({
             reload();
           }}
           aria-label={t.studiesPage.titlePlaceholder}
+          dir="auto"
           className="w-full bg-transparent text-2xl font-semibold text-ink outline-none focus:underline"
         />
         <textarea
@@ -280,6 +284,7 @@ export function StudyDetail({
             reload();
           }}
           placeholder={t.studiesPage.notesPlaceholder}
+          dir="auto"
           rows={3}
           className="mt-2 w-full resize-y rounded-lg border border-border bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
         />
@@ -306,6 +311,7 @@ export function StudyDetail({
                         updateSetLabel(study.id, set.id, e.target.value);
                         reload();
                       }}
+                      dir="auto"
                       className="w-full min-w-0 bg-transparent text-sm font-medium text-ink outline-none focus:underline"
                     />
                     <p dir="ltr" className="mt-0.5 truncate font-mono text-xs text-muted">
@@ -349,6 +355,7 @@ export function StudyDetail({
                     reload();
                   }}
                   placeholder={t.savedList.notePlaceholder}
+                  dir="auto"
                   rows={1}
                   className="mt-2 w-full resize-y rounded-lg border border-border bg-bg px-3 py-1.5 text-xs text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
                 />
@@ -408,6 +415,7 @@ export function StudyDetail({
             value={newLabel}
             onChange={(e) => setNewLabel(e.target.value)}
             placeholder={t.studiesPage.setLabelPlaceholder}
+            dir="auto"
             className="w-40 rounded-lg border border-border bg-bg px-3 py-2 text-sm text-ink outline-none focus:border-accent"
           />
           <input
@@ -505,6 +513,7 @@ export function StudyDetail({
               value={combineLabel}
               onChange={(e) => setCombineLabel(e.target.value)}
               placeholder={t.studiesPage.setLabelPlaceholder}
+              dir="auto"
               className="min-w-0 flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-sm text-ink outline-none focus:border-accent"
             />
             <button
