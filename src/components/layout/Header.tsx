@@ -45,6 +45,9 @@ export function Header() {
           <Link href="/saved/" className={NAV_LINK_CLASS}>
             {t.nav.saved}
           </Link>
+          <Link href="/studies/" className={NAV_LINK_CLASS}>
+            {t.nav.studies}
+          </Link>
           <Link href="/about/" className={NAV_LINK_CLASS}>
             {t.nav.about}
           </Link>

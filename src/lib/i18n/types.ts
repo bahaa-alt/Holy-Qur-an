@@ -41,6 +41,7 @@ export interface Dict {
     insights: string;
     syntax: string;
     saved: string;
+    studies: string;
     about: string;
   };
   footer: {
@@ -818,6 +819,44 @@ export interface Dict {
     removeAria: (label: string) => string;
     notePlaceholder: string;
   };
+  studiesPage: {
+    title: string;
+    subtitle: string;
+    titlePlaceholder: string;
+    create: string;
+    listHeading: string;
+    import: string;
+    importSummary: (title: string, setCount: number) => string;
+    importFailed: string;
+    empty: string;
+    removeAria: (label: string) => string;
+    setCount: (n: number) => string;
+    backToList: string;
+    deleteStudy: string;
+    notFound: string;
+    notesPlaceholder: string;
+    setsHeading: string;
+    noSets: string;
+    resultCount: (matches: number, verses: number) => string;
+    preview: string;
+    hide: string;
+    previewCapped: (shown: number, total: number) => string;
+    removeSetAria: (label: string) => string;
+    addSetHeading: string;
+    setLabelPlaceholder: string;
+    addSet: string;
+    orFromSaved: string;
+    combineHeading: string;
+    pickSet: string;
+    opIntersect: string;
+    opUnion: string;
+    opSubtract: string;
+    combine: string;
+    subtractOrderHint: string;
+    exportHeading: string;
+    downloadBackup: string;
+    exportHint: string;
+  };
   wordHeader: {
     lemmaLabel: string;
     rootPrefix: (root: string) => string;
@@ -874,6 +913,7 @@ export interface Dict {
     changelogDistinctiveVocabFix: string;
     changelogMoreStatsAdditions: string;
     changelogResearchTooling: string;
+    changelogStudies: string;
     changelogV1Label: string;
     changelogV1Note: string;
     dataSourcesHeading: string;
@@ -906,5 +946,7 @@ export interface Dict {
     reproducibilityExampleBody: string;
     qcqlCliHeading: string;
     qcqlCliBody: string;
+    studiesAboutHeading: string;
+    studiesAboutBody: string;
   };
 }

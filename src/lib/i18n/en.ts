@@ -35,6 +35,7 @@ export const en: Dict = {
     insights: "Insights",
     syntax: "Syntax",
     saved: "Saved",
+    studies: "Studies",
     about: "About",
   },
   footer: {
@@ -889,6 +890,49 @@ export const en: Dict = {
     removeAria: (label) => `Remove ${label}`,
     notePlaceholder: "Add a note…",
   },
+  studiesPage: {
+    title: "Studies",
+    subtitle:
+      "A study groups QCQL queries into named sets, lets you combine them by set algebra (A ∩ B, A ∪ B, A − B), and writes them up together. Stored only in this browser -- nothing is sent anywhere.",
+    titlePlaceholder: "New study title…",
+    create: "Create",
+    listHeading: "Your studies",
+    import: "Import",
+    importSummary: (title, setCount) =>
+      `Imported "${title}" with ${setCount.toLocaleString()} set${setCount === 1 ? "" : "s"}.`,
+    importFailed: "That file is not a study exported from this app.",
+    empty: 'Nothing here yet. Give a study a title and press "Create" to start one.',
+    removeAria: (label) => `Delete study ${label}`,
+    setCount: (n) => `${n.toLocaleString()} set${n === 1 ? "" : "s"}`,
+    backToList: "All studies",
+    deleteStudy: "Delete study",
+    notFound: "This study does not exist, or was deleted.",
+    notesPlaceholder: "Write up what this study is about…",
+    setsHeading: "Sets",
+    noSets: "No sets yet -- add one below, from a fresh query or one you already saved.",
+    resultCount: (matches, verses) =>
+      `${matches.toLocaleString()} ${matches === 1 ? "match" : "matches"} in ${verses.toLocaleString()} ${verses === 1 ? "verse" : "verses"}`,
+    preview: "Preview",
+    hide: "Hide",
+    previewCapped: (shown, total) =>
+      `Showing the first ${shown.toLocaleString()} of ${total.toLocaleString()}. Export this set for the rest.`,
+    removeSetAria: (label) => `Remove set ${label}`,
+    addSetHeading: "Add a set",
+    setLabelPlaceholder: "Label…",
+    addSet: "Add",
+    orFromSaved: "…or add one of your saved queries:",
+    combineHeading: "Combine two sets",
+    pickSet: "Choose a set…",
+    opIntersect: "intersect (both)",
+    opUnion: "union (either)",
+    opSubtract: "subtract (first, not second)",
+    combine: "Combine",
+    subtractOrderHint: "Subtract keeps the first set's members that are not in the second -- order matters.",
+    exportHeading: "Export",
+    downloadBackup: "Download study file (.qstudy.json)",
+    exportHint:
+      "The table export (CSV/JSON/Markdown) is the citable summary -- each set's definition, match count and verse count. The study file is a full backup you can re-import here later, on this browser or another.",
+  },
   wordHeader: {
     lemmaLabel: "Lemma",
     rootPrefix: (root) => `root: ${root}`,
@@ -972,6 +1016,8 @@ export const en: Dict = {
       "Added a 95% confidence interval on the keyness log-ratio effect size (Katz et al. 1978); a G² significance test with Benjamini-Hochberg FDR correction, and a log-dice association score (Rychlý 2008) alongside PMI, to both the Verb–preposition collocations and the Root co-occurrence network tools.",
     changelogResearchTooling:
       "Added a machine-readable data dictionary (codebook.json and a CSV companion) for the bulk corpus export and the JSON data files; a command-line interface for QCQL, for offline and batch querying; and a runnable reproducibility example that independently reproduces one of this app's own published numbers from the public export alone.",
+    changelogStudies:
+      "Added Studies: named collections of QCQL query sets combined by set algebra (intersect/union/subtract), with notes and a citable table/JSON/Markdown export -- the next unit up from a single saved query.",
     changelogV1Label: "v1.0.0 (20 September 2026)",
     changelogV1Note: "First archived release.",
     dataSourcesHeading: "Data sources & licenses",
@@ -1008,5 +1054,8 @@ export const en: Dict = {
     qcqlCliHeading: "Command-line queries",
     qcqlCliBody:
       "The same query language the Query page runs in your browser is also available as a script, for anyone who wants to run many queries, batch results into a file, or pull matches into a notebook rather than clicking through a page one query at a time. In a checkout that has run the data build, `npm run qcql -- \"[root=\\u0639\\u0644\\u0645 & cat=verb.perf] :: meccan\"` prints CSV to stdout; add `--format json`, `--with-text`, or `--base-url` to read a deployed instance's data instead of a local build. Run `npm run qcql -- --help` for the full option list.",
+    studiesAboutHeading: "Studies",
+    studiesAboutBody:
+      "A study groups QCQL queries into named, labelled sets and lets you combine them by set algebra -- intersect, union, subtract -- to ask compound questions ('root X but not root Y') without hand-merging result lists. Write up the reasoning alongside the sets, export the summary as a citable CSV/JSON/Markdown table, or download the whole study as a .qstudy.json file to keep working on it later or on another device. Like Saved, a study lives only in this browser's storage.",
   },
 };

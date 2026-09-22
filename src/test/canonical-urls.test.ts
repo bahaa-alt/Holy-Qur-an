@@ -84,15 +84,23 @@ describe("sitemap coverage", () => {
     expect(staticRoutes.length).toBeGreaterThan(10);
   });
 
-  it.each(staticRoutes.filter((r) => r !== "/saved/"))("%s is listed in sitemap.ts", (route) => {
-    expect(sitemapSrc).toContain(`"${route}"`);
-  });
+  const NOTHING_TO_INDEX = ["/saved/", "/studies/"];
 
-  it("deliberately omits /saved/, which has nothing to index", () => {
-    // Per-reader bookmarks out of browser storage: a crawler sees an empty
-    // shell. robots.txt disallows it for the same reason.
-    expect(staticRoutes).toContain("/saved/");
-    expect(sitemapSrc).not.toContain('"/saved/"');
-    expect(sitemapSrc).toMatch(/`\/saved\/` is deliberately absent/);
+  it.each(staticRoutes.filter((r) => !NOTHING_TO_INDEX.includes(r)))(
+    "%s is listed in sitemap.ts",
+    (route) => {
+      expect(sitemapSrc).toContain(`"${route}"`);
+    },
+  );
+
+  it("deliberately omits /saved/ and /studies/, which have nothing to index", () => {
+    // Per-reader browser-storage data (bookmarks; QCQL studies): a crawler
+    // sees an empty shell either way. robots.txt disallows both for the
+    // same reason.
+    for (const route of NOTHING_TO_INDEX) {
+      expect(staticRoutes).toContain(route);
+      expect(sitemapSrc).not.toContain(`"${route}"`);
+    }
+    expect(sitemapSrc).toMatch(/`\/saved\/` and `\/studies\/` are deliberately absent/);
   });
 });

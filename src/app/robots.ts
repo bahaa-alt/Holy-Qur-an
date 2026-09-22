@@ -11,9 +11,10 @@ export const dynamic = "force-static";
  * Points crawlers at the sitemap, and keeps them off the one route that has
  * nothing to index.
  *
- * `/saved/` renders a reader's own bookmarks out of their browser storage,
- * so a crawler fetching it sees an empty shell. Excluding it keeps that
- * shell out of results where it would look like a broken page.
+ * `/saved/` and `/studies/` render a reader's own data out of their
+ * browser storage -- bookmarks, and QCQL studies -- so a crawler fetching
+ * either sees an empty shell. Excluding them keeps that shell out of
+ * results where it would look like a broken page.
  *
  * The two 404 shells are excluded for a different reason: they are client
  * components, so they cannot export metadata and cannot carry a canonical
@@ -22,7 +23,11 @@ export const dynamic = "force-static";
  */
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: { userAgent: "*", allow: "/", disallow: ["/saved/", "/404/", "/_not-found/"] },
+    rules: {
+      userAgent: "*",
+      allow: "/",
+      disallow: ["/saved/", "/studies/", "/404/", "/_not-found/"],
+    },
     sitemap: absoluteUrl("/sitemap.xml"),
   };
 }

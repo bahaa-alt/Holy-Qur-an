@@ -48,9 +48,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/phrases/",
     "/topics/",
     "/topics/compare/",
-    // `/saved/` is deliberately absent: it renders one reader's own
-    // bookmarks out of their browser storage, so it has no content a
-    // crawler could index and nothing stable to point anyone at.
+    // `/saved/` and `/studies/` are deliberately absent: both render one
+    // reader's own browser-storage data (bookmarks; QCQL studies), so
+    // neither has content a crawler could index or anything stable to
+    // point anyone at.
   ];
 
   for (const s of meta.surahs) {

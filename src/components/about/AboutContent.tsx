@@ -132,6 +132,7 @@ export function AboutContent({
               <li>{t.aboutPage.changelogStatsAdditions}</li>
               <li>{t.aboutPage.changelogMoreStatsAdditions}</li>
               <li>{t.aboutPage.changelogResearchTooling}</li>
+              <li>{t.aboutPage.changelogStudies}</li>
             </ul>
           </div>
           <div>
@@ -229,6 +230,11 @@ export function AboutContent({
       <div>
         <h2 className="text-lg font-semibold">{t.aboutPage.qcqlCliHeading}</h2>
         <p className="mt-2 text-muted">{t.aboutPage.qcqlCliBody}</p>
+      </div>
+
+      <div>
+        <h2 className="text-lg font-semibold">{t.aboutPage.studiesAboutHeading}</h2>
+        <p className="mt-2 text-muted">{t.aboutPage.studiesAboutBody}</p>
       </div>
 
       <div>
