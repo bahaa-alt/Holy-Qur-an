@@ -532,6 +532,11 @@ export const en: Dict = {
         `${verses.toLocaleString()} verses \u00b7 ${tokens.toLocaleString()} rooted occurrences here, against ${referenceTokens.toLocaleString()} elsewhere`,
       correctionNote: (tests: number, alpha: string) =>
         `${tests.toLocaleString()} roots were tested, so \u201Ccorrected\u201D marks the rows that survive a Bonferroni threshold of p < ${alpha}. At a plain p < 0.05, about ${Math.round(tests * 0.05).toLocaleString()} roots would clear the bar by chance alone.`,
+      fdrCorrectionNote: (shown: number, alpha: string) =>
+        `${shown.toLocaleString()} roots meet the minimum-occurrence floor above; among those, \u201Ccorrected\u201D marks the rows Benjamini-Hochberg FDR calls significant at p < ${alpha}. This is a different, smaller family than Bonferroni's (every root tested, floor or no floor) \u2014 FDR is applied only where the rate itself is estimated from enough occurrences to be worth defending, and has more power to find real, moderate effects than Bonferroni across a family this size.`,
+      correctionMethodLabel: "Correction",
+      correctionBonferroni: "Bonferroni",
+      correctionFdr: "FDR (BH)",
       nsNote:
         "Rows marked n.s. are not statistically significant; they are shown because absence of evidence is a result too.",
       estimatedNote:
@@ -541,12 +546,20 @@ export const en: Dict = {
       colCount: "n",
       colHere: "per 10k here",
       colElsewhere: "per 10k elsewhere",
+      colRateCIHint: "The smaller range underneath is the 95% Wilson score confidence interval.",
       colLogRatio: "Log ratio",
       colG2: "G\u00b2",
       colSig: "Significance",
       colRange: "Surahs",
       colDp: "DP",
       colSpread: "Concentration",
+      colSignificance: "Significance",
+      colSignificanceHint:
+        "A permutation test: how often placing this root's occurrences by chance, in proportion to each surah's size, produces a DP at least this high. Computed on demand, one root at a time.",
+      testSignificance: "Test significance",
+      testingSignificance: "Testing\u2026",
+      significanceResult: (p: number, permutations: number) =>
+        `p = ${p.toFixed(3)} (${permutations.toLocaleString()} permutations)`,
       sig: {
         corrected: "corrected",
         p001: "p < 0.001",
@@ -561,8 +574,14 @@ export const en: Dict = {
         "G\u00b2 is log-likelihood (Dunning 1993): how surprising the difference is, given how much text is involved. It grows with the size of the corpus, so a large G\u00b2 on a tiny difference is real but may be uninteresting.",
       methodsLogRatio:
         "Log ratio (Hardie 2014) is the size of the difference, in doublings: +1 means twice as common here, +3 means eight times. It does not grow with corpus size, and it is unstable on small counts \u2014 which is what the minimum-occurrence floor is for.",
+      methodsCI:
+        "The smaller range under each rate is a 95% Wilson score confidence interval (Wilson 1927): where the true rate plausibly lies, not just its single best estimate. Preferred here over the textbook normal approximation because it stays inside 0-100% and keeps its stated coverage even at the small counts a keyness table often runs on.",
+      methodsCorrection:
+        "Bonferroni and FDR (Benjamini-Hochberg, 1995) answer different questions and are offered as alternatives, not as one right answer. Bonferroni bounds the chance of any false positive at all, across every root that occurs anywhere in the comparison \u2014 strict, and conservative enough to bury real, moderate effects among 1,651 simultaneous tests. FDR instead bounds the expected proportion of false positives among the rows it calls significant, computed only among the roots above the minimum-occurrence floor, and has more power to find those effects at some known cost in false discoveries.",
       methodsDp:
         "DP is Gries's deviation of proportions (2008): how far a root's distribution across the 114 surahs departs from what those surahs' sizes would predict. It separates a word used 300 times across eighty surahs from one used 300 times in a single passage \u2014 two facts this app previously reported identically.",
+      methodsPermutation:
+        "DP alone is descriptive, not a significance test: a root occurring only a handful of times can look concentrated by pure luck. \u201CTest significance\u201D runs a permutation (Monte Carlo) test for that one root: simulate its occurrences landing by chance, in proportion to each surah's size, many times over, and see how often that alone produces a DP as high as observed. A small p-value means the concentration is unlikely to be a coincidence of where a rare word happened to land.",
       methodsLimits:
         "The reference corpus is always the rest of the Qur'an, which is a small corpus by the standards of these measures: read a single row as a lead to follow, not a result to publish. Roots are the unit here; lemmas, grammatical features and collocation follow.",
     },
@@ -920,6 +939,27 @@ export const en: Dict = {
     verseSimilarityMethodHeading: "Similar verses",
     verseSimilarityMethodBody:
       "For every verse, collects its distinct rooted-word roots. Candidate pairs are proposed only through roots occurring in 60 or fewer verses (a shared common root like أله is not a meaningful signal on its own), then every candidate is scored by full Jaccard similarity (shared roots ÷ the union of both verses' distinct roots) over each verse's complete root set. A pair needs at least 4 shared roots and 40% overlap to qualify; every pair clearing that bar is shown (around a thousand), not just a fixed top slice -- over 40% of them are a perfect (100%) match. This heuristic can miss a genuinely similar pair that shares only common roots -- it trades completeness for keeping the comparison corpus-wide rather than one hand-picked pair at a time.",
+    keynessMethodHeading: "Compare (keyness)",
+    keynessMethodBody:
+      "Measures whether a root is characteristic of a chosen scope (a surah, a juz', the Meccan or Medinan corpus, a window of revelation order) against the rest of the Qur'an: log-likelihood G² (Dunning 1993) for statistical significance, log ratio (Hardie 2014) for effect size, and a 95% Wilson score confidence interval (Wilson 1927) on each rate. Testing every root at once needs a multiple-comparison correction; the tool offers a choice of Bonferroni (bounds the chance of any false positive at all, conservative) or Benjamini-Hochberg FDR (1995) (bounds the expected proportion of false positives among the rows called significant, more power). See the tool's own \"How to read this\" section for the full method and its stated limits.",
+    dispersionMethodHeading: "Dispersion",
+    dispersionMethodBody:
+      "At whole-Qur'an scope, Compare reports dispersion instead of keyness: Gries's DP (2008), how far a root's spread across the 114 surahs departs from what those surahs' sizes would predict -- a root used 300 times across eighty surahs and one used 300 times in a single passage are not the same fact, though a raw count treats them identically. Since DP alone is descriptive, an on-demand permutation (Monte Carlo) test is available per root: it simulates the null (occurrences landing by chance, in proportion to each surah's size) many times over and reports how often that alone reaches a DP as high as observed.",
+    letterFrequencyMethodHeading: "Letter frequency",
+    letterFrequencyMethodBody:
+      "Counts every Arabic letter in the chosen scope's text, diacritics stripped but letter variants (ة vs ه, ا vs أ/إ/آ/ٱ) kept distinct, read from the same canonical quran-json spelling every verse page displays -- the same text a scoped comparison, a juz', or a single ayah's count is computed from.",
+    changelogHeading: "Data revisions",
+    changelogIntro:
+      "A number cited from a specific archived version should stay reproducible against that version forever -- so real corrections to the underlying data are recorded here, not silently absorbed into the next release. See \"Cite this tool\" above for which version DOI a given number belongs to.",
+    changelogUnreleasedLabel: "Unreleased (since v1.0.0)",
+    changelogCategoryFix:
+      "Fixed occurrence categorization: occurrences.json's per-occurrence category now comes from that occurrence's own tags, not its word-form's -- a homograph (the same spelled word used differently on different occasions) could carry the wrong category before. This moves occurrences.json's category counts and Advanced Search's category/verb-Form filter results; every count that doesn't depend on category (total occurrences, verb-Form counts, case/mood/definiteness/syntax-tag counts) is unchanged.",
+    changelogLetterFrequencyFix:
+      "Fixed a text-source mismatch: the whole-Qur'an letter frequency count and the \"longest word\" fact now read the same canonical spelling every verse page displays, instead of the morphology corpus's own word reconstruction -- which used a different spelling convention (word-final ي vs ى, and a decomposed vs precomposed hamza) for roughly half of all words at the diacritics-stripped level. Moved the total letter count by about 0.09%.",
+    changelogStatsAdditions:
+      "Added 95% Wilson score confidence intervals, a Benjamini-Hochberg FDR option alongside Bonferroni, and an on-demand permutation significance test for dispersion to the Compare tool.",
+    changelogV1Label: "v1.0.0 (20 September 2026)",
+    changelogV1Note: "First archived release.",
     dataSourcesHeading: "Data sources & licenses",
     laneLexiconNote:
       "Root meanings are given as \"after Lane's Lexicon\" -- a summary drawn from that dataset, not a verbatim quotation of the original 19th-century lexicon. This project's own source code is licensed GPL-3.0, matching the copyleft terms of the morphology dataset it builds on.",
@@ -947,5 +987,8 @@ export const en: Dict = {
     corpusExportReleases: "Browse releases",
     corpusExportNotPublished: (size) =>
       `The export is ${size} \u2014 too large to ship with the site, so it is published as a release asset rather than served from here. Build it yourself with \`pnpm data:build\`; it lands in \`dist/export/corpus.csv\`.`,
+    qcqlCliHeading: "Command-line queries",
+    qcqlCliBody:
+      "The same query language the Query page runs in your browser is also available as a script, for anyone who wants to run many queries, batch results into a file, or pull matches into a notebook rather than clicking through a page one query at a time. In a checkout that has run the data build, `npm run qcql -- \"[root=\\u0639\\u0644\\u0645 & cat=verb.perf] :: meccan\"` prints CSV to stdout; add `--format json`, `--with-text`, or `--base-url` to read a deployed instance's data instead of a local build. Run `npm run qcql -- --help` for the full option list.",
   },
 };

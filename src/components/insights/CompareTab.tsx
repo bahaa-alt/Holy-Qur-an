@@ -5,7 +5,12 @@ import { Loader2 } from "lucide-react";
 import { getIndex, getVerseRoots } from "@/lib/data/loader";
 import { useUrlParam } from "@/lib/hooks/useUrlParam";
 import { useT } from "@/lib/i18n/LanguageContext";
-import { compareScope, corpusDispersion, type CompareRow } from "@/lib/insights/compare";
+import {
+  compareScope,
+  corpusDispersion,
+  perSurahCounts,
+  type CompareRow,
+} from "@/lib/insights/compare";
 import {
   buildVerseRefs,
   scopeFromParam,
@@ -13,7 +18,8 @@ import {
   scopeToQcqlFilter,
   type Scope,
 } from "@/lib/insights/scope";
-import { bonferroniAlpha, DEFAULT_MIN_COUNT } from "@/lib/stats/keyness";
+import { benjaminiHochberg, bonferroniAlpha, DEFAULT_MIN_COUNT } from "@/lib/stats/keyness";
+import { dispersionPermutationTest } from "@/lib/stats/dispersion";
 import { DispersionTable, KeynessTable, sigBucket } from "./CompareTables";
 import { ScopeSelector } from "./ScopeSelector";
 import { ExportButton } from "@/components/export/ExportButton";
@@ -66,6 +72,7 @@ export function CompareTab({ meta }: { meta: MetaFile }) {
   );
   const [minCount, setMinCount] = useState<number>(DEFAULT_MIN_COUNT);
   const [direction, setDirection] = useState<"over" | "under">("over");
+  const [correctionMethod, setCorrectionMethod] = useState<"bonferroni" | "fdr">("bonferroni");
   const [spread, setSpread] = useState<"even" | "concentrated">("concentrated");
   const [dispersionMin, setDispersionMin] = useState<number>(25);
   const [data, setData] = useState<{ verseRoots: VerseRootsFile; index: IndexFile } | null>(null);
@@ -110,7 +117,24 @@ export function CompareTab({ meta }: { meta: MetaFile }) {
       .slice(0, ROWS_SHOWN);
   }, [result, direction]);
 
-  const correctedAlpha = bonferroniAlpha(result?.tested ?? 1);
+  // FDR (Benjamini-Hochberg), computed over every root meeting the
+  // minimum-occurrence floor (result.rows, both directions, unsliced) --
+  // not just the 40 shown -- so restricting to the most extreme p-values
+  // ahead of time can't bias which ones the correction calls significant.
+  // A different family than Bonferroni's `tested` (every root that
+  // occurs at all): see correctionNote/fdrCorrectionNote for why that
+  // is a deliberate, disclosed choice rather than an inconsistency.
+  const fdr = useMemo(
+    () => (result && result.rows.length > 0 ? benjaminiHochberg(result.rows.map((r) => r.keyness.p)) : null),
+    [result],
+  );
+  const qValueByRootIdx = useMemo(() => {
+    if (!result || !fdr) return new Map<number, number>();
+    return new Map(result.rows.map((r, i) => [r.rootIdx, fdr.qValues[i]]));
+  }, [result, fdr]);
+
+  const correctedAlpha =
+    correctionMethod === "bonferroni" ? bonferroniAlpha(result?.tested ?? 1) : (fdr?.thresholdP ?? 0);
 
   const scopeFilter = scopeToQcqlFilter(scope);
   const queryFor = (rootAr: string) =>
@@ -167,11 +191,23 @@ export function CompareTab({ meta }: { meta: MetaFile }) {
         provenance: [
           { label: "scope", value: scopeLabel },
           { label: "reference", value: "the rest of the Qur'an" },
-          { label: "measures", value: "log-likelihood G² (Dunning 1993), log ratio (Hardie 2014)" },
+          {
+            label: "measures",
+            value:
+              "log-likelihood G² (Dunning 1993), log ratio (Hardie 2014), 95% Wilson score interval (Wilson 1927)",
+          },
           { label: "minimum occurrences", value: String(minCount) },
-          { label: "roots tested", value: String(result?.tested ?? 0) },
+          { label: "roots tested (Bonferroni family)", value: String(result?.tested ?? 0) },
+          { label: "roots above the floor (FDR family)", value: String(result?.rows.length ?? 0) },
           { label: "scope tokens", value: String(result?.scopeTokens ?? 0) },
           { label: "reference tokens", value: String(result?.referenceTokens ?? 0) },
+          {
+            label: "active correction",
+            value:
+              correctionMethod === "bonferroni"
+                ? `Bonferroni, alpha=${correctedAlpha.toExponential(3)}`
+                : `Benjamini-Hochberg FDR, threshold p=${correctedAlpha.toExponential(3)}`,
+          },
         ],
       },
       columns: [
@@ -179,24 +215,39 @@ export function CompareTab({ meta }: { meta: MetaFile }) {
         { key: "count_in_scope", label: "count_in_scope" },
         { key: "count_elsewhere", label: "count_elsewhere" },
         { key: "per_10k_in_scope", label: "per_10k_in_scope" },
+        { key: "per_10k_in_scope_ci_low", label: "per_10k_in_scope_ci_low" },
+        { key: "per_10k_in_scope_ci_high", label: "per_10k_in_scope_ci_high" },
         { key: "per_10k_elsewhere", label: "per_10k_elsewhere" },
+        { key: "per_10k_elsewhere_ci_low", label: "per_10k_elsewhere_ci_low" },
+        { key: "per_10k_elsewhere_ci_high", label: "per_10k_elsewhere_ci_high" },
         { key: "log_ratio", label: "log_ratio" },
         { key: "log_ratio_estimated", label: "log_ratio_estimated" },
         { key: "log_likelihood_g2", label: "log_likelihood_g2" },
         { key: "p_value", label: "p_value" },
+        { key: "fdr_q_value", label: "fdr_q_value" },
       ],
       rows: shownRows.map((r) => [
         rootNames[r.rootIdx],
         r.count,
         r.referenceCount,
         r.keyness.rate.toFixed(2),
+        r.keyness.rateCI.low.toFixed(2),
+        r.keyness.rateCI.high.toFixed(2),
         r.keyness.referenceRate.toFixed(2),
+        r.keyness.referenceRateCI.low.toFixed(2),
+        r.keyness.referenceRateCI.high.toFixed(2),
         r.keyness.logRatio.toFixed(4),
         r.keyness.logRatioEstimated ? "yes" : "no",
         r.keyness.g2.toFixed(3),
         r.keyness.p.toExponential(3),
+        (qValueByRootIdx.get(r.rootIdx) ?? 1).toExponential(3),
       ]),
     };
+  }
+
+  function testDispersionSignificance(rootIdx: number) {
+    const { counts, sizes } = perSurahCounts(data!.verseRoots, refs, rootIdx, meta.surahs.length);
+    return dispersionPermutationTest(counts, sizes);
   }
 
   const c = t.insightsPage.compare;
@@ -279,6 +330,28 @@ export function CompareTab({ meta }: { meta: MetaFile }) {
             </div>
           )}
 
+          {scope.kind !== "quran" && (
+            <label className="flex items-center gap-1.5">
+              {c.correctionMethodLabel}
+              <div className="flex rounded-lg border border-border p-0.5">
+                <button
+                  type="button"
+                  className={PILL(correctionMethod === "bonferroni")}
+                  onClick={() => setCorrectionMethod("bonferroni")}
+                >
+                  {c.correctionBonferroni}
+                </button>
+                <button
+                  type="button"
+                  className={PILL(correctionMethod === "fdr")}
+                  onClick={() => setCorrectionMethod("fdr")}
+                >
+                  {c.correctionFdr}
+                </button>
+              </div>
+            </label>
+          )}
+
           <SaveButton
             id={`view:compare:${scopeToParam(scope)}`}
             kind="view"
@@ -309,7 +382,11 @@ export function CompareTab({ meta }: { meta: MetaFile }) {
             <h3 className="text-sm font-medium text-ink">{c.dispersionHeading}</h3>
             <p className="mt-1 text-xs leading-relaxed text-muted">{c.dispersionIntro}</p>
             <div className="mt-3">
-              <DispersionTable rows={dispersionRows.slice(0, ROWS_SHOWN)} rootNames={rootNames} />
+              <DispersionTable
+                rows={dispersionRows.slice(0, ROWS_SHOWN)}
+                rootNames={rootNames}
+                onTestSignificance={testDispersionSignificance}
+              />
             </div>
           </>
         ) : (
@@ -333,7 +410,9 @@ export function CompareTab({ meta }: { meta: MetaFile }) {
                   />
                 </div>
                 <p className="mt-3 text-xs text-muted">
-                  {c.correctionNote(result.tested, correctedAlpha.toExponential(1))}
+                  {correctionMethod === "bonferroni"
+                    ? c.correctionNote(result.tested, correctedAlpha.toExponential(1))
+                    : c.fdrCorrectionNote(result.rows.length, correctedAlpha.toExponential(1))}
                   {shownRows.some((r) => sigBucket(r.keyness.p, correctedAlpha) === "ns") &&
                     ` ${c.nsNote}`}
                 </p>
@@ -349,7 +428,10 @@ export function CompareTab({ meta }: { meta: MetaFile }) {
         <p>{c.methodsBasis}</p>
         <p>{c.methodsG2}</p>
         <p>{c.methodsLogRatio}</p>
+        <p>{c.methodsCI}</p>
+        <p>{c.methodsCorrection}</p>
         <p>{c.methodsDp}</p>
+        <p>{c.methodsPermutation}</p>
         <p>{c.methodsLimits}</p>
       </div>
     </div>

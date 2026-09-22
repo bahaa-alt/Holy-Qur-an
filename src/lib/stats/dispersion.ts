@@ -81,3 +81,95 @@ export function dispersion(counts: readonly number[], partSizes: readonly number
   const max = 1 - minExpected;
   return { dp, dpNorm: max > 0 ? Math.min(dp / max, 1) : 0, range, total };
 }
+
+/** A tiny deterministic PRNG (mulberry32), so re-running the same test with
+ *  the same seed reproduces the same p-value rather than drifting with
+ *  Math.random() -- a permutation test whose result changes on refresh
+ *  would undermine exactly the reproducibility this tool is for. */
+function mulberry32(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+export interface PermutationTestResult {
+  observedDp: number;
+  /** Monte Carlo p-value: how often the null process alone produces a DP
+   *  at least this high, add-one smoothed (North et al. 2002) so it is
+   *  never reported as exactly 0. */
+  p: number;
+  permutations: number;
+}
+
+/**
+ * A permutation (Monte Carlo) significance test for DP.
+ *
+ * DP on its own is descriptive: it says how far the observed spread is
+ * from proportional to each part's size, but not whether that gap is
+ * bigger than what pure chance would produce anyway -- a root occurring
+ * only a handful of times can "concentrate" in one surah by luck alone.
+ * This simulates the null hypothesis directly, `permutations` times:
+ * place `total` occurrences one at a time, each independently landing in
+ * a part with probability equal to that part's share of the text --
+ * exactly what DP=0 assumes -- recompute DP for that simulated draw, and
+ * report how often the null alone reaches a DP at least as high as what
+ * was actually observed. A small p means the observed concentration is
+ * unlikely to be a coincidence of where a rare word happened to land.
+ *
+ * Deliberately scoped to one root at a time rather than the whole table:
+ * a root's `total` occurrences dominate the cost (one draw per
+ * occurrence per permutation), so this is meant to be run on demand for
+ * a row a reader is actually looking at, not eagerly for every row in a
+ * ranked list.
+ */
+export function dispersionPermutationTest(
+  counts: readonly number[],
+  partSizes: readonly number[],
+  permutations = 199,
+  seed = 1,
+): PermutationTestResult {
+  if (counts.length !== partSizes.length) {
+    throw new Error(
+      `dispersionPermutationTest: ${counts.length} counts but ${partSizes.length} part sizes; they must line up`,
+    );
+  }
+  const observed = dispersion(counts, partSizes);
+  if (observed.total === 0) return { observedDp: 0, p: 1, permutations };
+
+  // Null-hypothesis cumulative distribution: each occurrence lands in
+  // part i with probability proportional to that part's size, matching
+  // dispersion()'s own treatment of zero-size parts (probability 0).
+  let sizeTotal = 0;
+  for (const s of partSizes) if (s > 0) sizeTotal += s;
+  const cumulative = new Array<number>(partSizes.length);
+  let running = 0;
+  for (let i = 0; i < partSizes.length; i++) {
+    running += partSizes[i] > 0 ? partSizes[i] / sizeTotal : 0;
+    cumulative[i] = running;
+  }
+
+  const rand = mulberry32(seed);
+  const nullCounts = new Array<number>(counts.length);
+  let atLeastAsExtreme = 0;
+  for (let perm = 0; perm < permutations; perm++) {
+    nullCounts.fill(0);
+    for (let occ = 0; occ < observed.total; occ++) {
+      const r = rand();
+      let lo = 0;
+      let hi = cumulative.length - 1;
+      while (lo < hi) {
+        const mid = (lo + hi) >>> 1;
+        if (cumulative[mid] < r) lo = mid + 1;
+        else hi = mid;
+      }
+      nullCounts[lo]++;
+    }
+    if (dispersion(nullCounts, partSizes).dp >= observed.dp) atLeastAsExtreme++;
+  }
+
+  return { observedDp: observed.dp, p: (atLeastAsExtreme + 1) / (permutations + 1), permutations };
+}
