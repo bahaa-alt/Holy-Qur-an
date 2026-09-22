@@ -30,19 +30,23 @@ const SORT_PILL_CLASS = (active: boolean) =>
  */
 const PARTNERS_SHOWN = 15;
 
-/** A shared-verse pair, PMI carried only when it means something (see cooccurrenceScope.ts). */
+/** A shared-verse pair, PMI/significance carried only when it means something (see cooccurrenceScope.ts). */
 interface TopPairRow {
   rootA: string;
   rootB: string;
   count: number;
   pmi?: number;
+  g2?: number;
+  p?: number;
+  qValue?: number;
 }
 
-/** One root's co-occurrence partner, same optional-PMI shape as TopPairRow. */
+/** One root's co-occurrence partner: PMI and a q-value only, not the raw G²/p (see RootCooccurrencePartner). */
 interface PartnerRow {
   root: string;
   count: number;
   pmi?: number;
+  qValue?: number;
 }
 
 function PartnerBar({
@@ -50,11 +54,13 @@ function PartnerBar({
   values,
   metric,
   pmiLabel,
+  sigLabel,
 }: {
   row: PartnerRow;
   values: readonly number[];
   metric: SortMode;
   pmiLabel: string;
+  sigLabel: string | null;
 }) {
   const pct = metricBarPct(metric === "count" ? row.count : (row.pmi ?? 0), values);
   return (
@@ -71,6 +77,7 @@ function PartnerBar({
       <div className="w-36 shrink-0 text-end text-xs text-muted">
         {row.count.toLocaleString()}
         {row.pmi !== undefined && ` · ${pmiLabel}`}
+        {sigLabel && <div className="text-[10px] text-muted/70">{sigLabel}</div>}
       </div>
     </div>
   );
@@ -175,6 +182,10 @@ export function CooccurrenceTab({ meta }: { meta: MetaFile }) {
         provenance: [
           { label: "scope", value: scopeLabel },
           { label: "measure", value: "distinct shared verses" },
+          {
+            label: "pmi, g2, p-value, fdr q-value",
+            value: "measured over the whole Qur'an (Dunning 1993); do not vary with scope",
+          },
         ],
       },
       columns: [
@@ -182,12 +193,18 @@ export function CooccurrenceTab({ meta }: { meta: MetaFile }) {
         { key: "root_b", label: "root_b" },
         { key: "shared_verses", label: "shared_verses" },
         { key: "pmi_whole_quran", label: "pmi_whole_quran" },
+        { key: "log_likelihood_g2", label: "log_likelihood_g2" },
+        { key: "p_value", label: "p_value" },
+        { key: "fdr_q_value", label: "fdr_q_value" },
       ],
       rows: topPairs.map((p) => [
         p.rootA,
         p.rootB,
         p.count,
         p.pmi !== undefined ? p.pmi.toFixed(3) : "",
+        p.g2 !== undefined ? p.g2.toFixed(3) : "",
+        p.p !== undefined ? p.p.toExponential(3) : "",
+        p.qValue !== undefined ? p.qValue.toExponential(3) : "",
       ]),
     };
   }
@@ -201,18 +218,24 @@ export function CooccurrenceTab({ meta }: { meta: MetaFile }) {
         provenance: [
           { label: "root", value: selectedRoot ?? "" },
           { label: "scope", value: scopeLabel },
-          { label: "pmi", value: "measured over the whole Qur'an; does not vary with scope" },
+          {
+            label: "pmi, fdr q-value",
+            value:
+              "measured over the whole Qur'an (Dunning 1993); do not vary with scope. For a pair's raw G²/p-value, see the top-pairs export.",
+          },
         ],
       },
       columns: [
         { key: "partner_root", label: "partner_root" },
         { key: "shared_verses", label: "shared_verses" },
         { key: "pmi_whole_quran", label: "pmi_whole_quran" },
+        { key: "fdr_q_value", label: "fdr_q_value" },
       ],
       rows: shownPartners.map((p) => [
         p.root,
         p.count,
         p.pmi !== undefined ? p.pmi.toFixed(3) : "",
+        p.qValue !== undefined ? p.qValue.toExponential(3) : "",
       ]),
     };
   }
@@ -263,7 +286,9 @@ export function CooccurrenceTab({ meta }: { meta: MetaFile }) {
             )}
           </div>
           {effectiveSortMode === "pmi" && (
-            <p className="mt-1.5 text-xs text-muted">{t.insightsPage.pmiExplanation}</p>
+            <p className="mt-1.5 text-xs text-muted">
+              {t.insightsPage.pmiExplanation} {t.insightsPage.cooccurrenceSigExplanation}
+            </p>
           )}
           <div className="mt-2 divide-y divide-border/60">
             {topPairs.slice(0, 15).map((pair, i) => (
@@ -286,6 +311,7 @@ export function CooccurrenceTab({ meta }: { meta: MetaFile }) {
                 <span className="text-xs text-muted">
                   {t.insightsPage.cooccurrenceSharedVerses(pair.count)}
                   {pair.pmi !== undefined && ` · ${t.insightsPage.pmiLabel(pair.pmi.toFixed(2))}`}
+                  {pair.qValue !== undefined && ` · ${t.insightsPage.collocationSigLabel(pair.qValue)}`}
                 </span>
               </div>
             ))}
@@ -379,6 +405,7 @@ export function CooccurrenceTab({ meta }: { meta: MetaFile }) {
                       values={partnerMetricValues}
                       metric={effectiveSortMode}
                       pmiLabel={t.insightsPage.pmiLabel((p.pmi ?? 0).toFixed(2))}
+                      sigLabel={p.qValue !== undefined ? t.insightsPage.collocationSigLabel(p.qValue) : null}
                     />
                   ))}
                   <Link

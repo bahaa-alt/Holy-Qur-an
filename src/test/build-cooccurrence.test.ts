@@ -62,10 +62,26 @@ describe("buildCooccurrence", () => {
   });
 
   it("lists each root's co-occurrence partners, sorted by count desc, each carrying its PMI", () => {
-    expect(result.byRoot["ا"]).toEqual([
+    expect(result.byRoot["ا"].map(({ root, count, pmi }) => ({ root, count, pmi }))).toEqual([
       { root: "ب", count: 4, pmi: expect.closeTo(0, 10) },
       { root: "ج", count: 3, pmi: expect.closeTo(Math.log2(10), 10) },
     ]);
+  });
+
+  it("computes the exact G2, p-value, and FDR q-value, independently verified in Python", () => {
+    // (ا,ب): both=4, onlyFirst=100-4=96, onlySecond=40-4=36, neither=1000-100-40+4=864
+    //   -- an exactly-as-expected co-occurrence rate (PMI was 0 too), so G2 is exactly 0.
+    // (ا,ج): both=3, onlyFirst=100-3=97, onlySecond=3-3=0, neither=1000-100-3+3=900
+    const ab = result.topPairs.find((p) => p.rootB === "ب")!;
+    const aj = result.topPairs.find((p) => p.rootB === "ج")!;
+    expect(ab.g2).toBeCloseTo(0, 9);
+    expect(ab.p).toBeCloseTo(1, 9);
+    expect(aj.g2).toBeCloseTo(13.897415292406471, 9);
+    expect(aj.p).toBeCloseTo(0.00019306378723721733, 9);
+    // FDR over the 2 tested pairs: (ا,ج)'s q is its own p doubled (rank 1 of
+    // 2); (ا,ب)'s q is its own p (rank 2, the last, always equals itself).
+    expect(aj.qValue).toBeCloseTo(0.00038612757447443465, 9);
+    expect(ab.qValue).toBeCloseTo(1, 9);
   });
 
   it("excludes a partner whose shared count falls below the minimum", () => {

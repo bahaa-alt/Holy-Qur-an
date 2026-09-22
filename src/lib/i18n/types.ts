@@ -678,6 +678,7 @@ export interface Dict {
     logDiceLabel: (value: string) => string;
     collocationSigExplanation: string;
     collocationSigLabel: (q: number) => string;
+    cooccurrenceSigExplanation: string;
   };
   formulaDetailPage: {
     backToInsights: string;
@@ -870,6 +871,9 @@ export interface Dict {
     changelogCategoryFix: string;
     changelogLetterFrequencyFix: string;
     changelogStatsAdditions: string;
+    changelogDistinctiveVocabFix: string;
+    changelogMoreStatsAdditions: string;
+    changelogResearchTooling: string;
     changelogV1Label: string;
     changelogV1Note: string;
     dataSourcesHeading: string;

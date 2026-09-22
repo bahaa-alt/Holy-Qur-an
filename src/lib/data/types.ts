@@ -716,13 +716,33 @@ export interface RootPairRow {
    * on their own -- a high-count, unremarkable-PMI pair).
    */
   pmi: number;
+  /**
+   * Log-likelihood G² for this pair's full 2x2 contingency table (Dunning
+   * 1993): does this pair share more verses than each root's own verse
+   * frequency, independently, would predict. Computed over the same
+   * corpus-wide-verse opportunity space as `pmi`.
+   */
+  g2: number;
+  /** p-value for `g2` at 1 degree of freedom */
+  p: number;
+  /** Benjamini-Hochberg (1995) FDR q-value, computed across every pair tested */
+  qValue: number;
 }
 
-/** One root's co-occurrence partner: the other root, their shared verse count, and PMI. */
+/**
+ * One root's co-occurrence partner: the other root, their shared verse
+ * count, PMI, and significance. Carries only the FDR q-value, not the raw
+ * G²/p-value RootPairRow has -- byRoot repeats this shape twice per pair
+ * across up to ~1,651 roots, so the extra fields would multiply the file's
+ * size for numbers this app never displays independently of the q-value
+ * they were corrected into. See topPairs/topPairsByPmi for a pair's full
+ * G²/p if needed.
+ */
 export interface RootCooccurrencePartner {
   root: string;
   count: number;
   pmi: number;
+  qValue: number;
 }
 
 /**
