@@ -6,6 +6,7 @@ import type {
   RootFile,
   SurahCoverageLemmaRow,
   SurahCoverageRootRow,
+  SurahFile,
 } from "../../src/lib/data/types";
 import type { RawWord } from "./parse-morphology";
 
@@ -15,6 +16,22 @@ const TOP_N = 15;
  * Computes corpus-wide curiosities from data buildRoots() and
  * parseMorphologyTSV() already produced -- see InsightsFile's doc comment
  * for why these are precomputed here rather than derived client-side.
+ *
+ * letterFrequency and longestWord read each word's text from `surahFiles`
+ * (buildSurahs()'s output: the canonical quran-json spelling, the same
+ * text every verse/search/root page displays and every scoped Letter
+ * Frequency view already counts from), not from `words[].text` (the
+ * morphology corpus's own reconstruction). The two disagree on two
+ * systematic, real spelling conventions -- word-final /i:/ as ى vs ي, and
+ * a decomposed ء+ا vs precomposed أ -- affecting roughly half of all
+ * words at the diacritics-stripped level; using morphology's spelling
+ * here previously meant this app's own single corpus-wide letter count,
+ * and the exact text of its "longest word" fact, wouldn't match the
+ * canonical spelling shown on that very word's own verse page one click
+ * away. buildSurahs() already resolves the 10 verses where the two
+ * sources' word counts disagree by falling back to the morphology
+ * reconstruction there, so reading through `surahFiles` here needs no
+ * special-casing for that.
  */
 export function buildInsights(
   words: readonly RawWord[],
@@ -23,7 +40,14 @@ export function buildInsights(
   indexRoots: readonly IndexRootRow[],
   indexLemmas: readonly IndexLemmaRow[],
   totalSurahs: number,
+  surahFiles: ReadonlyMap<number, SurahFile>,
 ): InsightsFile {
+  const verseByRef = new Map<string, SurahFile["verses"][number]>();
+  for (const file of surahFiles.values()) {
+    for (const verse of file.verses) verseByRef.set(`${file.n}:${verse.a}`, verse);
+  }
+  const canonicalWord = (s: number, a: number, w: number): string =>
+    verseByRef.get(`${s}:${a}`)!.w[w - 1];
   // --- roots ranked by distinct-surah coverage ---
   const rootRows: SurahCoverageRootRow[] = indexRoots.map((row) => {
     const file = rootFiles.get(row.ar)!;
@@ -71,14 +95,17 @@ export function buildInsights(
   // --- longest word, by letter count (diacritics stripped) ---
   let longestWord = { s: 0, a: 0, w: 0, text: "", letterCount: -1 };
   for (const word of words) {
-    const letterCount = letterCountOf(word.text);
+    const text = canonicalWord(word.s, word.a, word.w);
+    const letterCount = letterCountOf(text);
     if (letterCount > longestWord.letterCount) {
-      longestWord = { s: word.s, a: word.a, w: word.w, text: word.text, letterCount };
+      longestWord = { s: word.s, a: word.a, w: word.w, text, letterCount };
     }
   }
 
   // --- whole-Qur'an letter frequency ---
-  const letterFrequency = countLetters(words.map((w) => w.text));
+  const letterFrequency = countLetters(
+    words.map((w) => canonicalWord(w.s, w.a, w.w)),
+  );
 
   // --- hapax legomena (occurring exactly once) ---
   const hapaxRootCount = indexRoots.filter((r) => r.count === 1).length;

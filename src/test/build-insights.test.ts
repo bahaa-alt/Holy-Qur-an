@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { parseMorphologyTSV } from "../../scripts/lib/parse-morphology";
+import { parseMorphologyTSV, type RawWord } from "../../scripts/lib/parse-morphology";
 import { buildRoots, type RootsGlossMap } from "../../scripts/lib/build-roots";
 import { buildInsights } from "../../scripts/lib/build-insights";
+import type { SurahFile } from "../lib/data/types";
 
 // Same fixture as build-roots.test.ts, reused so the two test files reason
 // about the same known corpus.
@@ -73,9 +74,46 @@ function words() {
 
 const GLOSS: RootsGlossMap = { رحم: { b: "rHm", m: "Mercy, compassion." } };
 
+// A minimal stand-in for buildSurahs()'s output: canonical per-word text,
+// keyed the same way (s, a, w). Built straight from the same fixture words
+// (unlike the real pipeline, nothing here diverges from morphology's own
+// text), so every assertion below still reads the text it always has.
+function surahFilesFrom(fixtureWords: readonly RawWord[]): Map<number, SurahFile> {
+  const bySurah = new Map<number, Map<number, string[]>>();
+  for (const word of fixtureWords) {
+    let byAyah = bySurah.get(word.s);
+    if (!byAyah) {
+      byAyah = new Map();
+      bySurah.set(word.s, byAyah);
+    }
+    let tokens = byAyah.get(word.a);
+    if (!tokens) {
+      tokens = [];
+      byAyah.set(word.a, tokens);
+    }
+    tokens[word.w - 1] = word.text;
+  }
+  const surahFiles = new Map<number, SurahFile>();
+  for (const [s, byAyah] of bySurah) {
+    const verses = [...byAyah.entries()]
+      .sort(([a], [b]) => a - b)
+      .map(([a, w]) => ({ a, w, t: "" }));
+    surahFiles.set(s, { n: s, verses });
+  }
+  return surahFiles;
+}
+
 describe("buildInsights", () => {
   const built = buildRoots(words(), GLOSS);
-  const insights = buildInsights(words(), built.rootFiles, built.lemmaFiles, built.indexRoots, built.indexLemmas, 114);
+  const insights = buildInsights(
+    words(),
+    built.rootFiles,
+    built.lemmaFiles,
+    built.indexRoots,
+    built.indexLemmas,
+    114,
+    surahFilesFrom(words()),
+  );
 
   it("carries totalSurahs through unchanged", () => {
     expect(insights.totalSurahs).toBe(114);
@@ -134,5 +172,36 @@ describe("buildInsights", () => {
     // the two 10-word fixture verses, 6:1 (4 distinct roots, density 0.4)
     // beats 5:1 (2 distinct roots, density 0.2).
     expect(insights.mostRootDenseVerse).toEqual({ s: 6, a: 1, distinctRootCount: 4, wordCount: 10, density: 0.4 });
+  });
+});
+
+describe("buildInsights reads canonical text, not morphology's own", () => {
+  it("uses surahFiles' spelling for longestWord and letterFrequency, not words[].text", () => {
+    const built = buildRoots(words(), GLOSS);
+    const surahFiles = surahFilesFrom(words());
+    // Overwrite 1:1:3 (ٱلرَّحْمَٰنِ, the longest word in the shared fixture
+    // above) with a canonical spelling one letter longer, appending غ --
+    // absent from every other word in this fixture -- so it's the one
+    // change that can move both longestWord and letterFrequency -- if
+    // either still read words[].text, this override would have no effect.
+    surahFiles.get(1)!.verses[0]!.w[2] = "ٱلرَّحْمَٰنِغ";
+    const insights = buildInsights(
+      words(),
+      built.rootFiles,
+      built.lemmaFiles,
+      built.indexRoots,
+      built.indexLemmas,
+      114,
+      surahFiles,
+    );
+    expect(insights.longestWord).toEqual({
+      s: 1,
+      a: 1,
+      w: 3,
+      text: "ٱلرَّحْمَٰنِغ",
+      letterCount: 7,
+    });
+    const byLetter = Object.fromEntries(insights.letterFrequency.map((r) => [r.letter, r.count]));
+    expect(byLetter["غ"]).toBe(1);
   });
 });
