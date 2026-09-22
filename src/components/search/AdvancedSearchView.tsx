@@ -74,6 +74,21 @@ function toggle<T>(set: ReadonlySet<T>, value: T): Set<T> {
   return next;
 }
 
+/**
+ * The word/verse syntax facets are a flat ~32-tag vocabulary with no
+ * natural grammar/rhetoric split reliable enough to hard-code (several
+ * tags straddle both), so a text filter -- the same pattern the root
+ * search above already uses -- narrows the wall of pills instead.
+ */
+function filterTags(tags: string[], filter: string, lang: "en" | "ar"): string[] {
+  const q = filter.trim().toLowerCase();
+  if (q === "") return tags;
+  return tags.filter((tag) => {
+    const label = lang === "ar" ? describeTag(tag).ar : describeTag(tag).en;
+    return tag.toLowerCase().includes(q) || label.toLowerCase().includes(q);
+  });
+}
+
 export function AdvancedSearchView() {
   const t = useT();
   const { lang } = useLanguage();
@@ -92,6 +107,8 @@ export function AdvancedSearchView() {
   const [verseSyntax, setVerseSyntax] = useState<Set<string>>(new Set());
   const [syntax, setSyntax] = useState<SyntaxLookups | null>(null);
   const [syntaxTags, setSyntaxTags] = useState<string[]>([]);
+  const [wordSyntaxFilter, setWordSyntaxFilter] = useState("");
+  const [verseSyntaxFilter, setVerseSyntaxFilter] = useState("");
   const [surahFrom, setSurahFrom] = useState(1);
   const [surahTo, setSurahTo] = useState(114);
   const [page, setPage] = useState(0);
@@ -346,8 +363,17 @@ export function AdvancedSearchView() {
                     {t.advancedSearchPage.wordSyntaxLabel}
                   </h2>
                   <p className="mt-1 text-xs text-muted">{t.advancedSearchPage.wordSyntaxHint}</p>
+                  {syntaxTags.length > 8 && (
+                    <input
+                      type="text"
+                      value={wordSyntaxFilter}
+                      onChange={(e) => setWordSyntaxFilter(e.target.value)}
+                      placeholder={t.advancedSearchPage.syntaxFilterPlaceholder}
+                      className="mt-2 w-full max-w-xs rounded-lg border border-border bg-bg px-3 py-1.5 text-xs text-ink placeholder:text-muted focus:border-accent focus:outline-none"
+                    />
+                  )}
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {syntaxTags.map((tag) => (
+                    {filterTags(syntaxTags, wordSyntaxFilter, lang).map((tag) => (
                       <button
                         key={tag}
                         type="button"
@@ -365,6 +391,9 @@ export function AdvancedSearchView() {
                       </button>
                     ))}
                   </div>
+                  {wordSyntaxFilter.trim() !== "" && filterTags(syntaxTags, wordSyntaxFilter, lang).length === 0 && (
+                    <p className="mt-2 text-xs text-muted">{t.advancedSearchPage.syntaxFilterNoMatches}</p>
+                  )}
                 </div>
 
                 <div>
@@ -372,8 +401,17 @@ export function AdvancedSearchView() {
                     {t.advancedSearchPage.verseSyntaxLabel}
                   </h2>
                   <p className="mt-1 text-xs text-muted">{t.advancedSearchPage.verseSyntaxHint}</p>
+                  {syntaxTags.length > 8 && (
+                    <input
+                      type="text"
+                      value={verseSyntaxFilter}
+                      onChange={(e) => setVerseSyntaxFilter(e.target.value)}
+                      placeholder={t.advancedSearchPage.syntaxFilterPlaceholder}
+                      className="mt-2 w-full max-w-xs rounded-lg border border-border bg-bg px-3 py-1.5 text-xs text-ink placeholder:text-muted focus:border-accent focus:outline-none"
+                    />
+                  )}
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {syntaxTags.map((tag) => (
+                    {filterTags(syntaxTags, verseSyntaxFilter, lang).map((tag) => (
                       <button
                         key={tag}
                         type="button"
@@ -391,6 +429,10 @@ export function AdvancedSearchView() {
                       </button>
                     ))}
                   </div>
+                  {verseSyntaxFilter.trim() !== "" &&
+                    filterTags(syntaxTags, verseSyntaxFilter, lang).length === 0 && (
+                      <p className="mt-2 text-xs text-muted">{t.advancedSearchPage.syntaxFilterNoMatches}</p>
+                    )}
                 </div>
               </>
             )}

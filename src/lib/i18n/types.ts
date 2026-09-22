@@ -27,6 +27,8 @@ export interface Dict {
     clearFilters: string;
     prev: string;
     next: string;
+    /** Label on a clickable example that fills a form/filter and runs it, e.g. "Try: أمن · كفر". */
+    tryLabel: string;
   };
   categories: Record<Cat, string>;
   rootShapes: Record<RootShape, string>;
@@ -190,6 +192,8 @@ export interface Dict {
     loadingRoots: string;
     pickAtLeastOneMore: string;
     heatmapHeading: string;
+    emptyTitle: string;
+    emptyDescription: string;
   };
   rootPicker: {
     heading: string;
@@ -237,6 +241,8 @@ export interface Dict {
     wordSyntaxHint: string;
     verseSyntaxLabel: string;
     verseSyntaxHint: string;
+    syntaxFilterPlaceholder: string;
+    syntaxFilterNoMatches: string;
     title: string;
     subtitle: string;
     loading: string;
@@ -817,6 +823,7 @@ export interface Dict {
     importLabel: string;
     importSummary: (added: number, updated: number, skipped: number) => string;
     importFailed: string;
+    emptyTitle: string;
     empty: string;
     removeAria: (label: string) => string;
     notePlaceholder: string;
@@ -830,6 +837,7 @@ export interface Dict {
     import: string;
     importSummary: (title: string, setCount: number) => string;
     importFailed: string;
+    emptyTitle: string;
     empty: string;
     removeAria: (label: string) => string;
     setCount: (n: number) => string;

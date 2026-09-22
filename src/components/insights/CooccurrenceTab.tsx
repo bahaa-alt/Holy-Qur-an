@@ -29,6 +29,8 @@ const SORT_PILL_CLASS = (active: boolean) =>
  * hundred indistinguishable slivers.
  */
 const PARTNERS_SHOWN = 15;
+/** Both verified against cooccurrence.json: 10 and 9 partners respectively. */
+const COOCCURRENCE_EXAMPLE_ROOTS = ["كتب", "رحم"];
 
 /** A shared-verse pair, PMI/significance carried only when it means something (see cooccurrenceScope.ts). */
 interface TopPairRow {
@@ -378,7 +380,22 @@ export function CooccurrenceTab({ meta }: { meta: MetaFile }) {
 
             <div className="mt-4">
               {selectedRoot === null ? (
-                <p className="text-sm text-muted">{t.insightsPage.cooccurrencePickPrompt}</p>
+                <div>
+                  <p className="text-sm text-muted">{t.insightsPage.cooccurrencePickPrompt}</p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+                    <span className="text-muted">{t.common.tryLabel}:</span>
+                    {COOCCURRENCE_EXAMPLE_ROOTS.map((r) => (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => setSelectedRoot(r)}
+                        className="arabic-ui inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
+                      >
+                        {r}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               ) : partners.length === 0 ? (
                 <p className="text-sm text-muted">{t.insightsPage.cooccurrenceNoResults}</p>
               ) : (

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { FlaskConical, Trash2, Upload } from "lucide-react";
 import { createStudy, deleteStudy, getStudies, importStudyJson } from "@/lib/notebook/store";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { useT } from "@/lib/i18n/LanguageContext";
 import type { Study } from "@/lib/notebook/types";
 
@@ -101,7 +102,11 @@ export function StudyList({ onOpen }: { onOpen: (id: string) => void }) {
       {message && <p className="text-xs text-muted">{message}</p>}
 
       {studies.length === 0 ? (
-        <p className="text-sm text-muted">{t.studiesPage.empty}</p>
+        <EmptyState
+          icon={FlaskConical}
+          title={t.studiesPage.emptyTitle}
+          description={t.studiesPage.empty}
+        />
       ) : (
         <div className="space-y-3">
           {studies.map((s) => (
