@@ -37,6 +37,8 @@ export const en: Dict = {
     saved: "Saved",
     studies: "Studies",
     about: "About",
+    openMenu: "Open menu",
+    closeMenu: "Close menu",
   },
   footer: {
     tagline: "Free, open-source, no accounts, no servers.",

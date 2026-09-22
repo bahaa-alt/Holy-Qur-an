@@ -60,6 +60,8 @@ export const ar: Dict = {
     saved: "المحفوظات",
     studies: "الدراسات",
     about: "عن الموقع",
+    openMenu: "فتح القائمة",
+    closeMenu: "إغلاق القائمة",
   },
   footer: {
     tagline: "مجاني ومفتوح المصدر، بلا حسابات وبلا خوادم.",

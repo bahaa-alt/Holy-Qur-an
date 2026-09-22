@@ -52,7 +52,12 @@ export function DailyWidget() {
         </h2>
         <p className="arabic-ui mt-2 text-2xl text-ink">{state.root.ar}</p>
         {state.root.glossShort && (
-          <p className="mt-1 text-sm text-muted">{state.root.glossShort}</p>
+          // See RootHeader.tsx's identical comment: English lexicon prose
+          // with an embedded Arabic citation needs an explicit direction so
+          // it doesn't inherit the page's RTL base direction in Arabic UI.
+          <p dir="ltr" className="mt-1 text-start text-sm text-muted">
+            {state.root.glossShort}
+          </p>
         )}
         <Link
           href={rootHref(state.root.ar)}

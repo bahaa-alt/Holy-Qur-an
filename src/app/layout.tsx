@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { SITE_ORIGIN, absoluteUrl } from "@/lib/site";
-import { Amiri_Quran, Inter, Noto_Naskh_Arabic } from "next/font/google";
+import { Inter, Noto_Naskh_Arabic } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -20,10 +21,16 @@ const notoNaskhArabic = Noto_Naskh_Arabic({
   display: "swap",
 });
 
-const amiriQuran = Amiri_Quran({
+// Self-hosted rather than next/font/google's Amiri_Quran: this file is that
+// exact font (Arabic subset) with one fix -- U+065E ARABIC FATHA WITH TWO
+// DOTS, the tanwin mark on words like شَرَابٞ, is genuinely missing from
+// upstream's binary (1,803 occurrences across the corpus render as a
+// visible tofu box otherwise). See scripts/patch-amiri-quran-font.py for
+// how the patch works and how to regenerate this file.
+const amiriQuran = localFont({
+  src: "./fonts/amiri-quran-patched.woff2",
   variable: "--font-amiri",
   weight: "400",
-  subsets: ["arabic"],
   display: "swap",
 });
 

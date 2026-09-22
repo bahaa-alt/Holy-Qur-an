@@ -54,7 +54,12 @@ export function RootHeader({
       </div>
 
       {summary.glossFull && (
-        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-ink">
+        // English lexicon prose with an embedded Arabic citation -- needs an
+        // explicit direction. Without it, this paragraph inherits the page's
+        // RTL base direction in Arabic UI mode and the bidi algorithm visibly
+        // scrambles its line order (the Arabic UI toggle only flips layout
+        // and translated labels; a Lane's Lexicon gloss is always English).
+        <p dir="ltr" className="mt-4 max-w-2xl text-start text-sm leading-relaxed text-ink">
           <span className="font-medium">{t.rootHeader.meaningLabel}</span>
           {summary.glossFull}
         </p>
