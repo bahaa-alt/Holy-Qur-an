@@ -1,3 +1,4 @@
+import { benjaminiHochberg, chiSquarePValue1df, contingencyG2 } from "../../src/lib/stats/keyness";
 import type { CooccurrenceFile, RootCooccurrencePartner, RootPairRow } from "../../src/lib/data/types";
 import type { RawWord } from "./parse-morphology";
 
@@ -63,12 +64,34 @@ export function buildCooccurrence(
     return Math.log2((count * totalVerses) / (verseCountA * verseCountB));
   }
 
-  const allPairs: RootPairRow[] = [];
+  // Dunning's (1993) collocation test, over the same corpus-wide-verse
+  // opportunity space PMI uses: does this pair share more verses than each
+  // root's own verse frequency, independently, would predict? See
+  // lib/stats/keyness.ts's contingencyG2 for why the full 2x2 table (not
+  // just the two roots' raw counts) is what this needs.
+  function g2Of(rootA: string, rootB: string, count: number): number {
+    const verseCountA = verseCountByRoot.get(rootA) ?? 0;
+    const verseCountB = verseCountByRoot.get(rootB) ?? 0;
+    return contingencyG2({
+      both: count,
+      onlyFirst: verseCountA - count,
+      onlySecond: verseCountB - count,
+      neither: totalVerses - verseCountA - verseCountB + count,
+    });
+  }
+
+  const withoutFdr: (Omit<RootPairRow, "qValue"> & { p: number })[] = [];
   for (const [key, count] of pairCounts) {
     if (count < MIN_COUNT) continue;
     const [rootA, rootB] = key.split("|");
-    allPairs.push({ rootA, rootB, count, pmi: pmiOf(rootA, rootB, count) });
+    const g2 = g2Of(rootA, rootB, count);
+    withoutFdr.push({ rootA, rootB, count, pmi: pmiOf(rootA, rootB, count), g2, p: chiSquarePValue1df(g2) });
   }
+
+  // FDR across every pair tested (the natural family: one test per pair
+  // that cleared MIN_COUNT), same convention as collocations.
+  const fdr = benjaminiHochberg(withoutFdr.map((r) => r.p));
+  const allPairs: RootPairRow[] = withoutFdr.map((r, i) => ({ ...r, qValue: fdr.qValues[i] }));
 
   const byCount = [...allPairs].sort(
     (a, b) => b.count - a.count || a.rootA.localeCompare(b.rootA) || a.rootB.localeCompare(b.rootB),
@@ -79,10 +102,16 @@ export function buildCooccurrence(
 
   const partnersByRoot = new Map<string, RootCooccurrencePartner[]>();
   for (const pair of allPairs) {
+    // Only qValue, not g2/p -- see RootCooccurrencePartner's own doc comment.
+    // Rounded to 4 significant figures: the UI only ever shows 3 decimal
+    // places, and this shape is repeated twice per pair across up to
+    // ~1,651 roots, so float64's full digit string is pure size for
+    // precision nothing here reads.
+    const shared = { count: pair.count, pmi: pair.pmi, qValue: Number(pair.qValue.toPrecision(4)) };
     if (!partnersByRoot.has(pair.rootA)) partnersByRoot.set(pair.rootA, []);
-    partnersByRoot.get(pair.rootA)!.push({ root: pair.rootB, count: pair.count, pmi: pair.pmi });
+    partnersByRoot.get(pair.rootA)!.push({ root: pair.rootB, ...shared });
     if (!partnersByRoot.has(pair.rootB)) partnersByRoot.set(pair.rootB, []);
-    partnersByRoot.get(pair.rootB)!.push({ root: pair.rootA, count: pair.count, pmi: pair.pmi });
+    partnersByRoot.get(pair.rootB)!.push({ root: pair.rootA, ...shared });
   }
 
   // byRoot holds the UNION of each root's top-5-by-count and top-5-by-PMI

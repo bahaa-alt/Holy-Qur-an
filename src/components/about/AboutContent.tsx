@@ -128,7 +128,10 @@ export function AboutContent({
             <ul className="mt-1 list-disc space-y-2 ps-5 text-muted">
               <li>{t.aboutPage.changelogCategoryFix}</li>
               <li>{t.aboutPage.changelogLetterFrequencyFix}</li>
+              <li>{t.aboutPage.changelogDistinctiveVocabFix}</li>
               <li>{t.aboutPage.changelogStatsAdditions}</li>
+              <li>{t.aboutPage.changelogMoreStatsAdditions}</li>
+              <li>{t.aboutPage.changelogResearchTooling}</li>
             </ul>
           </div>
           <div>
