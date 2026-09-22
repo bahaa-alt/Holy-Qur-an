@@ -21,6 +21,7 @@ export const en: Dict = {
     clearFilters: "Clear filters",
     prev: "Prev",
     next: "Next",
+    tryLabel: "Try",
   },
   categories: CATEGORY_LABELS,
   rootShapes: ROOT_SHAPE_LABELS,
@@ -190,6 +191,9 @@ export const en: Dict = {
     loadingRoots: "Loading roots…",
     pickAtLeastOneMore: "Pick at least one more root to compare.",
     heatmapHeading: "Where each root occurs across the Mushaf",
+    emptyTitle: "Nothing to compare yet",
+    emptyDescription:
+      "Pick two or three roots above to see their occurrence counts, categories and spread across the Mushaf side by side.",
   },
   rootPicker: {
     heading: "Roots to compare",
@@ -242,6 +246,8 @@ export const en: Dict = {
     verseSyntaxLabel: "Verse contains",
     verseSyntaxHint:
       "The function appears somewhere in the same verse, on any word. This is the one that composes: a root, filtered to where it sits inside a conditional or a restriction.",
+    syntaxFilterPlaceholder: "Filter…",
+    syntaxFilterNoMatches: "No tags match.",
     title: "Advanced search",
     subtitle:
       "Combine facets across the whole corpus -- category, verb Form, one or more roots, surah range, and Meccan/Medinan -- to find things no single root's own page can answer, like every Form VIII passive participle in the Medinan surahs, or every occurrence of either of two roots together.",
@@ -887,8 +893,9 @@ export const en: Dict = {
     importSummary: (added: number, updated: number, skipped: number) =>
       `Imported: ${added} added, ${updated} updated, ${skipped} skipped.`,
     importFailed: "That file is not a notebook exported from this app.",
+    emptyTitle: "Nothing saved yet",
     empty:
-      'Nothing saved yet. Use the "Save" button on a root, word, or verse page to bookmark it here.',
+      'Use the "Save" button on a root, word, verse, query result, or saved view to bookmark it here.',
     removeAria: (label) => `Remove ${label}`,
     notePlaceholder: "Add a note…",
   },
@@ -903,7 +910,9 @@ export const en: Dict = {
     importSummary: (title, setCount) =>
       `Imported "${title}" with ${setCount.toLocaleString()} set${setCount === 1 ? "" : "s"}.`,
     importFailed: "That file is not a study exported from this app.",
-    empty: 'Nothing here yet. Give a study a title and press "Create" to start one.',
+    emptyTitle: "No studies yet",
+    empty:
+      'Give a study a title above and press "Create." Inside, add a QCQL query as a set (or bring in one you\'ve already saved), then combine two sets with intersect (∩), union (∪) or subtract (−).',
     removeAria: (label) => `Delete study ${label}`,
     setCount: (n) => `${n.toLocaleString()} set${n === 1 ? "" : "s"}`,
     backToList: "All studies",

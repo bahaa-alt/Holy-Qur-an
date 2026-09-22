@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { GitCompare, Loader2 } from "lucide-react";
 import { getRoot } from "@/lib/data/loader";
 import { buildRootSummary, type RootSummary } from "@/lib/root/summary";
 import { buildSurahOccurrenceCounts } from "@/lib/root/surahHeatmap";
@@ -13,7 +13,15 @@ import { CompareCategoryBars } from "./CompareCategoryBars";
 import { SurahHeatmapStrip } from "@/components/root/SurahHeatmapStrip";
 import { CopyTextButton } from "@/components/export/CopyTextButton";
 import { PrintButton } from "@/components/export/PrintButton";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { useT } from "@/lib/i18n/LanguageContext";
+
+/**
+ * A semantically contrasting pair (belief / disbelief), both frequent
+ * enough that the resulting comparison table is never sparse -- verified
+ * against index.json: أمن occurs 879 times, كفر 525.
+ */
+const EXAMPLE_ROOTS = ["أمن", "كفر"];
 
 export function CompareView({ roots }: { roots: CompareRootRow[] }) {
   const t = useT();
@@ -127,6 +135,23 @@ export function CompareView({ roots }: { roots: CompareRootRow[] }) {
 
       {!stillLoading && selected.length === 1 && (
         <p className="text-center text-sm text-muted">{t.compareView.pickAtLeastOneMore}</p>
+      )}
+
+      {!stillLoading && selected.length === 0 && (
+        <EmptyState
+          icon={GitCompare}
+          title={t.compareView.emptyTitle}
+          description={t.compareView.emptyDescription}
+        >
+          <button
+            type="button"
+            onClick={() => setSelected(EXAMPLE_ROOTS.filter((r) => roots.some((row) => row.ar === r)))}
+            className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
+          >
+            <span>{t.common.tryLabel}:</span>
+            <span className="arabic-ui">{EXAMPLE_ROOTS.join(" · ")}</span>
+          </button>
+        </EmptyState>
       )}
     </div>
   );

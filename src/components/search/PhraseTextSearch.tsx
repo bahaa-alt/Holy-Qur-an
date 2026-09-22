@@ -13,6 +13,8 @@ import { useT } from "@/lib/i18n/LanguageContext";
 import type { ArIndexFile, MetaFile, SurahVerse } from "@/lib/data/types";
 
 const PAGE_SIZE = 25;
+/** Verified against ar-index.json's actual tokenization: 21, 89 and 257 verse matches respectively. */
+const EXAMPLE_PHRASES = ["الحمد لله", "يا أيها الذين آمنوا", "إن الله"];
 // Phrase queries built of common words (e.g. a single frequent particle)
 // could in principle match thousands of verses; cap the working set the
 // same way /phrases/ (root-adjacency search) does, so pagination and the
@@ -175,6 +177,28 @@ export function PhraseTextSearch() {
         </div>
         <p className="mt-2 text-xs text-muted">{t.phraseTextSearch.helperText}</p>
       </form>
+
+      {searchedQuery === null && (
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-muted">{t.common.tryLabel}:</span>
+          {EXAMPLE_PHRASES.map((phrase) => (
+            <button
+              key={phrase}
+              type="button"
+              disabled={!arIndex}
+              onClick={() => {
+                setInputValue(phrase);
+                if (arIndex) runSearch(phrase, arIndex);
+              }}
+              dir="rtl"
+              lang="ar"
+              className="arabic-ui inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm text-ink transition-colors hover:border-accent hover:text-accent disabled:opacity-40"
+            >
+              {phrase}
+            </button>
+          ))}
+        </div>
+      )}
 
       {searchedQuery !== null && searchedQuery !== "" && matches !== null && (
         <div className="flex flex-wrap items-center justify-between gap-3">

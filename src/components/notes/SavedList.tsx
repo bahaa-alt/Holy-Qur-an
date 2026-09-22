@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Download, Trash2, Upload } from "lucide-react";
+import { Bookmark, Download, Trash2, Upload } from "lucide-react";
 import { exportSaved, getSavedItems, importSaved, removeItem, updateNote } from "@/lib/notes/store";
 import { CopyTextButton } from "@/components/export/CopyTextButton";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { useT } from "@/lib/i18n/LanguageContext";
 import type { SavedItem, SavedKind } from "@/lib/notes/types";
 
@@ -120,7 +121,7 @@ export function SavedList() {
       {message && <p className="text-end text-xs text-muted">{message}</p>}
 
       {items.length === 0 ? (
-        <p className="text-sm text-muted">{t.savedList.empty}</p>
+        <EmptyState icon={Bookmark} title={t.savedList.emptyTitle} description={t.savedList.empty} />
       ) : (
         KIND_ORDER.filter((kind) => items.some((i) => i.kind === kind)).map((kind) => (
           <div key={kind}>

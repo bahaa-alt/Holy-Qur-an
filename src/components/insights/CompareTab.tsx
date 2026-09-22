@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
 import { getIndex, getVerseRoots } from "@/lib/data/loader";
 import { useUrlParam } from "@/lib/hooks/useUrlParam";
 import { useT } from "@/lib/i18n/LanguageContext";
@@ -426,18 +426,27 @@ export function CompareTab({ meta }: { meta: MetaFile }) {
         )}
       </div>
 
-      {/* --- how to read it: the difference between a tool and a toy --- */}
-      <div className="space-y-2 rounded-2xl border border-border bg-surface p-6 text-xs leading-relaxed text-muted">
-        <h3 className="text-sm font-medium text-ink">{c.methodsHeading}</h3>
-        <p>{c.methodsBasis}</p>
-        <p>{c.methodsG2}</p>
-        <p>{c.methodsLogRatio}</p>
-        <p>{c.methodsCI}</p>
-        <p>{c.methodsCorrection}</p>
-        <p>{c.methodsDp}</p>
-        <p>{c.methodsPermutation}</p>
-        <p>{c.methodsLimits}</p>
-      </div>
+      {/* --- how to read it: the difference between a tool and a toy ---
+          Closed by default: every word here stays, but at the same visual
+          weight as the table above it, an 8-paragraph footnote reads as
+          equally important as the finding -- this is sequencing, not
+          cutting. */}
+      <details className="group rounded-2xl border border-border bg-surface p-6 text-xs leading-relaxed text-muted">
+        <summary className="flex cursor-pointer list-none items-center gap-1.5 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden">
+          <ChevronRight size={14} className="shrink-0 transition-transform group-open:rotate-90" />
+          {c.methodsHeading}
+        </summary>
+        <div className="mt-3 space-y-2">
+          <p>{c.methodsBasis}</p>
+          <p>{c.methodsG2}</p>
+          <p>{c.methodsLogRatio}</p>
+          <p>{c.methodsCI}</p>
+          <p>{c.methodsCorrection}</p>
+          <p>{c.methodsDp}</p>
+          <p>{c.methodsPermutation}</p>
+          <p>{c.methodsLimits}</p>
+        </div>
+      </details>
     </div>
   );
 }

@@ -9,8 +9,29 @@ import { ThemeToggle } from "./ThemeToggle";
 import { LanguageToggle } from "./LanguageToggle";
 
 const NAV_LINK_CLASS = "rounded-lg px-3 py-1.5 text-muted transition-colors hover:bg-surface hover:text-ink";
+const NAV_LINK_CLASS_ACTIVE = "rounded-lg px-3 py-1.5 bg-accent text-accent-fg";
 const NAV_LINK_CLASS_MOBILE =
   "block rounded-lg px-3 py-2.5 text-muted transition-colors hover:bg-surface hover:text-ink";
+const NAV_LINK_CLASS_MOBILE_ACTIVE = "block rounded-lg px-3 py-2.5 bg-accent text-accent-fg";
+
+/**
+ * A detail page's own URL doesn't start with its section's nav href (e.g.
+ * /root/علم/ vs the "Roots" link's /roots/), so exact-match alone would
+ * leave the nav with no active state on exactly the deep-link pages where
+ * orientation matters most. These are the sections whose detail routes
+ * live under a different top-level segment.
+ */
+const SECTION_ALIASES: Record<string, string[]> = {
+  "/quran/": ["/surah/", "/v/"],
+  "/roots/": ["/root/", "/word/"],
+  "/search/": ["/query/", "/phrases/", "/compare/"],
+  "/insights/": ["/curiosities/"],
+};
+
+function isActiveLink(pathname: string, href: string): boolean {
+  if (pathname === href || pathname.startsWith(href)) return true;
+  return (SECTION_ALIASES[href] ?? []).some((prefix) => pathname.startsWith(prefix));
+}
 
 /**
  * The nav links, without their toggles: shared between the desktop row and
@@ -61,7 +82,12 @@ export function Header() {
 
         <nav className="hidden items-center gap-1 text-sm md:flex">
           {links.map((l) => (
-            <Link key={l.href} href={l.href} className={NAV_LINK_CLASS}>
+            <Link
+              key={l.href}
+              href={l.href}
+              aria-current={isActiveLink(pathname, l.href) ? "page" : undefined}
+              className={isActiveLink(pathname, l.href) ? NAV_LINK_CLASS_ACTIVE : NAV_LINK_CLASS}
+            >
               {l.label}
             </Link>
           ))}
@@ -89,7 +115,14 @@ export function Header() {
       {open && (
         <nav className="border-t border-border px-2 py-2 text-sm md:hidden">
           {links.map((l) => (
-            <Link key={l.href} href={l.href} className={NAV_LINK_CLASS_MOBILE}>
+            <Link
+              key={l.href}
+              href={l.href}
+              aria-current={isActiveLink(pathname, l.href) ? "page" : undefined}
+              className={
+                isActiveLink(pathname, l.href) ? NAV_LINK_CLASS_MOBILE_ACTIVE : NAV_LINK_CLASS_MOBILE
+              }
+            >
               {l.label}
             </Link>
           ))}

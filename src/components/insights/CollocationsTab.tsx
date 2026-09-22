@@ -21,6 +21,8 @@ import type { CollocationsFile, IndexFile, MetaFile } from "@/lib/data/types";
 type SortMode = "count" | "pmi";
 const SORT_PILL_CLASS = (active: boolean) =>
   `rounded-md px-3 py-1 text-xs ${active ? "bg-accent text-accent-fg" : "text-muted"}`;
+/** Both verified against collocations.json: 5 and 7 verb-preposition entries respectively. */
+const COLLOCATIONS_EXAMPLE_ROOTS = ["علم", "قول"];
 
 function Bar({
   row,
@@ -236,7 +238,22 @@ export function CollocationsTab() {
 
           <div className="mt-4 border-t border-border pt-4">
             {selectedRoot === null ? (
-              <p className="text-sm text-muted">{t.insightsPage.collocationsPickPrompt}</p>
+              <div>
+                <p className="text-sm text-muted">{t.insightsPage.collocationsPickPrompt}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+                  <span className="text-muted">{t.common.tryLabel}:</span>
+                  {COLLOCATIONS_EXAMPLE_ROOTS.map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setSelectedRoot(r)}
+                      className="arabic-ui inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ) : rows.length === 0 ? (
               <p className="text-sm text-muted">{t.insightsPage.collocationsNoResults}</p>
             ) : (
