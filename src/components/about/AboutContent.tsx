@@ -8,6 +8,14 @@ import { CONCEPT_DOI, VERSION_DOI, VERSION_TAG, doiUrl } from "@/lib/citation/do
 /** Set once the CSV is uploaded to a release; see scripts/build-data.ts EXPORT_DIR. */
 const CORPUS_EXPORT_URL = process.env.NEXT_PUBLIC_CORPUS_EXPORT_URL ?? "";
 
+// Matches next.config.ts's basePath and lib/data/loader.ts's own DATA_BASE:
+// empty for the default (root-domain) deploy, "/Holy-Qur-an" for GitHub Pages.
+// Unlike corpus.csv, codebook.json/corpus-columns.csv are a few KB, so they
+// ship as ordinary public/data/v1 files rather than a release asset.
+const DATA_BASE = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/data/v1`;
+const CODEBOOK_JSON_URL = `${DATA_BASE}/codebook.json`;
+const CORPUS_COLUMNS_CSV_URL = `${DATA_BASE}/corpus-columns.csv`;
+
 export function AboutContent({
   manifest,
   rootNames,
@@ -191,6 +199,16 @@ export function AboutContent({
             </a>
           </>
         )}
+        <p className="mt-3 text-muted">
+          {t.aboutPage.codebookBody}{" "}
+          <a href={CODEBOOK_JSON_URL} className="text-accent hover:text-accent-strong" dir="ltr">
+            codebook.json
+          </a>
+          {" · "}
+          <a href={CORPUS_COLUMNS_CSV_URL} className="text-accent hover:text-accent-strong" dir="ltr">
+            corpus-columns.csv
+          </a>
+        </p>
       </div>
 
       <div>

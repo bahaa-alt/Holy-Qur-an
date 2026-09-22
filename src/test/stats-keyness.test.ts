@@ -3,10 +3,12 @@ import {
   benjaminiHochberg,
   bonferroniAlpha,
   chiSquarePValue1df,
+  contingencyG2,
   G2_CRITICAL,
   keyness,
   logLikelihood,
   logRatio,
+  logRatioCI,
   wilsonInterval,
 } from "@/lib/stats/keyness";
 
@@ -62,6 +64,96 @@ describe("logRatio", () => {
     expect(logLikelihood({ a: 1000, b: 2000, c: 10000, d: 100000 })).toBeGreaterThan(
       logLikelihood({ a: 10, b: 20, c: 100, d: 1000 }),
     );
+  });
+});
+
+describe("contingencyG2", () => {
+  /**
+   * Expected values independently computed in Python (a from-scratch
+   * reimplementation of the standard 2x2 G-test of independence, not
+   * copied from this module) so the test can fail.
+   */
+  it("matches an independently computed worked example with a real association", () => {
+    expect(contingencyG2({ both: 10, onlyFirst: 90, onlySecond: 40, neither: 860 })).toBeCloseTo(
+      4.737383864602785,
+      9,
+    );
+  });
+
+  it("is zero when the two items are perfectly independent (proportional cells)", () => {
+    expect(contingencyG2({ both: 50, onlyFirst: 50, onlySecond: 50, neither: 50 })).toBeCloseTo(0, 9);
+  });
+
+  it("matches an independently computed small-count example", () => {
+    expect(contingencyG2({ both: 2, onlyFirst: 8, onlySecond: 3, neither: 87 })).toBeCloseTo(
+      3.3889459168692744,
+      9,
+    );
+  });
+
+  it("handles a zero cell without producing NaN", () => {
+    expect(contingencyG2({ both: 0, onlyFirst: 100, onlySecond: 50, neither: 850 })).toBeCloseTo(
+      10.824007374215904,
+      9,
+    );
+  });
+
+  it("returns 0 rather than NaN for an empty table", () => {
+    expect(contingencyG2({ both: 0, onlyFirst: 0, onlySecond: 0, neither: 0 })).toBe(0);
+  });
+
+  it("grows with the strength of association, holding marginals fixed", () => {
+    // Row/col totals fixed at 60/40 and 60/40 out of 100 throughout (the
+    // independence point is both=36); moving `both` further above that
+    // point in the same direction must only increase G².
+    const atIndependence = contingencyG2({ both: 36, onlyFirst: 24, onlySecond: 24, neither: 16 });
+    const weak = contingencyG2({ both: 40, onlyFirst: 20, onlySecond: 20, neither: 20 });
+    const strong = contingencyG2({ both: 50, onlyFirst: 10, onlySecond: 10, neither: 30 });
+    expect(atIndependence).toBeCloseTo(0, 9);
+    expect(strong).toBeGreaterThan(weak);
+    expect(weak).toBeGreaterThan(atIndependence);
+  });
+});
+
+describe("logRatioCI", () => {
+  /**
+   * Expected values independently computed in Python (math.log/math.sqrt),
+   * written from the Katz (1978) formula directly rather than copied from
+   * this implementation, so the test can actually fail.
+   */
+  it("brackets the point estimate for the standard fixture (a=100,b=200,c=1000,d=10000)", () => {
+    const ci = logRatioCI({ a: 100, b: 200, c: 1000, d: 10000 });
+    expect(ci.low).toBeCloseTo(1.9885553966745007, 9);
+    expect(ci.high).toBeCloseTo(2.6553007931002237, 9);
+    expect(ci.estimated).toBe(false);
+    const point = logRatio({ a: 100, b: 200, c: 1000, d: 10000 }).value;
+    expect(ci.low).toBeLessThan(point);
+    expect(ci.high).toBeGreaterThan(point);
+  });
+
+  it("floors a zero count and marks the interval as estimated", () => {
+    const ci = logRatioCI({ a: 0, b: 200, c: 1000, d: 10000 });
+    expect(ci.low).toBeCloseTo(-9.324698246420919, 9);
+    expect(ci.high).toBeCloseTo(-1.3191579433538068, 9);
+    expect(ci.estimated).toBe(true);
+  });
+
+  it("is symmetric around zero when the two rates are equal", () => {
+    const ci = logRatioCI({ a: 20, b: 20, c: 1000, d: 1000 });
+    expect(ci.low).toBeCloseTo(-0.8851883057620608, 9);
+    expect(ci.high).toBeCloseTo(0.8851883057620608, 9);
+  });
+
+  it("narrows as counts grow, for the same underlying rates", () => {
+    const small = logRatioCI({ a: 100, b: 200, c: 1000, d: 10000 });
+    const big = logRatioCI({ a: 1000, b: 2000, c: 10000, d: 100000 });
+    expect(big.high).toBeCloseTo(2.427349798494221, 9);
+    expect(big.low).toBeCloseTo(2.2165063912805034, 9);
+    expect(big.high - big.low).toBeLessThan(small.high - small.low);
+  });
+
+  it("returns a degenerate interval for an empty corpus rather than dividing by zero", () => {
+    expect(logRatioCI({ a: 0, b: 0, c: 0, d: 0 })).toEqual({ low: 0, high: 0, estimated: false });
   });
 });
 
@@ -190,6 +282,14 @@ describe("keyness", () => {
     expect(k.referenceRate).toBeCloseTo(200, 9);
     expect(k.expected).toBeCloseTo(27.272727272727273, 9);
     expect(k.p).toBeLessThan(1e-30);
+  });
+
+  it("reports a 95% confidence interval on the log ratio, bracketing the point estimate", () => {
+    const k = keyness({ a: 100, b: 200, c: 1000, d: 10000 });
+    const raw = logRatioCI({ a: 100, b: 200, c: 1000, d: 10000 });
+    expect(k.logRatioCI).toEqual({ low: raw.low, high: raw.high });
+    expect(k.logRatioCI.low).toBeLessThan(k.logRatio);
+    expect(k.logRatioCI.high).toBeGreaterThan(k.logRatio);
   });
 
   it("reports a 95% Wilson interval on the rate, in the same per-10k units", () => {

@@ -2,7 +2,8 @@ import { classify } from "../../src/lib/morphology/classify";
 import type { MetaFile, SurahFile } from "../../src/lib/data/types";
 import type { RawWord } from "./parse-morphology";
 
-const HEADER = [
+/** Exported so build-codebook.ts's column list can be tested against it, rather than drift silently. */
+export const CORPUS_CSV_HEADER_COLUMNS = [
   "surah",
   "ayah",
   "surah_name_en",
@@ -16,7 +17,8 @@ const HEADER = [
   "tags",
   "translation_saheeh",
   "translation_pickthall",
-].join(",");
+] as const;
+const HEADER = CORPUS_CSV_HEADER_COLUMNS.join(",");
 
 /** Quotes a CSV field only when it needs it (contains a comma, quote, or newline), per RFC 4180. */
 function csvField(value: string): string {

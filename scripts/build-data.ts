@@ -51,6 +51,7 @@ import { buildFormulas } from "./lib/build-formulas";
 import { buildVerseSimilarity } from "./lib/build-verse-similarity";
 import { buildDivineNamePairs } from "./lib/build-divine-name-pairs";
 import { buildCorpusExportCsv } from "./lib/build-corpus-export";
+import { buildCodebookJson, buildCorpusColumnsCsv } from "./lib/build-codebook";
 import {
   SizeReport,
   checkSizeBudgets,
@@ -573,6 +574,8 @@ async function main() {
   );
   const corpusExportCsv = buildCorpusExportCsv(words, surahFiles, meta);
   const corpusExportBytes = Buffer.byteLength(corpusExportCsv, "utf8");
+  const codebookJson = buildCodebookJson(words.length);
+  const corpusColumnsCsv = buildCorpusColumnsCsv();
 
   // --- 6. Validate invariants ---
   const errors: string[] = [];
@@ -992,6 +995,8 @@ async function main() {
       verseSimilarity,
       divineNamePairs,
       corpusExportBytes,
+      codebookJson,
+      corpusColumnsCsv,
       rootFiles,
       lemmaFiles,
       manifest,
@@ -1186,6 +1191,15 @@ async function main() {
     divineNamePairsSize.gzBytes,
   );
 
+  // A data dictionary for corpus.csv's columns and for the files above --
+  // small (a few KB), so unlike corpus.csv itself it ships as an ordinary
+  // part of the app payload, at a stable URL any researcher's script can
+  // fetch without going through a GitHub release.
+  const codebookSize = writeJSON(join(OUT_DIR, "codebook.json"), codebookJson);
+  report.record("codebook.json", codebookSize.rawBytes, codebookSize.gzBytes);
+  const corpusColumnsSize = writeText(join(OUT_DIR, "corpus-columns.csv"), corpusColumnsCsv);
+  report.record("corpus-columns.csv", corpusColumnsSize.rawBytes, corpusColumnsSize.gzBytes);
+
   // Not recorded in `report`/counted against TOTAL_RAW_BUDGET or
   // TOTAL_GZ_BUDGET on purpose: unlike every file above, this is a
   // one-time bulk download a researcher opts into, never fetched by the
@@ -1277,6 +1291,8 @@ function printSizeEstimate(data: {
   verseSimilarity: unknown;
   divineNamePairs: unknown;
   corpusExportBytes: number;
+  codebookJson: unknown;
+  corpusColumnsCsv: string;
   rootFiles: Map<string, unknown>;
   lemmaFiles: Map<string, unknown>;
   manifest: unknown;
@@ -1318,6 +1334,12 @@ function printSizeEstimate(data: {
   rec("formulas.json", data.formulas);
   rec("verse-similarity.json", data.verseSimilarity);
   rec("divine-name-pairs.json", data.divineNamePairs);
+  rec("codebook.json", data.codebookJson);
+  {
+    const raw = Buffer.byteLength(data.corpusColumnsCsv, "utf8");
+    const gz = gzipSync(Buffer.from(data.corpusColumnsCsv, "utf8")).length;
+    report.record("corpus-columns.csv", raw, gz);
+  }
   // The real build writes one file per surah/root/lemma; --check has no
   // files to measure, so it sizes the same payloads in aggregate. surahs/
   // was previously missing entirely, which hid ~3.3 MB raw from the total.

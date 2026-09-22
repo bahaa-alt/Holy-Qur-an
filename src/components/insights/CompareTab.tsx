@@ -194,7 +194,7 @@ export function CompareTab({ meta }: { meta: MetaFile }) {
           {
             label: "measures",
             value:
-              "log-likelihood G² (Dunning 1993), log ratio (Hardie 2014), 95% Wilson score interval (Wilson 1927)",
+              "log-likelihood G² (Dunning 1993), log ratio (Hardie 2014) with a 95% CI via the Katz log method (Katz et al. 1978), 95% Wilson score interval on rate (Wilson 1927)",
           },
           { label: "minimum occurrences", value: String(minCount) },
           { label: "roots tested (Bonferroni family)", value: String(result?.tested ?? 0) },
@@ -221,6 +221,8 @@ export function CompareTab({ meta }: { meta: MetaFile }) {
         { key: "per_10k_elsewhere_ci_low", label: "per_10k_elsewhere_ci_low" },
         { key: "per_10k_elsewhere_ci_high", label: "per_10k_elsewhere_ci_high" },
         { key: "log_ratio", label: "log_ratio" },
+        { key: "log_ratio_ci_low", label: "log_ratio_ci_low" },
+        { key: "log_ratio_ci_high", label: "log_ratio_ci_high" },
         { key: "log_ratio_estimated", label: "log_ratio_estimated" },
         { key: "log_likelihood_g2", label: "log_likelihood_g2" },
         { key: "p_value", label: "p_value" },
@@ -237,6 +239,8 @@ export function CompareTab({ meta }: { meta: MetaFile }) {
         r.keyness.referenceRateCI.low.toFixed(2),
         r.keyness.referenceRateCI.high.toFixed(2),
         r.keyness.logRatio.toFixed(4),
+        r.keyness.logRatioCI.low.toFixed(4),
+        r.keyness.logRatioCI.high.toFixed(4),
         r.keyness.logRatioEstimated ? "yes" : "no",
         r.keyness.g2.toFixed(3),
         r.keyness.p.toExponential(3),

@@ -548,6 +548,8 @@ export const en: Dict = {
       colElsewhere: "per 10k elsewhere",
       colRateCIHint: "The smaller range underneath is the 95% Wilson score confidence interval.",
       colLogRatio: "Log ratio",
+      colLogRatioCIHint:
+        "The smaller range underneath is a 95% confidence interval on the log ratio itself (Katz et al. 1978), not the rate.",
       colG2: "G\u00b2",
       colSig: "Significance",
       colRange: "Surahs",
@@ -573,7 +575,7 @@ export const en: Dict = {
       methodsG2:
         "G\u00b2 is log-likelihood (Dunning 1993): how surprising the difference is, given how much text is involved. It grows with the size of the corpus, so a large G\u00b2 on a tiny difference is real but may be uninteresting.",
       methodsLogRatio:
-        "Log ratio (Hardie 2014) is the size of the difference, in doublings: +1 means twice as common here, +3 means eight times. It does not grow with corpus size, and it is unstable on small counts \u2014 which is what the minimum-occurrence floor is for.",
+        "Log ratio (Hardie 2014) is the size of the difference, in doublings: +1 means twice as common here, +3 means eight times. It does not grow with corpus size, and it is unstable on small counts \u2014 which is what the minimum-occurrence floor is for. The smaller range underneath is a 95% confidence interval on that log ratio itself, via the delta-method standard error for a log relative risk (Katz, Baptista, Azen & Pike 1978) \u2014 the same method behind the risk-ratio interval in a meta-analysis forest plot \u2014 so a reader can see whether two effect sizes are actually distinguishable, not just compare their single best estimates.",
       methodsCI:
         "The smaller range under each rate is a 95% Wilson score confidence interval (Wilson 1927): where the true rate plausibly lies, not just its single best estimate. Preferred here over the textbook normal approximation because it stays inside 0-100% and keeps its stated coverage even at the small counts a keyness table often runs on.",
       methodsCorrection:
@@ -737,6 +739,9 @@ export const en: Dict = {
     pmiExplanation:
       "PMI measures how much more (or less) than chance two things co-occur, correcting for how common each is by itself -- unlike raw frequency, it isn't biased toward simply-common items.",
     pmiLabel: (value) => `PMI ${value}`,
+    collocationSigExplanation:
+      "The smaller figure underneath is a Benjamini-Hochberg FDR q-value, from a G² test of the same association (Dunning 1993, the original collocation-significance test): whether this pairing is likely a real association or could be chance, corrected across every verb+preposition combination tracked.",
+    collocationSigLabel: (q) => `q ${q < 0.001 ? "< 0.001" : q.toFixed(3)}`,
   },
   formulaDetailPage: {
     backToInsights: "← Back to Insights",
@@ -920,7 +925,7 @@ export const en: Dict = {
       "Each verse's \"ending\" is the final letter of its last word, diacritics stripped -- the unit classical Qur'anic rhetorical studies (fawāṣil/sajʿ) use to classify verse-endings. Letter variants (ة vs ه, alif forms) are not unified here, matching the letter-frequency table's convention.",
     collocationsMethodHeading: "Verb–preposition collocations",
     collocationsMethodBody:
-      "For every occurrence of a verb root, checks whether the immediately following word -- or, for a one-letter proclitic like بِ/لِ/كَ, that word's attached prefix segment -- is one of ten canonical Arabic prepositions (ب ل ك من إلى على في عن مع حتى). Restricted to this list rather than any following particle, so the result reflects verb government (valency) specifically, not incidental adjacency to a conjunction, negation, or interrogative. Each combination also gets a PMI (pointwise mutual information) score alongside its raw count, measured over all tracked-verb occurrences with a following word: PMI asks whether a preposition follows a given verb more than its own overall frequency in that space would predict, so it isn't dominated by simply-common prepositions the way raw count is.",
+      "For every occurrence of a verb root, checks whether the immediately following word -- or, for a one-letter proclitic like بِ/لِ/كَ, that word's attached prefix segment -- is one of ten canonical Arabic prepositions (ب ل ك من إلى على في عن مع حتى). Restricted to this list rather than any following particle, so the result reflects verb government (valency) specifically, not incidental adjacency to a conjunction, negation, or interrogative. Each combination also gets a PMI (pointwise mutual information) score alongside its raw count, measured over all tracked-verb occurrences with a following word: PMI asks whether a preposition follows a given verb more than its own overall frequency in that space would predict, so it isn't dominated by simply-common prepositions the way raw count is. Alongside PMI, a G² test of the same 2x2 co-occurrence table (Dunning 1993 -- the original collocation-significance test, as distinct from the two-corpus adaptation Compare uses) gives each combination a p-value, corrected to a Benjamini-Hochberg FDR q-value across every combination tracked: a high PMI on a handful of occurrences can be chance, and the q-value says how likely that is.",
     abjadMethodHeading: "Abjad value (ḥisāb al-jummal)",
     abjadMethodBody:
       "Sums each letter's value in the classical 28-letter Arabic numeral system (أبجد هوز حطي...), after stripping diacritics and folding alif variants and hamza carriers (أ إ آ ٱ ء ؤ ئ) to ا, teh marbuta (ة) to ه, and alif maksura (ى) to ي -- hamza carries no separate value in this system, which predates hamza as a distinct letter. The \"Find by value\" search reverses this: every verse's and every surah's own total is precomputed once at build time, so a target number can be matched against the whole corpus (an exact-equality scan) instead of one hand-picked phrase, the way classical chronogram composition itself works.",
@@ -987,6 +992,8 @@ export const en: Dict = {
     corpusExportReleases: "Browse releases",
     corpusExportNotPublished: (size) =>
       `The export is ${size} \u2014 too large to ship with the site, so it is published as a release asset rather than served from here. Build it yourself with \`pnpm data:build\`; it lands in \`dist/export/corpus.csv\`.`,
+    codebookBody:
+      "A machine-readable data dictionary for this CSV's columns \u2014 name, type, nullability, and every enum's possible values \u2014 plus an index of the JSON files under data/v1 this app itself (and the command-line tool below) reads:",
     qcqlCliHeading: "Command-line queries",
     qcqlCliBody:
       "The same query language the Query page runs in your browser is also available as a script, for anyone who wants to run many queries, batch results into a file, or pull matches into a notebook rather than clicking through a page one query at a time. In a checkout that has run the data build, `npm run qcql -- \"[root=\\u0639\\u0644\\u0645 & cat=verb.perf] :: meccan\"` prints CSV to stdout; add `--format json`, `--with-text`, or `--base-url` to read a deployed instance's data instead of a local build. Run `npm run qcql -- --help` for the full option list.",

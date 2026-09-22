@@ -43,6 +43,8 @@ export interface Keyness {
   g2: number;
   /** effect size in doublings: +1 = twice as common in the scope */
   logRatio: number;
+  /** 95% confidence interval on `logRatio`, same units (doublings) */
+  logRatioCI: LogRatioInterval;
   /** true when the scope's rate exceeds the reference's */
   overused: boolean;
   /** how many occurrences the scope's size would predict */
@@ -115,6 +117,11 @@ export interface WilsonInterval {
   high: number;
 }
 
+export interface LogRatioInterval {
+  low: number;
+  high: number;
+}
+
 /** z for a two-sided 95% interval (Φ⁻¹(0.975)), to full double precision. */
 const Z_95 = 1.959963984540054;
 
@@ -141,6 +148,36 @@ export function wilsonInterval(successes: number, total: number, z: number = Z_9
   return {
     low: Math.max(0, (center - margin) / denom),
     high: Math.min(1, (center + margin) / denom),
+  };
+}
+
+/**
+ * 95% confidence interval on the log-ratio effect size, via the delta-method
+ * standard error for a log relative risk (Katz, Baptista, Azen & Pike 1978)
+ * -- the same "log method" behind the risk-ratio interval in every
+ * meta-analysis forest plot. logRatio() alone is a point estimate; a reader
+ * deciding whether "+2.3 doublings" and "+1.1 doublings" are actually
+ * different effects needs the interval, not just the two points.
+ *
+ * Var[ln(RR)] = 1/a - 1/c + 1/b - 1/d (Katz 1978); dividing the resulting
+ * interval on ln(RR) by ln(2) converts it to the same log2 (doublings)
+ * units logRatio() reports. Zero counts are floored to 0.5, the same as
+ * logRatio() and for the same reason: a and b sit in a denominator, and an
+ * unfloored zero makes the interval infinite rather than merely wide.
+ */
+export function logRatioCI(input: KeynessInput, z: number = Z_95): LogRatioInterval & { estimated: boolean } {
+  const { a, b, c, d } = input;
+  if (c <= 0 || d <= 0) return { low: 0, high: 0, estimated: false };
+  const estimated = a === 0 || b === 0;
+  const safeA = a === 0 ? 0.5 : a;
+  const safeB = b === 0 ? 0.5 : b;
+  const lnRR = Math.log(safeA / c / (safeB / d));
+  const seLn = Math.sqrt(1 / safeA - 1 / c + 1 / safeB - 1 / d);
+  const margin = z * seLn;
+  return {
+    low: (lnRR - margin) / Math.LN2,
+    high: (lnRR + margin) / Math.LN2,
+    estimated,
   };
 }
 
@@ -199,6 +236,7 @@ export function keyness(input: KeynessInput): Keyness {
   const { a, b, c, d } = input;
   const g2 = logLikelihood(input);
   const lr = logRatio(input);
+  const lrCI = logRatioCI(input);
   const rate = c > 0 ? (a / c) * 10_000 : 0;
   const referenceRate = d > 0 ? (b / d) * 10_000 : 0;
   const rateCI = wilsonInterval(a, c);
@@ -206,6 +244,7 @@ export function keyness(input: KeynessInput): Keyness {
   return {
     g2,
     logRatio: lr.value,
+    logRatioCI: { low: lrCI.low, high: lrCI.high },
     logRatioEstimated: lr.estimated,
     overused: rate >= referenceRate,
     expected: c + d > 0 ? (c * (a + b)) / (c + d) : 0,
@@ -279,4 +318,56 @@ export function benjaminiHochberg(pValues: readonly number[], alpha = 0.05): Fdr
   }
 
   return { qValues, significant, thresholdP };
+}
+
+/**
+ * The full 2×2 contingency table a co-occurrence (collocation) test is
+ * computed from -- as distinct from KeynessInput, which is really a 2×1
+ * comparison (one item's frequency across two corpora). Here every cell
+ * matters: whether item X and item Y appear together (in a verse, a
+ * window, a document -- whatever the unit is) more often than each one's
+ * own footprint alone would predict.
+ */
+export interface ContingencyTable {
+  /** units containing both X and Y */
+  both: number;
+  /** units containing X but not Y */
+  onlyFirst: number;
+  /** units containing Y but not X */
+  onlySecond: number;
+  /** units containing neither */
+  neither: number;
+}
+
+/**
+ * Log-likelihood G² for a full 2×2 contingency table -- Dunning's (1993)
+ * ORIGINAL collocation-significance test, the one the paper actually
+ * introduces before Rayson & Garside (2000) adapt it into the two-corpus
+ * comparison logLikelihood() above computes. Two words that always occur
+ * in the same handful of verses are a collocation regardless of how rare
+ * either one is alone; raw co-occurrence counts alone cannot tell that
+ * apart from two words that are simply both common. This can.
+ *
+ * Same statistic (Pearson's G-test of independence at 1 degree of
+ * freedom), so chiSquarePValue1df() and benjaminiHochberg() both apply to
+ * its output exactly as they do to logLikelihood()'s.
+ */
+export function contingencyG2({ both, onlyFirst, onlySecond, neither }: ContingencyTable): number {
+  const n = both + onlyFirst + onlySecond + neither;
+  if (n <= 0) return 0;
+  const rowFirst = both + onlyFirst;
+  const rowSecond = onlySecond + neither;
+  const colFirst = both + onlySecond;
+  const colSecond = onlyFirst + neither;
+  const cells: [number, number][] = [
+    [both, (rowFirst * colFirst) / n],
+    [onlyFirst, (rowFirst * colSecond) / n],
+    [onlySecond, (rowSecond * colFirst) / n],
+    [neither, (rowSecond * colSecond) / n],
+  ];
+  let sum = 0;
+  for (const [o, e] of cells) {
+    if (o > 0 && e > 0) sum += o * Math.log(o / e);
+  }
+  return 2 * sum;
 }
