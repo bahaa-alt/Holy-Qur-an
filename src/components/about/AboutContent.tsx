@@ -96,6 +96,37 @@ export function AboutContent({
             <h3 className="font-medium">{t.aboutPage.verseSimilarityMethodHeading}</h3>
             <p className="mt-1 text-muted">{t.aboutPage.verseSimilarityMethodBody}</p>
           </div>
+          <div>
+            <h3 className="font-medium">{t.aboutPage.keynessMethodHeading}</h3>
+            <p className="mt-1 text-muted">{t.aboutPage.keynessMethodBody}</p>
+          </div>
+          <div>
+            <h3 className="font-medium">{t.aboutPage.dispersionMethodHeading}</h3>
+            <p className="mt-1 text-muted">{t.aboutPage.dispersionMethodBody}</p>
+          </div>
+          <div>
+            <h3 className="font-medium">{t.aboutPage.letterFrequencyMethodHeading}</h3>
+            <p className="mt-1 text-muted">{t.aboutPage.letterFrequencyMethodBody}</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2 className="text-lg font-semibold">{t.aboutPage.changelogHeading}</h2>
+        <p className="mt-2 text-muted">{t.aboutPage.changelogIntro}</p>
+        <div className="mt-4 space-y-4">
+          <div>
+            <h3 className="font-medium">{t.aboutPage.changelogUnreleasedLabel}</h3>
+            <ul className="mt-1 list-disc space-y-2 ps-5 text-muted">
+              <li>{t.aboutPage.changelogCategoryFix}</li>
+              <li>{t.aboutPage.changelogLetterFrequencyFix}</li>
+              <li>{t.aboutPage.changelogStatsAdditions}</li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="font-medium">{t.aboutPage.changelogV1Label}</h3>
+            <p className="mt-1 text-muted">{t.aboutPage.changelogV1Note}</p>
+          </div>
         </div>
       </div>
 
