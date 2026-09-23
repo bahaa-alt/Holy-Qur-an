@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,59060,t=>{"use strict";let e=(t.i(5196).default.env.NEXT_PUBLIC_SITE_ORIGIN??"https://bahaa-alt.github.io/Holy-Qur-an").replace(/\/+$/,"");t.s(["SITE_ORIGIN",0,e,"absoluteUrl",0,function(t){return t&&"/"!==t?`${e}/${t.replace(/^\/+/,"")}`:`${e}/`}])}]);

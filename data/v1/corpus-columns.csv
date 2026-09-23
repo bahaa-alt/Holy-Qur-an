@@ -1,0 +1,17 @@
+name,type,nullable,values,description
+surah,integer,false,,"Surah (chapter) number, 1-114."
+ayah,integer,false,,1-based verse number within the surah.
+surah_name_en,string,false,,English transliteration of the surah's name.
+surah_name_ar,string,false,,The surah's name in Arabic.
+revelation_type,enum,false,meccan|medinan,Traditional classification of where the surah was revealed.
+word_index,integer,false,,1-based word position within the verse.
+word,string,false,,"The Arabic word as it appears in the text, fully diacritized (Uthmani orthography)."
+root,string,true,,"Arabic root (typically triliteral), taken from the word's ROOTED morphological segment -- this app's own definition of an 'occurrence' (see the About page). Empty for words that carry no root at all: particles, pronouns, and most clitics. A word can carry more than one morphological segment, but at most one is ever rooted, with one documented exception (20:94:2, يَبْنَؤُمَّ) whose second root is not represented in this export."
+lemma,string,true,,Dictionary citation form of the rooted segment. Empty on the same rows as `root`.
+category,enum,true,verb.perf|verb.impf|verb.impv|noun|actPcpl|passPcpl|verbalNoun|adj|properNoun|other,Grammatical category of the rooted segment (see the About page's methodology section for the exact mapping from source tags). Empty on the same rows as `root`.
+tags,string,true,,"Raw morphological tags for the rooted segment, pipe (|)-delimited, in source order (e.g. PERF|ROOT:كتب|LEM:كَتَبَ|3MS). Empty on the same rows as `root`."
+translation_saheeh,string,false,,"Saheeh International English translation of the verse this word belongs to, repeated once per word in the verse."
+translation_pickthall,string,true,,"Pickthall English translation of the verse this word belongs to, repeated once per word. Technically optional (a small number of verses lack Pickthall coverage in the source), though every verse has one in the current build."
+translation_yusufali,string,false,,"Abdullah Yusuf Ali's 1934 English translation of the verse this word belongs to, repeated once per word. Full 6,236-verse coverage."
+translation_rodwell,string,false,,"John Medows Rodwell's 1861 English translation of the verse this word belongs to, repeated once per word. Full 6,236-verse coverage."
+translation_sale,string,false,,"George Sale's 1734 English translation of the verse this word belongs to, repeated once per word -- the first major English rendering made directly from the Arabic. Full 6,236-verse coverage."

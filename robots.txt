@@ -1,0 +1,8 @@
+User-Agent: *
+Allow: /
+Disallow: /saved/
+Disallow: /studies/
+Disallow: /404/
+Disallow: /_not-found/
+
+Sitemap: https://bahaa-alt.github.io/Holy-Qur-an/sitemap.xml
