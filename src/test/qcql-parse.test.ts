@@ -92,6 +92,9 @@ describe("parseQcql", () => {
       { kind: "chrono", op: ">", value: 5 },
       { kind: "surah", op: "<=", value: 20 },
     ]);
+    expect(parseQcql("[PASS] :: noldeke > 5").filters).toEqual([
+      { kind: "noldeke", op: ">", value: 5 },
+    ]);
   });
 
   it("accepts every comparison operator", () => {

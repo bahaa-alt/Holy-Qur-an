@@ -82,6 +82,7 @@ export type Expr =
 export type Filter =
   | { kind: "revelation"; value: "meccan" | "medinan" }
   | { kind: "chrono"; op: CompareOp; value: number }
+  | { kind: "noldeke"; op: CompareOp; value: number }
   | { kind: "surah"; op: CompareOp; value: number };
 
 export interface Query {

@@ -1,4 +1,5 @@
 import { CHRONOLOGICAL_ORDER_BY_SURAH } from "@/lib/data/chronologicalOrder";
+import { NOLDEKE_ORDER_BY_SURAH } from "@/lib/data/noldekeChronology";
 import type {
   IndexFile,
   MorphologyIndexFile,
@@ -300,6 +301,10 @@ function passesFilters(s: number, filters: readonly Filter[], byNumber: Map<numb
       if (byNumber.get(s)?.type !== f.value) return false;
     } else if (f.kind === "surah") {
       if (!compare(f.op, s, f.value)) return false;
+    } else if (f.kind === "noldeke") {
+      // 0-based: the array is keyed by surah - 1 (see noldekeChronology.ts).
+      const noldeke = NOLDEKE_ORDER_BY_SURAH[s - 1];
+      if (noldeke === undefined || !compare(f.op, noldeke, f.value)) return false;
     } else {
       // 0-based: the array is keyed by surah - 1 (see chronologicalOrder.ts).
       const chrono = CHRONOLOGICAL_ORDER_BY_SURAH[s - 1];

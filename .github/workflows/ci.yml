@@ -25,6 +25,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # The treebank source (see scripts/lib/build-treebank.ts) ships as a
+      # .rar archive; unrar-free extracts it the same way unzip already
+      # handles Lane's Lexicon and the Arabic lexicons' .zip archives --
+      # a system tool via execFileSync, not a bundled npm dependency.
+      - name: Install unrar-free
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends unrar-free
+
       - name: Data pipeline (fetch + validate)
         run: pnpm data:check
 

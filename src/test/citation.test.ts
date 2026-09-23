@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { buildCitation, datasetLabel } from "@/lib/citation/buildCitation";
-import { CONCEPT_DOI, VERSION_DOI } from "@/lib/citation/doi";
+import {
+  buildBibTeX,
+  buildCitation,
+  buildCslJson,
+  buildRIS,
+  citationKey,
+  datasetLabel,
+} from "@/lib/citation/buildCitation";
+import { CONCEPT_DOI, VERSION_DOI, VERSION_TAG } from "@/lib/citation/doi";
 import type { ManifestFile } from "@/lib/data/types";
 
 const manifest: Pick<ManifestFile, "version" | "builtAt" | "hash" | "reading"> = {
@@ -84,6 +91,57 @@ describe("buildCitation", () => {
         `DOI ${VERSION_DOI}. ` +
         "Accessed September 9, 2026. https://example.com/word/42/",
     );
+  });
+});
+
+describe("buildBibTeX", () => {
+  it("emits a @software entry with the version DOI and tag", () => {
+    const bib = buildBibTeX({ kind: "verse", label: "1:2" }, manifest, "https://example.com/v/1:2/");
+    expect(bib).toMatch(/^@software\{[^,]+,\n/);
+    expect(bib).toContain(`doi          = {${VERSION_DOI}}`);
+    expect(bib).toContain(`version      = {${VERSION_TAG}}`);
+    expect(bib).toContain("url          = {https://example.com/v/1:2/}");
+    expect(bib.trim().endsWith("}")).toBe(true);
+  });
+
+  it("escapes BibTeX special characters in the title", () => {
+    const bib = buildBibTeX({ kind: "query", label: "[root=a & b]" }, manifest, "https://x/");
+    expect(bib).toContain("\\&");
+    expect(bib).not.toMatch(/title\s*=\s*\{[^}]*[^\\]&/);
+  });
+});
+
+describe("buildRIS", () => {
+  it("opens with TY and closes with ER, one field per line", () => {
+    const ris = buildRIS({ kind: "root", label: "كتب" }, manifest, "https://example.com/root/كتب/");
+    const lines = ris.split("\n").filter((l) => l !== "");
+    expect(lines[0]).toBe("TY  - COMP");
+    expect(lines[lines.length - 1]).toBe("ER  - ");
+    expect(ris).toContain(`DO  - ${VERSION_DOI}`);
+    expect(ris).toContain("UR  - https://example.com/root/كتب/");
+  });
+});
+
+describe("buildCslJson", () => {
+  it("produces a one-item array valid CSL-JSON parses back correctly", () => {
+    const json = buildCslJson({ kind: "surah", label: "2" }, manifest, "https://example.com/surah/2/");
+    const parsed = JSON.parse(json);
+    expect(Array.isArray(parsed)).toBe(true);
+    expect(parsed).toHaveLength(1);
+    const [entry] = parsed;
+    expect(entry.type).toBe("software");
+    expect(entry.DOI).toBe(VERSION_DOI);
+    expect(entry.URL).toBe("https://example.com/surah/2/");
+    expect(entry.issued["date-parts"]).toEqual([[2026, 1, 1]]);
+    expect(entry.author).toEqual([{ given: "Bahaa" }]);
+  });
+});
+
+describe("citationKey", () => {
+  it("produces an ASCII-only, non-empty key even for an Arabic label", () => {
+    const key = citationKey({ kind: "root", label: "كتب" }, 2026);
+    expect(key).toMatch(/^[a-z0-9-]+$/);
+    expect(key.startsWith("bahaa2026-qrr-")).toBe(true);
   });
 });
 

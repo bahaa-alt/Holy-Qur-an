@@ -5,6 +5,8 @@ import { useT } from "@/lib/i18n/LanguageContext";
 import { TopicVerseList } from "./TopicVerseList";
 import { PrintableTopicVerses, type PrintableTopicVersesHandle } from "./PrintableTopicVerses";
 import { PrintButton } from "@/components/export/PrintButton";
+import { SendToStudyButton } from "./SendToStudyButton";
+import { topicToQcql } from "@/lib/topics/topicSourceToQcql";
 import type { TopicDefinition } from "@/lib/topics/topicDefinitions";
 import type { TopicVerseMatch } from "@/lib/topics/buildTopicOccurrences";
 
@@ -37,7 +39,10 @@ export function TopicPageContent({ topic, matches }: { topic: TopicDefinition; m
             <h1 className="arabic-ui mt-1 text-3xl font-semibold text-ink">{topic.labelAr}</h1>
             <p className="text-sm text-muted">{topic.labelEn}</p>
           </div>
-          <PrintButton onBeforePrint={() => printRef.current?.resolve()} />
+          <div className="flex shrink-0 items-center gap-2">
+            <SendToStudyButton label={topic.labelEn} qcql={topicToQcql(topic.sources)} />
+            <PrintButton onBeforePrint={() => printRef.current?.resolve()} />
+          </div>
         </div>
         <p className="mt-3 max-w-2xl text-sm text-muted">{t.topicPage.description(matches.length)}</p>
         {topic.note && (

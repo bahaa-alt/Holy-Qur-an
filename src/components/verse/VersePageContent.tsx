@@ -9,7 +9,9 @@ import { SaveButton } from "@/components/notes/SaveButton";
 import { RelatedVerses } from "@/components/ayah/RelatedVerses";
 import { ReadingsPanel } from "@/components/readings/ReadingsPanel";
 import { TafsirPanel } from "@/components/tafsir/TafsirPanel";
+import { TreebankPanel } from "@/components/treebank/TreebankPanel";
 import { CHRONOLOGICAL_ORDER_BY_SURAH } from "@/lib/data/chronologicalOrder";
+import { NOLDEKE_ORDER_BY_SURAH } from "@/lib/data/noldekeChronology";
 import { juzForVerse } from "@/lib/quran/juz";
 import { hizbForVerse } from "@/lib/quran/hizb";
 import { useLanguage, useT } from "@/lib/i18n/LanguageContext";
@@ -127,6 +129,7 @@ export function VersePageContent({
       <div className="mt-6 space-y-4 rounded-2xl border border-border bg-surface p-6">
         <TafsirPanel s={s} a={a} />
         <ReadingsPanel s={s} a={a} hafsText={verse.w.join(" ")} />
+        <TreebankPanel s={s} a={a} />
         <RelatedVerses s={s} a={a} />
       </div>
 
@@ -139,6 +142,10 @@ export function VersePageContent({
         <Metric
           label={t.versePage.chronological}
           value={`#${CHRONOLOGICAL_ORDER_BY_SURAH[s - 1]}`}
+        />
+        <Metric
+          label={t.versePage.noldekeOrder}
+          value={`#${NOLDEKE_ORDER_BY_SURAH[s - 1]}`}
         />
         <Metric label={t.versePage.juz} value={String(juzForVerse(s, a))} />
         <Metric label={t.versePage.hizb} value={String(hizbForVerse(s, a))} />

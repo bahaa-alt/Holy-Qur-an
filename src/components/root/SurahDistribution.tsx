@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { sortByChronologicalOrder } from "@/lib/root/distribution";
+import { sortByChronologicalOrder, sortByNoldekeOrder } from "@/lib/root/distribution";
 import { CHRONOLOGICAL_ORDER_BY_SURAH } from "@/lib/data/chronologicalOrder";
+import { NOLDEKE_ORDER_BY_SURAH } from "@/lib/data/noldekeChronology";
 import { useT } from "@/lib/i18n/LanguageContext";
 
 export interface SurahDistributionRow {
@@ -12,13 +13,14 @@ export interface SurahDistributionRow {
   count: number;
 }
 
-type OrderMode = "surah" | "chronological";
+type OrderMode = "surah" | "chronological" | "noldeke";
 
 export function SurahDistribution({ rows }: { rows: SurahDistributionRow[] }) {
   const t = useT();
   const [order, setOrder] = useState<OrderMode>("surah");
   const max = Math.max(...rows.map((r) => r.count), 1);
-  const displayRows = order === "surah" ? rows : sortByChronologicalOrder(rows);
+  const displayRows =
+    order === "surah" ? rows : order === "chronological" ? sortByChronologicalOrder(rows) : sortByNoldekeOrder(rows);
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-6">
@@ -39,19 +41,36 @@ export function SurahDistribution({ rows }: { rows: SurahDistributionRow[] }) {
           >
             {t.surahDistribution.revelationOrder}
           </button>
+          <button
+            type="button"
+            onClick={() => setOrder("noldeke")}
+            className={`rounded-md px-2.5 py-1 ${order === "noldeke" ? "bg-accent text-accent-fg" : "text-muted"}`}
+          >
+            {t.surahDistribution.noldekeOrder}
+          </button>
         </div>
       </div>
       <p className="mt-1 text-xs text-muted">
-        {order === "surah" ? t.surahDistribution.bySurahDescription : t.surahDistribution.byRevelationDescription}
+        {order === "surah"
+          ? t.surahDistribution.bySurahDescription
+          : order === "chronological"
+            ? t.surahDistribution.byRevelationDescription
+            : t.surahDistribution.byNoldekeDescription}
       </p>
 
       <div className="mt-4">
         {displayRows.map((r) => {
           const pct = Math.max((r.count / max) * 100, 2);
+          const orderMark =
+            order === "chronological"
+              ? `#${CHRONOLOGICAL_ORDER_BY_SURAH[r.surah - 1]} · `
+              : order === "noldeke"
+                ? `#${NOLDEKE_ORDER_BY_SURAH[r.surah - 1]} · `
+                : `${r.surah}. `;
           return (
             <Link key={r.surah} href={`/surah/${r.surah}/`} className="group flex items-center gap-3 py-1">
               <div className="w-32 shrink-0 truncate text-xs text-muted group-hover:text-accent sm:w-44">
-                {order === "chronological" ? `#${CHRONOLOGICAL_ORDER_BY_SURAH[r.surah - 1]} · ` : `${r.surah}. `}
+                {orderMark}
                 {r.label}
               </div>
               <div className="relative h-5 flex-1 overflow-hidden rounded bg-bg">
